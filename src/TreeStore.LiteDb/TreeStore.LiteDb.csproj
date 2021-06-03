@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>0.0.2</Version>
+    <Authors>github.com/wgross</Authors>
+    <Company>github.com/wgross</Company>
+    <Product>TreeStore</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="LiteDb" Version="5.0.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TreeStore.Model\TreeStore.Model.csproj" />
+  </ItemGroup>
+</Project>

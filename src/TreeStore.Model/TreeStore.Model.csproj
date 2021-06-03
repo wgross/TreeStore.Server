@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <Version>0.0.2</Version>
+    <Company>github/wgross</Company>
+    <Authors>github/wgross</Authors>
+    <Product>TreeStore</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="litedb" Version="5.0.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TreeStore.Model.Abstractions\TreeStore.Model.Abstractions.csproj" />
+  </ItemGroup>
+</Project>
