@@ -1,10 +1,11 @@
 ﻿using LiteDB;
 using System.IO;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.LiteDb
 {
-    public class TreeStoreLiteDbPersistence : ITreeStorePersistence
+    public class TreeStoreLiteDbPersistence : ITreeStoreModel
     {
         private LiteRepository db;
 
@@ -27,7 +28,7 @@ namespace TreeStore.LiteDb
         #region Create File based Storage
 
         public static TreeStoreLiteDbPersistence InFile(string connectionString)
-            => new TreeStoreLiteDbPersistence( new LiteRepository(connectionString));
+            => new TreeStoreLiteDbPersistence(new LiteRepository(connectionString));
 
         #endregion Create File based Storage
 
@@ -38,17 +39,17 @@ namespace TreeStore.LiteDb
             this.Categories = new CategoryLiteDbRepository(db);
         }
 
-        public ITagRepository Tags => new TagRepository(db);
+        public ITagRepository Tags => new TagLiteDbRepository(db);
 
         public ICategoryRepository Categories { get; private set; }
 
-        public IEntityRepository Entities => new EntityRepository(db);
+        public IEntityRepository Entities => new EntityLiteDbRepository(db);
 
-        public IRelationshipRepository Relationships => new RelationshipRepository(db);
+        public IRelationshipRepository Relationships => new RelationshipLiteDbRepository(db);
 
         public bool DeleteCategory(Category category, bool recurse)
         {
-            var traverser = new CategoryRemovalTraverser((CategoryLiteDbRepository)this.Categories, (EntityRepository)this.Entities);
+            var traverser = new CategoryRemovalTraverser((CategoryLiteDbRepository)this.Categories, (EntityLiteDbRepository)this.Entities);
 
             if (recurse)
                 return traverser.DeleteRecursively(category);
@@ -58,7 +59,7 @@ namespace TreeStore.LiteDb
 
         public void CopyCategory(Category source, Category destination, bool recurse)
         {
-            var traverser = new CategoryCopyTraverser((CategoryLiteDbRepository)this.Categories, (EntityRepository)this.Entities);
+            var traverser = new CategoryCopyTraverser((CategoryLiteDbRepository)this.Categories, (EntityLiteDbRepository)this.Entities);
 
             if (recurse)
                 traverser.CopyCategoryRecursively(source, destination);

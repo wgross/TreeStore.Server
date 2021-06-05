@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace TreeStore.Model
+namespace TreeStore.Model.Abstractions
 {
-    public interface ITreeStorePersistence : IDisposable
+    public interface ITreeStoreModel : IDisposable
     {
         ITagRepository Tags { get; }
 

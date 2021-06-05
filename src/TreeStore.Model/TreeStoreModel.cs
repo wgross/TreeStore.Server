@@ -1,12 +1,13 @@
 ﻿using System;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
     public class TreeStoreModel : IDisposable
     {
-        private ITreeStorePersistence? persistence;
+        private ITreeStoreModel? persistence;
 
-        public TreeStoreModel(ITreeStorePersistence persistence)
+        public TreeStoreModel(ITreeStoreModel persistence)
         {
             this.persistence = persistence;
         }
@@ -16,8 +17,6 @@ namespace TreeStore.Model
         public IEntityRepository Entities => this.persistence!.Entities;
 
         public IRelationshipRepository Relationships => this.persistence!.Relationships;
-
-        public Category RootCategory() => this.persistence!.Categories.Root();
 
         public void Dispose()
         {

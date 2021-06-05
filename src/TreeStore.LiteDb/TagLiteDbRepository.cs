@@ -3,11 +3,11 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public class TagRepository : LiteDbRepositoryBase<Tag>, ITagRepository
+    public class TagLiteDbRepository : LiteDbRepositoryBase<Tag>, ITagRepository
     {
         public const string CollectionName = "tags";
 
-        public TagRepository(LiteRepository liteDbrepository) : base(liteDbrepository, CollectionName)
+        public TagLiteDbRepository(LiteRepository liteDbrepository) : base(liteDbrepository, CollectionName)
         {
             liteDbrepository.Database
                 .GetCollection(CollectionName)

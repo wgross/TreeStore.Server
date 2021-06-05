@@ -2,7 +2,7 @@
 
 namespace TreeStore.LiteDb.Test
 {
-    public static class BsonDocumentExtessions
+    public static class BsonDocumentExtensions
     {
         public static BsonValue BsonValue(this BsonDocument root, params string[] names)
         {

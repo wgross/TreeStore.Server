@@ -5,19 +5,19 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public class EntityRepository : LiteDbRepositoryBase<Entity>, IEntityRepository
+    public class EntityLiteDbRepository : LiteDbRepositoryBase<Entity>, IEntityRepository
     {
         public const string CollectionName = "entities";
 
-        static EntityRepository()
+        static EntityLiteDbRepository()
         {
             BsonMapper.Global
                 .Entity<Entity>()
-                    .DbRef(e => e.Tags, TagRepository.CollectionName)
+                    .DbRef(e => e.Tags, TagLiteDbRepository.CollectionName)
                     .DbRef(e => e.Category, CategoryLiteDbRepository.collectionName);
         }
 
-        public EntityRepository(LiteRepository db) : base(db, CollectionName)
+        public EntityLiteDbRepository(LiteRepository db) : base(db, CollectionName)
         {
             // name+categoryid of an entity is unique
             db.Database

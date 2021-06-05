@@ -12,19 +12,19 @@ namespace TreeStore.LiteDb.Test
     {
         private readonly MockRepository mocks = new MockRepository(MockBehavior.Strict);
         private readonly LiteRepository liteDb;
-        private readonly EntityRepository entityRepository;
-        private readonly TagRepository tagRepository;
+        private readonly EntityLiteDbRepository entityRepository;
+        private readonly TagLiteDbRepository tagRepository;
         private readonly CategoryLiteDbRepository categoryRepository;
-        private readonly RelationshipRepository relationshipRepository;
+        private readonly RelationshipLiteDbRepository relationshipRepository;
         private readonly ILiteCollection<BsonDocument> relationships;
 
         public RelationshipRepositoryTest()
         {
             this.liteDb = new LiteRepository(new MemoryStream());
-            this.entityRepository = new EntityRepository(this.liteDb);
-            this.tagRepository = new TagRepository(this.liteDb);
+            this.entityRepository = new EntityLiteDbRepository(this.liteDb);
+            this.tagRepository = new TagLiteDbRepository(this.liteDb);
             this.categoryRepository = new CategoryLiteDbRepository(this.liteDb);
-            this.relationshipRepository = new RelationshipRepository(this.liteDb);
+            this.relationshipRepository = new RelationshipLiteDbRepository(this.liteDb);
             this.relationships = this.liteDb.Database.GetCollection("relationships");
         }
 
@@ -53,9 +53,9 @@ namespace TreeStore.LiteDb.Test
             Assert.NotNull(readRelationship);
             Assert.Equal(relationship.Id, readRelationship.AsDocument["_id"].AsGuid);
             Assert.Equal(relationship.From.Id, readRelationship["From"].AsDocument["$id"].AsGuid);
-            Assert.Equal(EntityRepository.CollectionName, readRelationship["From"].AsDocument["$ref"].AsString);
+            Assert.Equal(EntityLiteDbRepository.CollectionName, readRelationship["From"].AsDocument["$ref"].AsString);
             Assert.Equal(relationship.To.Id, readRelationship["To"].AsDocument["$id"].AsGuid);
-            Assert.Equal(EntityRepository.CollectionName, readRelationship["To"].AsDocument["$ref"].AsString);
+            Assert.Equal(EntityLiteDbRepository.CollectionName, readRelationship["To"].AsDocument["$ref"].AsString);
         }
 
         [Fact(Skip = "ignore relationships")]
@@ -108,7 +108,7 @@ namespace TreeStore.LiteDb.Test
             Assert.NotNull(readRelationship);
             Assert.Equal(relationship.Id, readRelationship.AsDocument["_id"].AsGuid);
             Assert.Equal(relationship.Tags.Single().Id, readRelationship["Tags"].AsArray[0].AsDocument["$id"].AsGuid);
-            Assert.Equal(TagRepository.CollectionName, readRelationship["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+            Assert.Equal(TagLiteDbRepository.CollectionName, readRelationship["Tags"].AsArray[0].AsDocument["$ref"].AsString);
         }
 
         [Fact(Skip = "ignore relationships")]

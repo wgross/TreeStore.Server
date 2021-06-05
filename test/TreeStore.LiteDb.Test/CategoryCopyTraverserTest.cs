@@ -8,14 +8,14 @@ namespace TreeStore.LiteDb.Test
 {
     public class CategoryCopyTraverserTest
     {
-        private readonly EntityRepository entityRepository;
+        private readonly EntityLiteDbRepository entityRepository;
         private readonly CategoryLiteDbRepository categoryRepository;
         private readonly CategoryCopyTraverser traverser;
 
         public CategoryCopyTraverserTest()
         {
             var tmp = new LiteRepository(new MemoryStream());
-            this.entityRepository = new EntityRepository(tmp);
+            this.entityRepository = new EntityLiteDbRepository(tmp);
             this.categoryRepository = new CategoryLiteDbRepository(tmp);
             this.traverser = new CategoryCopyTraverser(this.categoryRepository, this.entityRepository);
         }

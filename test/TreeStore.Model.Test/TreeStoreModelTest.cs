@@ -15,29 +15,6 @@ namespace TreeStore.Model.Test
             this.tagRepository = this.Mocks.Create<ITagRepository>();
             this.model = this.NewModel();
             // just touch the message bus to satify the strict mock repo
-            var msgBus = this.model.MessageBus;
-        }
-
-        [Fact]
-        public void TreeStoreModel_provides_root_Category()
-        {
-            // ARRANGE
-
-            this.Persistence
-                .Setup(p => p.Categories)
-                .Returns(this.categoryRepository.Object);
-
-            this.categoryRepository
-                .Setup(p => p.Root())
-                .Returns(new Category());
-
-            // ACT
-
-            var result = this.model.RootCategory();
-
-            // ASSERT
-
-            Assert.NotNull(result);
         }
 
         [Fact]

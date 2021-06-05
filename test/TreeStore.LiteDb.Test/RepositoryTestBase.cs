@@ -10,9 +10,9 @@ namespace TreeStore.LiteDb.Test
     {
         protected MockRepository Mocks { get; } = new MockRepository(MockBehavior.Strict);
 
-        protected EntityRepository EntityRepository { get; }
+        protected EntityLiteDbRepository EntityRepository { get; }
 
-        protected TagRepository TagRepository { get; }
+        protected TagLiteDbRepository TagRepository { get; }
 
         protected CategoryLiteDbRepository CategoryRepository { get; }
 
@@ -20,8 +20,8 @@ namespace TreeStore.LiteDb.Test
 
         public LiteDbTestBase()
         {
-            this.EntityRepository = new EntityRepository(this.LiteDb);
-            this.TagRepository = new TagRepository(this.LiteDb);
+            this.EntityRepository = new EntityLiteDbRepository(this.LiteDb);
+            this.TagRepository = new TagLiteDbRepository(this.LiteDb);
             this.CategoryRepository = new CategoryLiteDbRepository(this.LiteDb);
         }
 

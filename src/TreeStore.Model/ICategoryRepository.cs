@@ -14,5 +14,7 @@ namespace TreeStore.Model
         Category? FindByParentAndName(Category category, string name);
 
         IEnumerable<Category> FindByParent(Category category);
+
+        bool Delete(Category category);
     }
 }

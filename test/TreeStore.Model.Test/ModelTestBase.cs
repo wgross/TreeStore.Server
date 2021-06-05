@@ -1,6 +1,6 @@
-﻿using TreeStore.Messaging;
-using Moq;
+﻿using Moq;
 using System;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model.Test
 {
@@ -8,14 +8,11 @@ namespace TreeStore.Model.Test
     {
         protected MockRepository Mocks { get; } = new MockRepository(MockBehavior.Strict);
 
-        protected TreeStoreMessageBus MessageBus { get; }
-
-        protected Mock<ITreeStorePersistence> Persistence { get; }
+        protected Mock<ITreeStoreModel> Persistence { get; }
 
         public ModelTestBase()
         {
-            this.MessageBus = new TreeStoreMessageBus();
-            this.Persistence = this.Mocks.Create<ITreeStorePersistence>();
+            this.Persistence = this.Mocks.Create<ITreeStoreModel>();
         }
 
         public void Dispose() => this.Mocks.VerifyAll();
@@ -28,7 +25,6 @@ namespace TreeStore.Model.Test
 
         protected TreeStoreModel NewModel()
         {
-            this.Persistence.Setup(p => p.MessageBus).Returns(this.MessageBus);
             return new TreeStoreModel(this.Persistence.Object);
         }
 

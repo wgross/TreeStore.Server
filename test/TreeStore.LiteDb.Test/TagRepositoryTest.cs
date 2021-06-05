@@ -8,13 +8,13 @@ namespace TreeStore.LiteDb.Test
 {
     public class TagRepositoryTest : LiteDbTestBase
     {
-        private readonly TagRepository repository;
+        private readonly TagLiteDbRepository repository;
         private readonly ILiteCollection<BsonDocument> tags;
 
         public TagRepositoryTest()
         {
-            this.repository = new TagRepository(this.LiteDb);
-            this.tags = this.LiteDb.Database.GetCollection(TagRepository.CollectionName);
+            this.repository = new TagLiteDbRepository(this.LiteDb);
+            this.tags = this.LiteDb.Database.GetCollection(TagLiteDbRepository.CollectionName);
         }
 
         [Fact]

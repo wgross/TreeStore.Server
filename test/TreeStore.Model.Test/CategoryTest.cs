@@ -5,19 +5,15 @@ namespace TreeStore.Model.Test
 {
     public class CategoryTest
     {
-        // todo: category name is unique for parent node
-
         #region Category hierarchy structure
 
         [Fact]
         public void Category_has_no_parent()
         {
             // ACT
-
             var result = new Category();
 
             // ASSERT
-
             Assert.Null(result.Parent);
         }
 
@@ -25,12 +21,10 @@ namespace TreeStore.Model.Test
         public void Category_corrects_Parent_for_ctor_subcategories()
         {
             // ACT
-
             var category = new Category();
             var result = new Category("cat", new Facet(), category);
 
             // ASSERT
-
             Assert.Same(result, category.Parent);
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TreeStore.Model.Base
+namespace TreeStore.Model
 {
     public abstract class NamedBase
     {

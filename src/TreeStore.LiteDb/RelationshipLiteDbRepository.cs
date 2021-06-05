@@ -5,18 +5,18 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public class RelationshipRepository : LiteDbRepositoryBase<Relationship>, IRelationshipRepository
+    public class RelationshipLiteDbRepository : LiteDbRepositoryBase<Relationship>, IRelationshipRepository
     {
-        static RelationshipRepository()
+        static RelationshipLiteDbRepository()
         {
             BsonMapper.Global
                .Entity<Relationship>()
-                   .DbRef(r => r.Tags, TagRepository.CollectionName)
+                   .DbRef(r => r.Tags, TagLiteDbRepository.CollectionName)
                    .DbRef(r => r.From, "entities")
                    .DbRef(r => r.To, "entities");
         }
 
-        public RelationshipRepository(LiteRepository repo) : base(repo, "relationships")
+        public RelationshipLiteDbRepository(LiteRepository repo) : base(repo, "relationships")
         {
         }
 

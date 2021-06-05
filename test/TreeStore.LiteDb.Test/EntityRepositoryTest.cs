@@ -8,12 +8,12 @@ namespace TreeStore.LiteDb.Test
 {
     public class EntityRepositoryTest : LiteDbTestBase, IDisposable
     {
-        private readonly RelationshipRepository relationshipRepository;
+        private readonly RelationshipLiteDbRepository relationshipRepository;
         private readonly ILiteCollection<BsonDocument> entitiesCollection;
 
         public EntityRepositoryTest()
         {
-            this.relationshipRepository = new RelationshipRepository(this.LiteDb);
+            this.relationshipRepository = new RelationshipLiteDbRepository(this.LiteDb);
             this.entitiesCollection = this.LiteDb.Database.GetCollection("entities");
         }
 
@@ -171,7 +171,7 @@ namespace TreeStore.LiteDb.Test
             Assert.NotNull(readEntity);
             Assert.Equal(entity.Id, readEntity.AsDocument["_id"].AsGuid);
             Assert.Equal(entity.Tags.Single().Id, readEntity["Tags"].AsArray[0].AsDocument["$id"].AsGuid);
-            Assert.Equal(TagRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+            Assert.Equal(TagLiteDbRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
         }
 
         [Fact]
@@ -268,7 +268,7 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal(
                 entity.Values[entity.Tags.Single().Facet.Properties.Single().Id.ToString()],
                 readEntity["Values"].AsDocument[entity.Tags.Single().Facet.Properties.Single().Id.ToString()].AsGuid);
-            Assert.Equal(TagRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+            Assert.Equal(TagLiteDbRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
         }
 
         [Fact]

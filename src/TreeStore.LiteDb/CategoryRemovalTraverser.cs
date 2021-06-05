@@ -5,14 +5,14 @@ using TreeStore.Model;
 namespace TreeStore.LiteDb
 {
     /// <summary>
-    ///  Deletion of a catwgeory is a cros collection operation.
+    ///  Deletion of a category is a cross collection operation.
     /// </summary>
     public sealed class CategoryRemovalTraverser
     {
-        private CategoryLiteDbRepository categoryRepository;
-        private EntityRepository entityRepository;
+        private readonly ICategoryRepository categoryRepository;
+        private readonly IEntityRepository entityRepository;
 
-        public CategoryRemovalTraverser(CategoryLiteDbRepository categoryRepository, EntityRepository entityRepository)
+        public CategoryRemovalTraverser(ICategoryRepository categoryRepository, IEntityRepository entityRepository)
         {
             this.categoryRepository = categoryRepository;
             this.entityRepository = entityRepository;
@@ -23,10 +23,10 @@ namespace TreeStore.LiteDb
             if (category.Id == this.categoryRepository.Root().Id)
                 return false;
 
-            if (SubCategories(category).Any())
+            if (this.SubCategories(category).Any())
                 return false;
 
-            if (SubEntites(category).Any())
+            if (this.SubEntites(category).Any())
                 return false;
 
             return this.DeleteCategoryInDb(category);
@@ -41,9 +41,6 @@ namespace TreeStore.LiteDb
 
             // collect all entites and categories in the given parent category.
             // the delete them
-            // This might be prpblement if the persistence is by two processes.
-            // in these scenarios a persistence is required which will reject the operation.
-
             var entitiesToDelete = new List<Entity>();
             var categoriesToDelete = new List<Category>();
 
@@ -71,7 +68,7 @@ namespace TreeStore.LiteDb
             }
         }
 
-        private bool DeleteCategoryInDb(Category category) => this.categoryRepository.LiteCollectionDocuments().Delete(category.Id);
+        private bool DeleteCategoryInDb(Category category) => this.categoryRepository.Delete(category);
 
         #endregion Delete Recursive
 

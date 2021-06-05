@@ -4,10 +4,10 @@ namespace TreeStore.LiteDb
 {
     public class CategoryCopyTraverser
     {
-        private CategoryLiteDbRepository categoryRepository;
-        private EntityRepository entityRepository;
+        private readonly ICategoryRepository categoryRepository;
+        private readonly IEntityRepository entityRepository;
 
-        public CategoryCopyTraverser(CategoryLiteDbRepository categoryRepository, EntityRepository entityRepository)
+        public CategoryCopyTraverser(CategoryLiteDbRepository categoryRepository, EntityLiteDbRepository entityRepository)
         {
             this.categoryRepository = categoryRepository;
             this.entityRepository = entityRepository;
@@ -15,35 +15,42 @@ namespace TreeStore.LiteDb
 
         public void CopyCategory(Category src, Category dst)
         {
-            var srcClone = CloneWithNewId(src);
-            dst.AddSubCategory(srcClone);
-            this.categoryRepository.Upsert(srcClone);
+            this.CopyAndSaveCategory(src, dst);
         }
 
         public void CopyCategoryRecursively(Category src, Category dst)
         {
             // copy the top most src as child of the dst
-            var srcClone = CloneWithNewId(src);
-            dst.AddSubCategory(srcClone);
-            this.categoryRepository.Upsert(srcClone);
+            var srcClone = this.CopyAndSaveCategory(src, dst);
+
             // descend n src and continue wioth sub categories
             foreach (var srcChild in this.categoryRepository.FindByParent(src))
                 this.CopyCategoryRecursively(srcChild, srcClone);
 
-            // copy all enities in src to dst
+            // copy all entities in src to dst
             foreach (var srcEntity in this.entityRepository.FindByCategory(src))
-                this.CopyEntity(srcEntity, srcClone);
+                this.CopyAndSaveEntity(srcEntity, srcClone);
         }
 
-        private void CopyEntity(Entity srcEntity, Category dstCategory)
+        private Category CopyAndSaveCategory(Category src, Category dst)
         {
-            var srcClone = CloneWithNewId(srcEntity);
-            srcClone.SetCategory(dstCategory);
-            this.entityRepository.Upsert(srcClone);
+            return this.categoryRepository.Upsert(this.CopyToNewParentCategory(src, dst));
         }
 
-        private Category CloneWithNewId(Category category) => (Category)category.Clone();
+        private void CopyAndSaveEntity(Entity srcEntity, Category dstCategory) => this.entityRepository.Upsert(this.CopyToNewParentCategory(srcEntity, dstCategory));
 
-        private Entity CloneWithNewId(Entity entity) => (Entity)entity.Clone();
+        private Category CopyToNewParentCategory(Category category, Category dstParent)
+        {
+            var tmp = new Category(category.Name);
+            dstParent.AddSubCategory(tmp);
+            return tmp;
+        }
+
+        private Entity CopyToNewParentCategory(Entity entity, Category dstCategory)
+        {
+            var tmp = (Entity)entity.Clone();
+            tmp.SetCategory(dstCategory);
+            return tmp;
+        }
     }
 }
