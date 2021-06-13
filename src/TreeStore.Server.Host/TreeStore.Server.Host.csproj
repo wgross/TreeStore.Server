@@ -5,7 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TreeStore.LiteDb\TreeStore.LiteDb.csproj" />
+    <ProjectReference Include="..\TreeStore.Model.Abstractions\TreeStore.Model.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

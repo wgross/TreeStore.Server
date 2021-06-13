@@ -2,9 +2,9 @@
 using System.Linq;
 using TreeStore.Model;
 
-namespace TreeStore.LiteDb.Test
+namespace TreeStore.Test.Common
 {
-    public static class TestDataSources
+    public static class TreeStoreTestData
     {
         #region Default Tag
 
@@ -32,9 +32,10 @@ namespace TreeStore.LiteDb.Test
 
         #region Default Entity
 
-        public static Entity DefaultEntity(params Action<Entity>[] setup)
+        public static Entity DefaultEntity(Category category, params Action<Entity>[] setup)
         {
             var tmp = new Entity("e");
+            tmp.SetCategory(category);
             setup.ForEach(s => s(tmp));
             return tmp;
         }
@@ -51,6 +52,13 @@ namespace TreeStore.LiteDb.Test
         #endregion Default Entity
 
         #region Default Category
+
+        public static Category DefaultRootCategory(params Action<Category>[] setup)
+        {
+            var tmp = new Category("c");
+            setup.ForEach(s => s(tmp));
+            return tmp;
+        }
 
         public static Category DefaultCategory(Category parent, params Action<Category>[] setup)
         {
