@@ -28,7 +28,7 @@ namespace TreeStore.Server.Host.Controllers
             return this.CreatedAtAction("GetEntityById", new { id = result.Id }, result);
         }
 
-        [HttpGet, Route("entities/{id}", Name = "GetEntityById")]
+        [HttpGet, Route("entities/{id}")]
         public async Task<IActionResult> GetEntityByIdAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
         {
             var result = await this.service.GetEntityByIdAsync(id, cancellationToken);

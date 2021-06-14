@@ -23,6 +23,8 @@ namespace TreeStore.Server.Client
             this.logger = logger;
         }
 
+        #region /entities
+
         /// <inheritdoc/>
         public async Task<EntityResponse> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
         {
@@ -61,6 +63,10 @@ namespace TreeStore.Server.Client
                  httpResponseMessage: await this.httpClient.DeleteAsync($"entities/{id}", cancellationToken).ConfigureAwait(false),
                  convertToJson: async r => (await r.Content.ReadFromJsonAsync<DeleteEntityResponse>().ConfigureAwait(false))).ConfigureAwait(false);
         }
+
+        #endregion /entities
+
+        #region Common Implementation
 
         private async Task<T> HandleJsonResponse<T>(HttpResponseMessage httpResponseMessage, Func<HttpResponseMessage, Task<T>> convertToJson)
         {
@@ -106,5 +112,43 @@ namespace TreeStore.Server.Client
                     return new ArgumentException(nameof(exceptionName));
             }
         }
+
+        #endregion Common Implementation
+
+        #region /categories
+
+        ///<inheritdoc/>
+        public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse(
+                httpResponseMessage: await this.httpClient.PostAsJsonAsync("categories", request, cancellationToken).ConfigureAwait(false),
+                convertToJson: async r => await r.Content.ReadFromJsonAsync<CategoryResponse>().ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        ///<inheritdoc/>
+        public async Task<CategoryResponse> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse(
+                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
+                convertToJson: async r => (await r.Content.ReadFromJsonAsync<CategoryResponse>().ConfigureAwait(false)));
+        }
+
+        ///<inheritdoc/>
+        public async Task<CategoryResponse> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse(
+                httpResponseMessage: await this.httpClient.PutAsJsonAsync($"categories/{id}", request, cancellationToken).ConfigureAwait(false),
+                convertToJson: async r => (await r.Content.ReadFromJsonAsync<CategoryResponse>().ConfigureAwait(false))).ConfigureAwait(false);
+        }
+
+        ///<inheritdoc/>
+        public async Task<DeleteCategoryResponse> DeleteCategoryAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse(
+                httpResponseMessage: await this.httpClient.DeleteAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
+                convertToJson: async r => (await r.Content.ReadFromJsonAsync<DeleteCategoryResponse>().ConfigureAwait(false))).ConfigureAwait(false);
+        }
+
+        #endregion /categories
     }
 }

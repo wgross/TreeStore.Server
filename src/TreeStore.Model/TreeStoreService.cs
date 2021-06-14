@@ -18,13 +18,28 @@ namespace TreeStore.Model
             this.model = model;
         }
 
+        public Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <Inheritdoc/>
         public Task<EntityResponse> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+        public Task<DeleteCategoryResponse> DeleteCategoryAsync(Guid id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<DeleteEntityResponse> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CategoryResponse> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -44,6 +59,11 @@ namespace TreeStore.Model
         /// Provides the root <see cref="Category"/> of this model.
         /// </summary>
         public Category GetRootCategory() => this.model.Categories.Root();
+
+        public Task<CategoryResponse> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
 
         ///<inheritdoc/>
         public Task<EntityResponse> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
