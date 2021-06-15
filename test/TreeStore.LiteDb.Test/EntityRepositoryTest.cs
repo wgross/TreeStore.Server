@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 using Xunit;
 
 namespace TreeStore.LiteDb.Test
@@ -57,22 +58,28 @@ namespace TreeStore.LiteDb.Test
 
             // ACT
             var secondEntity = DefaultEntity();
-            var result = Assert.Throws<LiteException>(() => this.EntityRepository.Upsert(secondEntity));
+            var result = Assert.Throws<InvalidModelException>(() => this.EntityRepository.Upsert(secondEntity));
 
             // ASSERT
             // duplicate was rejected
-            Assert.Equal($"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"e_{this.CategoryRepository.Root().Id}\"'.", result.Message);
+            Assert.StartsWith($"Entity(id='", result.Message);
+            Assert.EndsWith($"') is a duplicate in category(id='{entity.Category.Id}')", result.Message);
+            Assert.IsType<LiteException>(result.InnerException);
+            Assert.Equal($"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"e_{this.CategoryRepository.Root().Id}\"'.", result.InnerException.Message);
             Assert.Single(this.entitiesCollection.FindAll());
         }
 
         [Fact]
         public void EntitiyRepository_writing_entity_rejects_missing_category()
         {
+            // ARRANGE
+            var entity = DefaultEntity(WithoutCategory);
+
             // ACT
-            var result = Assert.Throws<InvalidOperationException>(() => this.EntityRepository.Upsert(DefaultEntity(WithoutCategory)));
+            var result = Assert.Throws<InvalidModelException>(() => this.EntityRepository.Upsert(entity));
 
             // ASSERT
-            Assert.Equal("Entity must have category.", result.Message);
+            Assert.Equal($"Entity(id='{entity.Id}',name='{entity.Name}') is mssing a category", result.Message);
         }
 
         [Fact]

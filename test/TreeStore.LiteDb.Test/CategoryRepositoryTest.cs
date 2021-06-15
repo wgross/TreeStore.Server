@@ -47,7 +47,7 @@ namespace TreeStore.LiteDb.Test
 
         #endregion Root
 
-        #region Create
+        #region Upsert
 
         [Fact]
         public void CategoryRepository_creates_subcategory_to_root()
@@ -122,7 +122,30 @@ namespace TreeStore.LiteDb.Test
             Assert.True(resultInDb.ContainsKey("Facet")); // no further inspection. Feature isn't used.
         }
 
-        #endregion Create
+        [Fact]
+        public void CategoryRepository_rejects_duplicate_child_name()
+        {
+            // ARRANGE
+            var category = new Category("category");
+
+            this.repository.Root().AddSubCategory(category);
+            category = this.repository.Upsert(category);
+
+            var second_category = new Category("category-2");
+            this.repository.Root().AddSubCategory(second_category);
+            second_category = this.repository.Upsert(second_category);
+
+            // ACT
+            second_category.Name = category.Name;
+            var result = Assert.Throws<LiteException>(() => this.repository.Upsert(second_category));
+
+            // ASSERT
+            Assert.StartsWith(
+                $"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"category_",
+                result.Message);
+        }
+
+        #endregion Upsert
 
         #region Read
 

@@ -108,6 +108,9 @@ namespace TreeStore.Server.Client
                 case nameof(InvalidOperationException):
                     return new InvalidOperationException(detail);
 
+                case nameof(InvalidModelException):
+                    return new InvalidModelException(detail);
+
                 default:
                     return new ArgumentException(nameof(exceptionName));
             }

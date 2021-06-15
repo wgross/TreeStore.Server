@@ -2,7 +2,7 @@
 {
     public interface IRelationship : IIdentifiable
     {
-        IEntity From { get; }
-        IEntity To { get; }
+        IEntity? From { get; }
+        IEntity? To { get; }
     }
 }

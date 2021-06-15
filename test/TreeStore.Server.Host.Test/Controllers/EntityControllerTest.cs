@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
 using TreeStore.Server.Client;
-using TreeStore.Server.Host.Controllers;
 using Xunit;
 using static TreeStore.Test.Common.TreeStoreTestData;
 
@@ -62,11 +61,31 @@ namespace TreeStore.Server.Host.Test.Controllers
             var entity = DefaultEntity(this.rootCategory);
 
             this.serviceMock
-                .Setup(s => s.CreateEntityAsync(It.Is<CreateEntityRequest>(r => entity.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToDto());
+                .Setup(s => s.CreateEntityAsync(It.Is<CreateEntityRequest>(r => entity.Name.Equals(r.Name) && entity.Category.Id.Equals(r.CategoryId)), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResponse());
 
             // ACT
-            var result = await this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name), CancellationToken.None);
+            var result = await this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(entity.ToEntityResponse(), result);
+        }
+
+        [Fact]
+        public async Task Creating_entity_rethrows()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+
+            this.serviceMock
+                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("fail: innerFail", result.Message);
         }
 
         #endregion CREATE
@@ -81,13 +100,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToDto());
+                .ReturnsAsync(entity.ToEntityResponse());
 
             // ACT
             var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToDto(), result);
+            Assert.Equal(entity.ToEntityResponse(), result);
         }
 
         [Fact]
@@ -113,13 +132,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new[] { entity.ToDto() });
+                .ReturnsAsync(new[] { entity.ToEntityResponse() });
 
             // ACT
             var result = await this.service.GetEntitiesAsync(CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToDto(), result.Single());
+            Assert.Equal(entity.ToEntityResponse(), result.Single());
         }
 
         #endregion READ
@@ -134,30 +153,30 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToDto());
+                .ReturnsAsync(entity.ToEntityResponse());
 
             // ACT
             var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToDto(), result);
+            Assert.Equal(entity.ToEntityResponse(), result);
         }
 
         [Fact]
-        public async Task Update_rethrows_if_update_fails()
+        public async Task Updating_entity_fails()
         {
             // ARRANGE
             var entity = DefaultEntity(DefaultCategory(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Throws(new InvalidOperationException("fail"));
+                .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None));
 
             // ASSERT
-            Assert.Equal("fail", result.Message);
+            Assert.Equal("fail: innerFail", result.Message);
         }
 
         #endregion UPDATE

@@ -1,7 +1,7 @@
 ﻿using LiteDB;
-using System;
 using System.Collections.Generic;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.LiteDb
 {
@@ -40,8 +40,16 @@ namespace TreeStore.LiteDb
         public override Entity Upsert(Entity entity)
         {
             if (entity.Category is null)
-                throw new InvalidOperationException("Entity must have category.");
-            return base.Upsert(entity);
+                throw InvalidModelException.EntityWithoutCategeory(entity.Id, entity.Name);
+
+            try
+            {
+                return base.Upsert(entity);
+            }
+            catch (LiteException ex)
+            {
+                throw InvalidModelException.EntityWithDuplicateName(entity.Id, entity.Category.Id, ex);
+            }
         }
 
         public override bool Delete(Entity entity)

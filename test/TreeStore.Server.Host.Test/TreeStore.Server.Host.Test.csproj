@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\TreeStore.Model\TreeStore.Model.csproj" />
     <ProjectReference Include="..\..\src\TreeStore.Server.Client\TreeStore.Server.Client.csproj" />
     <ProjectReference Include="..\..\src\TreeStore.Server.Host\TreeStore.Server.Host.csproj" />
     <ProjectReference Include="..\TreeStore.Test.Common\TreeStore.Test.Common.csproj" />

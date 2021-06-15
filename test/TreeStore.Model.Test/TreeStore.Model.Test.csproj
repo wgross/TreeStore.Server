@@ -23,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\TreeStore.Model\TreeStore.Model.csproj" />
+    <ProjectReference Include="..\TreeStore.Test.Common\TreeStore.Test.Common.csproj" />
   </ItemGroup>
 </Project>

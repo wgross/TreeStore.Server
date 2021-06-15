@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
 using TreeStore.Server.Client;
-using TreeStore.Server.Host.Controllers;
 using Xunit;
 using static TreeStore.Test.Common.TreeStoreTestData;
 
@@ -55,7 +54,7 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToDto());
+                .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
             var result = await this.service.CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None);
@@ -73,13 +72,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToDto());
+                .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
             var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(category.ToDto(), result);
+            Assert.Equal(category.ToCategoryResponse(), result);
         }
 
         [Fact]
@@ -105,17 +104,17 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Update_category()
         {
             // ARRANGE
-            var categeory = DefaultCategory(this.rootCategory);
+            var category = DefaultCategory(this.rootCategory);
 
             this.serviceMock
-                .Setup(s => s.UpdateCategoryAsync(categeory.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(categeory.ToDto());
+                .Setup(s => s.UpdateCategoryAsync(category.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
-            var result = await this.service.UpdateCategoryAsync(categeory.Id, new UpdateCategoryRequest(categeory.Name), CancellationToken.None);
+            var result = await this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(category.Name), CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(categeory.ToDto(), result);
+            Assert.Equal(category.ToCategoryResponse(), result);
         }
 
         [Fact]

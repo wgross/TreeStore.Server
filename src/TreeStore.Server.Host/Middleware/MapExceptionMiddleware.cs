@@ -32,7 +32,8 @@ namespace TreeStore.Server.Host.Middleware
                 var problemDetails = this.problemDetailsFactory.CreateProblemDetails(
                     httpContext,
                     statusCode: (int)HttpStatusCode.BadRequest,
-                    detail: ex.Message);
+                    detail: ex.InnerException is null ? ex.Message : $"{ex.Message}: {ex.InnerException.Message}");
+
                 problemDetails.Extensions["ErrorType"] = ex.GetType().Name;
 
                 if (ex is ArgumentNullException aex)

@@ -36,7 +36,7 @@ namespace TreeStore.LiteDb
         {
             this.LiteRepository.Upsert(item, CollectionName);
             return item;
-        }
+        } 
 
         public ILiteCollection<T> LiteCollection() => this.LiteRepository.Database.GetCollection<T>(this.CollectionName);
 

@@ -35,7 +35,7 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Returns the category having the id <paramref name="id"/>.
         /// </summary>
-        Task<CategoryResponse> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<CategoryResponse?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the entity having the <paramref name="id"/>

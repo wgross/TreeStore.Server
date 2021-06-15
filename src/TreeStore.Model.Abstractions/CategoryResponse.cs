@@ -2,5 +2,5 @@
 
 namespace TreeStore.Model.Abstractions
 {
-    public sealed record CategoryResponse(Guid Id, string Name);
+    public sealed record CategoryResponse(Guid Id, string Name, Guid ParentId);
 }
