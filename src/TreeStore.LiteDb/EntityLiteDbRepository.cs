@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
@@ -17,10 +18,13 @@ namespace TreeStore.LiteDb
                     .DbRef(e => e.Category, CategoryLiteDbRepository.collectionName);
         }
 
-        public EntityLiteDbRepository(LiteRepository db) : base(db, CollectionName)
+        public EntityLiteDbRepository(TreeStoreLiteDbPersistence persistence, ILogger<EntityLiteDbRepository> logger)
+            : base(persistence.LiteRepository, CollectionName, logger)
         {
             // name+categoryid of an entity is unique
-            db.Database
+            persistence
+                .LiteRepository
+                .Database
                 .GetCollection(CollectionName)
                 .EnsureIndex(
                     name: nameof(Entity.UniqueName),
@@ -28,7 +32,9 @@ namespace TreeStore.LiteDb
                     unique: true);
 
             // retrieve entities by category id
-            db.Database
+            persistence
+                .LiteRepository
+                .Database
                 .GetCollection<Entity>(CollectionName)
                 .EnsureIndex(e => e.Category);
         }
@@ -40,7 +46,7 @@ namespace TreeStore.LiteDb
         public override Entity Upsert(Entity entity)
         {
             if (entity.Category is null)
-                throw InvalidModelException.EntityWithoutCategeory(entity.Id, entity.Name);
+                throw InvalidModelException.EntityWithoutCategory(entity.Id, entity.Name);
 
             try
             {

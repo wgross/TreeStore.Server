@@ -2,30 +2,30 @@
 
 namespace TreeStore.LiteDb
 {
-    public class CategoryCopyTraverser
+    internal sealed class CategoryCopyTraverser
     {
         private readonly ICategoryRepository categoryRepository;
         private readonly IEntityRepository entityRepository;
 
-        public CategoryCopyTraverser(CategoryLiteDbRepository categoryRepository, EntityLiteDbRepository entityRepository)
+        internal CategoryCopyTraverser(CategoryLiteDbRepository categoryRepository, IEntityRepository entityRepository)
         {
             this.categoryRepository = categoryRepository;
             this.entityRepository = entityRepository;
         }
 
-        public void CopyCategory(Category src, Category dst)
+        internal void CopyCategory(Category src, Category dst)
         {
             this.CopyAndSaveCategory(src, dst);
         }
 
-        public void CopyCategoryRecursively(Category src, Category dst)
+        internal void CopyCategoryRecursive(Category src, Category dst)
         {
             // copy the top most src as child of the dst
             var srcClone = this.CopyAndSaveCategory(src, dst);
 
             // descend n src and continue wioth sub categories
             foreach (var srcChild in this.categoryRepository.FindByParent(src))
-                this.CopyCategoryRecursively(srcChild, srcClone);
+                this.CopyCategoryRecursive(srcChild, srcClone);
 
             // copy all entities in src to dst
             foreach (var srcEntity in this.entityRepository.FindByCategory(src))

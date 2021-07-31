@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using TreeStore.Model;
@@ -16,7 +17,7 @@ namespace TreeStore.LiteDb
                    .DbRef(r => r.To, "entities");
         }
 
-        public RelationshipLiteDbRepository(LiteRepository repo) : base(repo, "relationships")
+        public RelationshipLiteDbRepository(LiteRepository repo, ILogger<RelationshipLiteDbRepository> logger) : base(repo, "relationships", logger)
         {
         }
 

@@ -15,6 +15,11 @@ namespace TreeStore.Model
 
         IEnumerable<Category> FindByParent(Category category);
 
-        bool Delete(Category category);
+        bool Delete(Category category, bool recurse);
+
+        /// <summary>
+        /// Copy a category <paramref name="sourceCategory"/> to <paramref name="destinationParentCategory"/> as sub catagory.
+        /// </summary>
+        void CopyTo(Category sourceCategory, Category destinationParentCategory, bool recurse);
     }
 }

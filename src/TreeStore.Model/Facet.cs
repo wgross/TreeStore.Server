@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class Facet : NamedBase
+    public class Facet : NamedBase, IIdentifiable
     {
         #region Construction and initialization of this instance
 

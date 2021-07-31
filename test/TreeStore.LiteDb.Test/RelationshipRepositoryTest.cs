@@ -1,7 +1,7 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
-using System.IO;
 using System.Linq;
 using TreeStore.Model;
 using Xunit;
@@ -11,7 +11,7 @@ namespace TreeStore.LiteDb.Test
     public class RelationshipRepositoryTest : IDisposable
     {
         private readonly MockRepository mocks = new MockRepository(MockBehavior.Strict);
-        private readonly LiteRepository liteDb;
+        private readonly TreeStoreLiteDbPersistence persistence;
         private readonly EntityLiteDbRepository entityRepository;
         private readonly TagLiteDbRepository tagRepository;
         private readonly CategoryLiteDbRepository categoryRepository;
@@ -20,12 +20,12 @@ namespace TreeStore.LiteDb.Test
 
         public RelationshipRepositoryTest()
         {
-            this.liteDb = new LiteRepository(new MemoryStream());
-            this.entityRepository = new EntityLiteDbRepository(this.liteDb);
-            this.tagRepository = new TagLiteDbRepository(this.liteDb);
-            this.categoryRepository = new CategoryLiteDbRepository(this.liteDb);
-            this.relationshipRepository = new RelationshipLiteDbRepository(this.liteDb);
-            this.relationships = this.liteDb.Database.GetCollection("relationships");
+            this.persistence = TreeStoreLiteDbPersistence.InMemory(new NullLoggerFactory());
+            this.entityRepository = new EntityLiteDbRepository(this.persistence, new NullLogger<EntityLiteDbRepository>());
+            this.tagRepository = new TagLiteDbRepository(this.persistence.LiteRepository, new NullLogger<TagLiteDbRepository>());
+            this.categoryRepository = new CategoryLiteDbRepository(this.persistence, new NullLogger<CategoryLiteDbRepository>());
+            this.relationshipRepository = new RelationshipLiteDbRepository(this.persistence.LiteRepository, new NullLogger<RelationshipLiteDbRepository>());
+            this.relationships = this.persistence.LiteRepository.Database.GetCollection("relationships");
         }
 
         public void Dispose()
@@ -234,7 +234,7 @@ namespace TreeStore.LiteDb.Test
             var entity2 = this.entityRepository.Upsert(new Entity("e2"));
             var relationship1 = new Relationship("r1", entity1, entity2);
             var relationship2 = new Relationship("r2", entity1, entity2);
-            
+
             this.relationshipRepository.Upsert(relationship1);
             this.relationshipRepository.Upsert(relationship2);
 

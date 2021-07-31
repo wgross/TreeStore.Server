@@ -178,7 +178,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_deletes_category()
+        public async Task TreeStoreService_deletes_category_if_empty()
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -190,7 +190,7 @@ namespace TreeStore.Model.Test
                 .Returns(category);
 
             this.categoryRepositoryMock
-                .Setup(r => r.Delete(category))
+                .Setup(r => r.Delete(category, false))
                 .Returns(true);
 
             // ACT

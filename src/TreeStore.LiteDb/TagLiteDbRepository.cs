@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging;
 using TreeStore.Model;
 
 namespace TreeStore.LiteDb
@@ -7,7 +8,8 @@ namespace TreeStore.LiteDb
     {
         public const string CollectionName = "tags";
 
-        public TagLiteDbRepository(LiteRepository liteDbrepository) : base(liteDbrepository, CollectionName)
+        public TagLiteDbRepository(LiteRepository liteDbrepository, ILogger<TagLiteDbRepository> logger)
+            : base(liteDbrepository, CollectionName, logger)
         {
             liteDbrepository.Database
                 .GetCollection(CollectionName)

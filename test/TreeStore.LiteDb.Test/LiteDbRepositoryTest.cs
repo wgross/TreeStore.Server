@@ -1,7 +1,9 @@
 using LiteDB;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.IO;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 using Xunit;
 
 namespace TreeStore.LiteDb.Test
@@ -12,7 +14,7 @@ namespace TreeStore.LiteDb.Test
         private readonly LiteDbRepositoryBase<TestEntity> repository;
         private readonly ILiteCollection<TestEntity> entities;
 
-        private class TestEntity : NamedBase
+        private class TestEntity : NamedBase, IIdentifiable
         {
             public TestEntity() : base()
             { }
@@ -25,7 +27,7 @@ namespace TreeStore.LiteDb.Test
         private class TestRepository : LiteDbRepositoryBase<TestEntity>
         {
             public TestRepository(LiteRepository db)
-                : base(db, "entities")
+                : base(db, "entities", new NullLogger<TestRepository>())
             { }
 
             protected override ILiteCollection<TestEntity> IncludeRelated(ILiteCollection<TestEntity> from) => from;

@@ -1,8 +1,9 @@
-﻿using TreeStore.Model.Base;
+﻿using TreeStore.Model.Abstractions;
+using TreeStore.Model.Base;
 
 namespace TreeStore.Model
 {
-    public class Tag : FacetingEntityBase
+    public class Tag : FacetingEntityBase, IIdentifiable
     {
         public Tag()
             : base(string.Empty, new Facet(string.Empty))

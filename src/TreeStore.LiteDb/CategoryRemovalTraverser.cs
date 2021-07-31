@@ -7,18 +7,18 @@ namespace TreeStore.LiteDb
     /// <summary>
     ///  Deletion of a category is a cross collection operation.
     /// </summary>
-    public sealed class CategoryRemovalTraverser
+    internal sealed class CategoryRemovalTraverser
     {
-        private readonly ICategoryRepository categoryRepository;
+        private readonly CategoryLiteDbRepository categoryRepository;
         private readonly IEntityRepository entityRepository;
 
-        public CategoryRemovalTraverser(ICategoryRepository categoryRepository, IEntityRepository entityRepository)
+        internal CategoryRemovalTraverser(CategoryLiteDbRepository categoryRepository, IEntityRepository entityRepository)
         {
             this.categoryRepository = categoryRepository;
             this.entityRepository = entityRepository;
         }
 
-        public bool DeleteIfEmpty(Category category)
+        internal bool DeleteIfEmpty(Category category)
         {
             if (category.Id == this.categoryRepository.Root().Id)
                 return false;
@@ -29,7 +29,7 @@ namespace TreeStore.LiteDb
             if (this.SubEntites(category).Any())
                 return false;
 
-            return this.DeleteCategoryInDb(category);
+            return this.DeleteCategoryInDb(category, recurse: false);
         }
 
         #region Delete Recursive
@@ -50,8 +50,8 @@ namespace TreeStore.LiteDb
             foreach (var entityToDelete in entitiesToDelete)
                 this.entityRepository.Delete(entityToDelete);
             foreach (var categoryToDelete in categoriesToDelete)
-                this.DeleteCategoryInDb(categoryToDelete);
-            return this.DeleteCategoryInDb(category);
+                this.DeleteCategoryInDb(categoryToDelete, recurse: false);
+            return this.DeleteCategoryInDb(category, recurse: false);
         }
 
         private void CollectItemsToDelete(Category category, List<Entity> entitiesToDelete, List<Category> categoriesToDelete)
@@ -68,7 +68,7 @@ namespace TreeStore.LiteDb
             }
         }
 
-        private bool DeleteCategoryInDb(Category category) => this.categoryRepository.Delete(category);
+        private bool DeleteCategoryInDb(Category category, bool recurse) => this.categoryRepository.Delete(category);
 
         #endregion Delete Recursive
 

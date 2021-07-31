@@ -16,7 +16,7 @@ namespace TreeStore.Model.Abstractions
         {
         }
 
-        public static InvalidModelException EntityWithoutCategeory(Guid entityId, string name)
+        public static InvalidModelException EntityWithoutCategory(Guid entityId, string name)
             => new InvalidModelException($"Entity(id='{entityId}',name='{name}') is mssing a category");
 
         public static InvalidModelException EntityWithDuplicateName(Guid entityId, Guid categoryId, Exception ex)

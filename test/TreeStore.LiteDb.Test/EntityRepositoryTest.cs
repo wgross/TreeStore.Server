@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
 using TreeStore.Model;
@@ -14,8 +15,8 @@ namespace TreeStore.LiteDb.Test
 
         public EntityRepositoryTest()
         {
-            this.relationshipRepository = new RelationshipLiteDbRepository(this.LiteDb);
-            this.entitiesCollection = this.LiteDb.Database.GetCollection("entities");
+            this.relationshipRepository = new RelationshipLiteDbRepository(this.Persistence.LiteRepository, new NullLogger<RelationshipLiteDbRepository>());
+            this.entitiesCollection = this.Persistence.LiteRepository.Database.GetCollection("entities");
         }
 
         [Fact]

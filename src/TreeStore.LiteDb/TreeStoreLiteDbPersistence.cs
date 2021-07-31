@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging;
 using System.IO;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
@@ -7,19 +8,21 @@ namespace TreeStore.LiteDb
 {
     public class TreeStoreLiteDbPersistence : ITreeStoreModel
     {
-        private LiteRepository db;
+        public LiteRepository LiteRepository { get; }
 
         #region Create in Memory Storage
 
-        public static TreeStoreLiteDbPersistence InMemory() => new TreeStoreLiteDbPersistence();
+        public static TreeStoreLiteDbPersistence InMemory(ILoggerFactory loggerFactory) => new TreeStoreLiteDbPersistence(loggerFactory);
 
-        private TreeStoreLiteDbPersistence()
-            : this(new MemoryStream())
+        private readonly ILoggerFactory loggerFactory;
+
+        private TreeStoreLiteDbPersistence(ILoggerFactory loggerFactory)
+            : this(new MemoryStream(), loggerFactory)
         {
         }
 
-        private TreeStoreLiteDbPersistence(Stream storageStream)
-           : this(new LiteRepository(storageStream))
+        private TreeStoreLiteDbPersistence(Stream storageStream, ILoggerFactory loggerFactory)
+           : this(new LiteRepository(storageStream), loggerFactory)
         {
         }
 
@@ -27,25 +30,28 @@ namespace TreeStore.LiteDb
 
         #region Create File based Storage
 
-        public static TreeStoreLiteDbPersistence InFile(string connectionString)
-            => new TreeStoreLiteDbPersistence(new LiteRepository(connectionString));
+        public static TreeStoreLiteDbPersistence InFile(string connectionString, ILoggerFactory loggerFactory)
+            => new TreeStoreLiteDbPersistence(new LiteRepository(connectionString), loggerFactory);
 
         #endregion Create File based Storage
 
-        private TreeStoreLiteDbPersistence(LiteRepository db)
+        private TreeStoreLiteDbPersistence(LiteRepository db, ILoggerFactory loggerFactory)
 
         {
-            this.db = db;
-            this.Categories = new CategoryLiteDbRepository(db);
+            this.LiteRepository = db;
+            this.loggerFactory = loggerFactory;
+
+            // category repository is created once b/c it holds the root node as cached state.
+            this.Categories = new CategoryLiteDbRepository(this, loggerFactory.CreateLogger<CategoryLiteDbRepository>());
         }
 
-        public ITagRepository Tags => new TagLiteDbRepository(db);
+        public ITagRepository Tags => new TagLiteDbRepository(LiteRepository, this.loggerFactory.CreateLogger<TagLiteDbRepository>());
 
-        public ICategoryRepository Categories { get; private set; }
+        public ICategoryRepository Categories { get; }
 
-        public IEntityRepository Entities => new EntityLiteDbRepository(db);
+        public IEntityRepository Entities => new EntityLiteDbRepository(this, this.loggerFactory.CreateLogger<EntityLiteDbRepository>());
 
-        public IRelationshipRepository Relationships => new RelationshipLiteDbRepository(db);
+        public IRelationshipRepository Relationships => new RelationshipLiteDbRepository(LiteRepository, this.loggerFactory.CreateLogger<RelationshipLiteDbRepository>());
 
         public bool DeleteCategory(Category category, bool recurse)
         {
@@ -62,14 +68,14 @@ namespace TreeStore.LiteDb
             var traverser = new CategoryCopyTraverser((CategoryLiteDbRepository)this.Categories, (EntityLiteDbRepository)this.Entities);
 
             if (recurse)
-                traverser.CopyCategoryRecursively(source, destination);
+                traverser.CopyCategoryRecursive(source, destination);
             else
                 traverser.CopyCategory(source, destination);
         }
 
         public void Dispose()
         {
-            this.db.Dispose();
+            this.LiteRepository.Dispose();
         }
     }
 }

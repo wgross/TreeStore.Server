@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
 using TreeStore.Model;
@@ -13,8 +14,8 @@ namespace TreeStore.LiteDb.Test
 
         public TagRepositoryTest()
         {
-            this.repository = new TagLiteDbRepository(this.LiteDb);
-            this.tags = this.LiteDb.Database.GetCollection(TagLiteDbRepository.CollectionName);
+            this.repository = new TagLiteDbRepository(this.Persistence.LiteRepository, new NullLogger<TagLiteDbRepository>());
+            this.tags = this.Persistence.LiteRepository.Database.GetCollection(TagLiteDbRepository.CollectionName);
         }
 
         [Fact]

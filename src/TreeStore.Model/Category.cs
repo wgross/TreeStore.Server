@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TreeStore.Model.Base;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class Category : FacetingEntityBase, ICloneable
+    public class Category : FacetingEntityBase, ICloneable, IIdentifiable
     {
         public Category()
             : this(string.Empty, new Facet())

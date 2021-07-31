@@ -1,7 +1,6 @@
-﻿using LiteDB;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
-using System.IO;
 using TreeStore.Model;
 
 namespace TreeStore.LiteDb.Test
@@ -10,20 +9,13 @@ namespace TreeStore.LiteDb.Test
     {
         protected MockRepository Mocks { get; } = new MockRepository(MockBehavior.Strict);
 
-        protected EntityLiteDbRepository EntityRepository { get; }
+        protected IEntityRepository EntityRepository => this.Persistence.Entities;
 
-        protected TagLiteDbRepository TagRepository { get; }
+        protected ITagRepository TagRepository => this.Persistence.Tags;
 
-        protected CategoryLiteDbRepository CategoryRepository { get; }
+        protected ICategoryRepository CategoryRepository => this.Persistence.Categories;
 
-        protected LiteRepository LiteDb { get; } = new LiteRepository(new MemoryStream());
-
-        public LiteDbTestBase()
-        {
-            this.EntityRepository = new EntityLiteDbRepository(this.LiteDb);
-            this.TagRepository = new TagLiteDbRepository(this.LiteDb);
-            this.CategoryRepository = new CategoryLiteDbRepository(this.LiteDb);
-        }
+        protected TreeStoreLiteDbPersistence Persistence { get; } = TreeStoreLiteDbPersistence.InMemory(new NullLoggerFactory());
 
         protected T Setup<T>(T t, Action<T> setup = null)
         {
@@ -73,6 +65,9 @@ namespace TreeStore.LiteDb.Test
 
         #region Default Category
 
+        /// <summary>
+        /// Creates a default category under the root category <see cref="CategoryRepository.Root"/>
+        /// </summary>
         protected Category DefaultCategory(params Action<Category>[] setup)
         {
             var tmp = new Category("c");
@@ -81,6 +76,9 @@ namespace TreeStore.LiteDb.Test
             return tmp;
         }
 
+        /// <summary>
+        /// Detaches the category from its current category and add ist to the <paramref name="parentCategory"/>
+        /// </summary>
         protected Action<Category> WithParentCategory(Category parentCategory)
         {
             return c =>

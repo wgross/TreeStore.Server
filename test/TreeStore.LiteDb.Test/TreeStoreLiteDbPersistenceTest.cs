@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using System;
 using TreeStore.Model;
 using Xunit;
@@ -12,7 +13,7 @@ namespace TreeStore.LiteDb.Test
 
         public KosmographLiteDbPersistenceTest()
         {
-            this.persistence = TreeStoreLiteDbPersistence.InMemory();
+            this.persistence = TreeStoreLiteDbPersistence.InMemory(new NullLoggerFactory());
         }
 
         public void Dispose()

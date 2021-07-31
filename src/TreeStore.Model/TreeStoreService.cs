@@ -58,7 +58,7 @@ namespace TreeStore.Model
                 return Task.FromResult(new DeleteCategoryResponse(Deleted: false));
             }
 
-            return Task.FromResult(new DeleteCategoryResponse(Deleted: this.model.Categories.Delete(category)));
+            return Task.FromResult(new DeleteCategoryResponse(Deleted: this.model.Categories.Delete(category, recurse: false)));
         }
 
         ///<inheritdoc/>
