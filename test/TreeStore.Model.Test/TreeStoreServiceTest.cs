@@ -16,7 +16,6 @@ namespace TreeStore.Model.Test
         private readonly Mock<ITreeStoreModel> modelMock;
         private readonly TreeStoreService service;
         private Category rootCategory;
-        private readonly CancellationTokenSource cancellationTokenSource = new();
 
         public TreeStoreServiceTest()
         {
@@ -31,11 +30,12 @@ namespace TreeStore.Model.Test
         public void TreeStoreService_reads_root_category()
         {
             // ARRANGE
-            this.ArrangeCategoryRepository();
-
-            this.categoryRepositoryMock
-                .Setup(r => r.Root())
-                .Returns(DefaultRootCategory());
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.Root())
+                    .Returns(DefaultRootCategory());
+            });
 
             // ACT
             var result = this.service.GetRootCategory();
@@ -51,16 +51,18 @@ namespace TreeStore.Model.Test
             var rootCategory = this.ArrangeRootCategory();
             var category = DefaultCategory(this.rootCategory);
 
-            this.ArrangeCategoryRepository();
-
             Category categoryWritten = default;
-            this.categoryRepositoryMock
-                .Setup(r => r.Upsert(It.IsAny<Category>()))
-                .Callback<Category>(c => categoryWritten = c)
-                .Returns<Category>(c => c);
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<Category>()))
+                    .Callback<Category>(c => categoryWritten = c)
+                    .Returns<Category>(c => c);
+            });
 
             // ACT
-            var result = await this.service.CreateCategoryAsync(new CreateCategoryRequest(category.Name, this.rootCategory.Id), this.cancellationTokenSource.Token);
+            var result = await this.service.CreateCategoryAsync(new CreateCategoryRequest(category.Name, this.rootCategory.Id), CancellationToken.None);
 
             // ASSERT
             Assert.Equal(category.Name, result.Name);
@@ -76,18 +78,17 @@ namespace TreeStore.Model.Test
             var parentId = Guid.NewGuid();
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.modelMock
-                .Setup(m => m.Categories)
-                .Returns(this.categoryRepositoryMock.Object);
-
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(parentId))
-                .Returns((Category)null);
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(parentId))
+                    .Returns((Category)null);
+            });
 
             // ACT
             var result = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                this.service.CreateCategoryAsync(new CreateCategoryRequest(category.Name, parentId),
-               this.cancellationTokenSource.Token));
+               CancellationToken.None));
 
             // ASSERT
             Assert.Equal($"Category(name='{category.Name}' wasn't created: Category(id='{parentId}') wasn't found", result.Message);
@@ -99,14 +100,15 @@ namespace TreeStore.Model.Test
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.ArrangeCategoryRepository();
-
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns(category);
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
+            });
 
             // ACT
-            var result = await this.service.GetCategoryByIdAsync(category.Id, this.cancellationTokenSource.Token);
+            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
 
             // ASSERT
             Assert.Equal(category.ToCategoryResponse(), result);
@@ -118,14 +120,15 @@ namespace TreeStore.Model.Test
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.ArrangeCategoryRepository();
-
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns((Category)null);
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns((Category)null);
+            });
 
             // ACT
-            var result = await this.service.GetCategoryByIdAsync(category.Id, this.cancellationTokenSource.Token);
+            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
 
             // ASSERT
             Assert.Null(result);
@@ -136,20 +139,22 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
-
-            this.ArrangeCategoryRepository();
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns(category);
-
             Category writtenCategory = default;
-            this.categoryRepositoryMock
-                .Setup(r => r.Upsert(It.IsAny<Category>()))
-                .Callback<Category>(c => writtenCategory = c)
-                .Returns(category);
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<Category>()))
+                    .Callback<Category>(c => writtenCategory = c)
+                    .Returns(category);
+            });
 
             // ACT
-            var result = await this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(Name: "changed"), this.cancellationTokenSource.Token);
+            var result = await this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(Name: "changed"), CancellationToken.None);
 
             // ASSERT
             Assert.Equal("changed", writtenCategory.Name);
@@ -163,67 +168,162 @@ namespace TreeStore.Model.Test
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.ArrangeCategoryRepository();
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns((Category)null);
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns((Category)null);
+            });
 
             // ACT
             var result = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(Name: "changed"),
-                this.cancellationTokenSource.Token));
+                () => this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(Name: "changed"), CancellationToken.None));
 
             // ASSERT
             Assert.Equal($"Category(id='{category.Id}') wasn't updated: Category(id='{category.Id}') doesn't exist", result.Message);
         }
 
-        [Fact]
-        public async Task TreeStoreService_deletes_category_if_empty()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TreeStoreService_deletes_category_if_empty(bool recurse)
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.ArrangeCategoryRepository();
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
 
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns(category);
-
-            this.categoryRepositoryMock
-                .Setup(r => r.Delete(category, false))
-                .Returns(true);
+                mock
+                    .Setup(r => r.Delete(category, recurse))
+                    .Returns(true);
+            });
 
             // ACT
-            var result = await this.service.DeleteCategoryAsync(category.Id, this.cancellationTokenSource.Token);
+            var result = await this.service.DeleteCategoryAsync(category.Id, recurse, CancellationToken.None);
 
             // ASSERT
-            Assert.True(result.Deleted);
+            Assert.True(result);
         }
 
-        [Fact]
-        public async Task TreeStoreService_deleting_category_returns_false_on_missing_category()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TreeStoreService_deleting_category_returns_false_on_missing_category(bool recurse)
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
 
-            this.ArrangeCategoryRepository();
-
-            this.categoryRepositoryMock
-                .Setup(r => r.FindById(category.Id))
-                .Returns((Category)null);
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns((Category)null);
+            });
 
             // ACT
-            var result = await this.service.DeleteCategoryAsync(category.Id, this.cancellationTokenSource.Token);
+            var result = await this.service
+                .DeleteCategoryAsync(category.Id, recurse, CancellationToken.None);
 
             // ASSERT
-            Assert.False(result.Deleted);
+            Assert.False(result);
         }
 
-        private void ArrangeCategoryRepository()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TreeStoreService_copies_category(bool recurse)
+        {
+            // ARRANGE
+            var source = DefaultCategory(DefaultRootCategory());
+            var destination = DefaultCategory(DefaultRootCategory());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns(source);
+
+                mock
+                    .Setup(r => r.FindById(destination.Id))
+                    .Returns(destination);
+
+                mock
+                    .Setup(r => r.CopyTo(source, destination, recurse));
+            });
+
+            // ACT
+            var result = await this.service
+                .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None);
+
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TreeStoreService_copying_category_fails_on_missing_source(bool recurse)
+        {
+            // ARRANGE
+            var source = DefaultCategory(DefaultRootCategory());
+            var destination = DefaultCategory(DefaultRootCategory());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns((Category)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+                 .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None));
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal($"Category(id='{source.Id}') wasn't copied: Category(id='{source.Id}') doesn't exist", result.Message);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TreeStoreService_copying_category_fails_on_missing_destination(bool recurse)
+        {
+            // ARRANGE
+            var source = DefaultCategory(DefaultRootCategory());
+            var destination = DefaultCategory(DefaultRootCategory());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns(source);
+
+                mock
+                    .Setup(r => r.FindById(destination.Id))
+                    .Returns((Category)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+                 .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None));
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal($"Category(id='{source.Id}') wasn't copied: Category(id='{destination.Id}') doesn't exist", result.Message);
+        }
+
+        private void ArrangeCategoryRepository(Action<Mock<ICategoryRepository>> arrange = null)
         {
             this.modelMock
                 .Setup(m => m.Categories)
                 .Returns(this.categoryRepositoryMock.Object);
+
+            arrange?.Invoke(this.categoryRepositoryMock);
         }
 
         private Category ArrangeRootCategory()

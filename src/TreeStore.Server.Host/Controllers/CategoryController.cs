@@ -44,9 +44,20 @@ namespace TreeStore.Server.Host.Controllers
         }
 
         [HttpDelete, Route("categories/{id}")]
-        public async Task<IActionResult> DeleteCategoryAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteCategoryAsync(
+            [FromRoute(Name = "id")] Guid id,
+            [FromQuery(Name = "recurse")] bool recurse,
+            CancellationToken cancellationToken)
         {
-            return this.Ok(await this.service.DeleteCategoryAsync(id, cancellationToken));
+            return this.Ok(new DeleteCategoryResponse(await this.service.DeleteCategoryAsync(id, recurse, cancellationToken)));
+        }
+
+        [HttpPost, Route("categories/copy")]
+        public async Task<IActionResult> CopyCategoryAsync(
+            [FromBody] CopyCategoryRequest request,
+            CancellationToken cancellationToken)
+        {
+            return this.Ok(await this.service.CopyCategoryToAsync(request.SourceId, request.DestinationId, request.Recurse, cancellationToken));
         }
     }
 }

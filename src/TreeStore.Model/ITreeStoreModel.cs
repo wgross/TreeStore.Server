@@ -11,9 +11,5 @@ namespace TreeStore.Model.Abstractions
         IEntityRepository Entities { get; }
 
         IRelationshipRepository Relationships { get; }
-
-        bool DeleteCategory(Category category, bool recurse);
-
-        void CopyCategory(Category category, Category parent, bool recurse);
     }
 }

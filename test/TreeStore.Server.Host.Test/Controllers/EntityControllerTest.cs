@@ -115,7 +115,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             this.serviceMock
                 .Setup(s => s.GetEntityByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((EntityResponse)null);
+                .ReturnsAsync((EntityResult)null);
 
             // ACT
             var result = await this.service.GetEntityByIdAsync(Guid.NewGuid(), CancellationToken.None);
@@ -191,13 +191,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new DeleteEntityResponse(true));
+                .ReturnsAsync(true);
 
             // ACT
             var result = await this.service.DeleteEntityAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.True(result.Deleted);
+            Assert.True(result);
         }
 
         #endregion DELETE

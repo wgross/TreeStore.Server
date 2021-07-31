@@ -57,7 +57,30 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
-            var result = await this.service.CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None);
+            var result = await this.service
+                .CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(category.ToCategoryResponse(), result);
+        }
+
+        [Fact]
+        public async Task Create_new_category_rethrows_if_create_fails()
+        {
+            // ARRANGE
+            var category = DefaultCategory(this.rootCategory);
+
+            this.serviceMock
+                .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("fail"));
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+                .CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("fail", result.Message);
         }
 
         #endregion CREATE
@@ -75,7 +98,9 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
-            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
+            var result = await this.service
+                .GetCategoryByIdAsync(category.Id, CancellationToken.None)
+                .ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(category.ToCategoryResponse(), result);
@@ -87,10 +112,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             this.serviceMock
                 .Setup(s => s.GetCategoryByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((CategoryResponse)null);
+                .ReturnsAsync((CategoryResult)null);
 
             // ACT
-            var result = await this.service.GetCategoryByIdAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await this.service
+                .GetCategoryByIdAsync(Guid.NewGuid(), CancellationToken.None)
+                .ConfigureAwait(false);
 
             // ASSERT
             Assert.Null(result);
@@ -111,7 +138,9 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(category.ToCategoryResponse());
 
             // ACT
-            var result = await this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(category.Name), CancellationToken.None);
+            var result = await this.service
+                .UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(category.Name), CancellationToken.None)
+                .ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(category.ToCategoryResponse(), result);
@@ -128,7 +157,9 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .Throws(new InvalidOperationException("fail"));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateCategoryAsync(entity.Id, new UpdateCategoryRequest(entity.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+                .UpdateCategoryAsync(entity.Id, new UpdateCategoryRequest(entity.Name), CancellationToken.None))
+                .ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal("fail", result.Message);
@@ -138,23 +169,93 @@ namespace TreeStore.Server.Host.Test.Controllers
 
         #region DELETE
 
-        [Fact]
-        public async Task Delete_category()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Delete_category(bool recurse)
         {
             // ARRANGE
-            var entity = DefaultCategory(this.rootCategory);
+            var category = DefaultCategory(this.rootCategory);
 
             this.serviceMock
-                .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new DeleteEntityResponse(true));
+                .Setup(s => s.DeleteCategoryAsync(category.Id, recurse, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
             // ACT
-            var result = await this.service.DeleteEntityAsync(entity.Id, CancellationToken.None);
+            var result = await this.service
+                .DeleteCategoryAsync(category.Id, recurse, CancellationToken.None)
+                .ConfigureAwait(false);
 
             // ASSERT
-            Assert.True(result.Deleted);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Delete_category_fails()
+        {
+            // ARRANGE
+            var category = DefaultCategory(this.rootCategory);
+
+            this.serviceMock
+                .Setup(s => s.DeleteCategoryAsync(category.Id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            // ACT
+            var result = await this.service
+                .DeleteCategoryAsync(category.Id, false, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.False(false);
         }
 
         #endregion DELETE
+
+        #region COPY
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Copy_category(bool recurse)
+        {
+            // ARRANGE
+            var sourceCategory = DefaultCategory(this.rootCategory);
+            var destinationCategory = DefaultCategory(this.rootCategory);
+
+            this.serviceMock
+                .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new CopyCategoryResponse());
+
+            // ACT
+            var result = await this.service
+                .CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse: recurse, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Copy_category_rethrows_if_copy_fails(bool recurse)
+        {
+            // ARRANGE
+            var sourceCategory = DefaultCategory(this.rootCategory);
+            var destinationCategory = DefaultCategory(this.rootCategory);
+
+            this.serviceMock
+                .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("fail"));
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+               .CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse: recurse, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("fail", result.Message);
+        }
+
+        #endregion COPY
     }
 }

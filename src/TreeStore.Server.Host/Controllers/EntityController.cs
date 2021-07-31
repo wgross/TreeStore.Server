@@ -21,7 +21,9 @@ namespace TreeStore.Server.Host.Controllers
         }
 
         [HttpPost, Route("entities")]
-        public async Task<IActionResult> CreateEntityAsync([FromBody] CreateEntityRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateEntityAsync(
+            [FromBody] CreateEntityRequest request,
+            CancellationToken cancellationToken)
         {
             var result = await this.service.CreateEntityAsync(request, cancellationToken);
 
@@ -29,7 +31,9 @@ namespace TreeStore.Server.Host.Controllers
         }
 
         [HttpGet, Route("entities/{id}")]
-        public async Task<IActionResult> GetEntityByIdAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetEntityByIdAsync(
+            [FromRoute(Name = "id")] Guid id,
+            CancellationToken cancellationToken)
         {
             var result = await this.service.GetEntityByIdAsync(id, cancellationToken);
             if (result is null)
@@ -48,15 +52,20 @@ namespace TreeStore.Server.Host.Controllers
         }
 
         [HttpPut, Route("entities/{id}")]
-        public async Task<IActionResult> UpdateEntityAsync([FromRoute(Name = "id")] Guid id, [FromBody] UpdateEntityRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateEntityAsync(
+            [FromRoute(Name = "id")] Guid id,
+            [FromBody] UpdateEntityRequest request,
+            CancellationToken cancellationToken)
         {
             return this.Ok(await this.service.UpdateEntityAsync(id, request, cancellationToken));
         }
 
         [HttpDelete, Route("entities/{id}")]
-        public async Task<IActionResult> DeleteEntityAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteEntityAsync(
+            [FromRoute(Name = "id")] Guid id,
+            CancellationToken cancellationToken)
         {
-            return this.Ok(await this.service.DeleteEntityAsync(id, cancellationToken));
+            return this.Ok(new DeleteEntityResponse(Deleted: await this.service.DeleteEntityAsync(id, cancellationToken)));
         }
     }
 }

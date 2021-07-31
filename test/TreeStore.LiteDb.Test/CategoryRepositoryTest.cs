@@ -117,7 +117,7 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void CategoryRepository_rejects_duplicate_child_name()
+        public void CategoryRepository_creating_fails_for_duplicate_child_name()
         {
             // ARRANGE
             var category = new Category("category");
@@ -470,6 +470,25 @@ namespace TreeStore.LiteDb.Test
             var assert_dst_src_category = this.CategoryRepository.FindByParentAndName(assert_dst_src, src_category.Name);
 
             Assert.Null(assert_dst_src_category);
+        }
+
+        [Fact]
+        public void CategoryRepository_copying_fails_for_duplicate_category_name()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
+            var dst_duplicate = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(dst), c => c.Name = src.Name));
+            var src_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(src)));
+
+            // ACT
+            var result = Assert.Throws<LiteException>(() => this.CategoryRepository.CopyTo(src, dst, recurse: true));
+
+            // ASSERT
+            Assert.StartsWith(
+                expectedStartString: $"Cannot insert duplicate key in unique index 'UniqueName'.",
+                actualString: result.Message);
         }
 
         #endregion COPY

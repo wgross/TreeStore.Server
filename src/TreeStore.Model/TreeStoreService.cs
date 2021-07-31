@@ -21,8 +21,23 @@ namespace TreeStore.Model
             this.logger = logger;
         }
 
+        public Task<CopyCategoryResponse> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken)
+        {
+            var sourceCategory = this.model.Categories.FindById(sourceCategoryId);
+            if (sourceCategory is null)
+                throw new InvalidOperationException($"Category(id='{sourceCategoryId}') wasn't copied: Category(id='{sourceCategoryId}') doesn't exist");
+
+            var destinationCategory = this.model.Categories.FindById(destinationCategoryId);
+            if (destinationCategory is null)
+                throw new InvalidOperationException($"Category(id='{sourceCategoryId}') wasn't copied: Category(id='{destinationCategoryId}') doesn't exist");
+
+            this.model.Categories.CopyTo(sourceCategory, destinationCategory, recurse);
+
+            return Task.FromResult(new CopyCategoryResponse());
+        }
+
         ///<inheritdoc/>
-        public Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
+        public Task<CategoryResult> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             var parent = this.model.Categories.FindById(request.ParentId);
             if (parent is null)
@@ -42,45 +57,45 @@ namespace TreeStore.Model
         }
 
         /// <Inheritdoc/>
-        public Task<EntityResponse> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
+        public Task<EntityResult> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         ///<inheritdoc/>
-        public Task<DeleteCategoryResponse> DeleteCategoryAsync(Guid id, CancellationToken cancellationToken)
+        public Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken)
         {
             var category = this.model.Categories.FindById(id);
             if (category is null)
             {
                 this.logger.LogInformation("Category(id='{categoryId}') wasn't deleted: Category(id='{categoryId}') doesn't exist", id);
 
-                return Task.FromResult(new DeleteCategoryResponse(Deleted: false));
+                return Task.FromResult(false);
             }
 
-            return Task.FromResult(new DeleteCategoryResponse(Deleted: this.model.Categories.Delete(category, recurse: false)));
+            return Task.FromResult(this.model.Categories.Delete(category, recurse: recurse));
         }
 
         ///<inheritdoc/>
-        public Task<DeleteEntityResponse> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
+        public Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         ///<inheritdoc/>
-        public Task<CategoryResponse?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
+        public Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(this.model.Categories.FindById(id)?.ToCategoryResponse());
         }
 
         ///<inheritdoc/>
-        public Task<IEnumerable<EntityResponse>> GetEntitiesAsync(CancellationToken cancellationToken)
+        public Task<IEnumerable<EntityResult>> GetEntitiesAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         ///<inheritdoc/>
-        public Task<EntityResponse> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
+        public Task<EntityResult> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
         {
             throw new NotImplementedException();
         }
@@ -91,7 +106,7 @@ namespace TreeStore.Model
         public Category GetRootCategory() => this.model.Categories.Root();
 
         ///<inheritdoc/>
-        public Task<CategoryResponse> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        public Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
             var category = this.model.Categories.FindById(id);
             if (category is null)
@@ -106,7 +121,7 @@ namespace TreeStore.Model
         }
 
         ///<inheritdoc/>
-        public Task<EntityResponse> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
+        public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
