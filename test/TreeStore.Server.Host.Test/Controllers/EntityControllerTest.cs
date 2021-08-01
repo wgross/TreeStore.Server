@@ -62,13 +62,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.CreateEntityAsync(It.Is<CreateEntityRequest>(r => entity.Name.Equals(r.Name) && entity.Category.Id.Equals(r.CategoryId)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToEntityResponse());
+                .ReturnsAsync(entity.ToEntityResult());
 
             // ACT
             var result = await this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResponse(), result);
+            Assert.Equal(entity.ToEntityResult(), result);
         }
 
         [Fact]
@@ -100,13 +100,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToEntityResponse());
+                .ReturnsAsync(entity.ToEntityResult());
 
             // ACT
             var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResponse(), result);
+            Assert.Equal(entity.ToEntityResult(), result);
         }
 
         [Fact]
@@ -132,13 +132,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new[] { entity.ToEntityResponse() });
+                .ReturnsAsync(new[] { entity.ToEntityResult() });
 
             // ACT
             var result = await this.service.GetEntitiesAsync(CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResponse(), result.Single());
+            Assert.Equal(entity.ToEntityResult(), result.Single());
         }
 
         #endregion READ
@@ -153,13 +153,13 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.ToEntityResponse());
+                .ReturnsAsync(entity.ToEntityResult());
 
             // ACT
             var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResponse(), result);
+            Assert.Equal(entity.ToEntityResult(), result);
         }
 
         [Fact]

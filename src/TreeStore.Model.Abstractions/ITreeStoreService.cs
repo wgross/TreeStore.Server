@@ -10,7 +10,7 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Retrieve the state of the entity having the id <paramref name="id"/>.
         /// </summary>
-        Task<EntityResult> GetEntityByIdAsync(Guid id, CancellationToken cancelled);
+        Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancelled);
 
         /// <summary>
         /// Creates a new entity from <paramref name="createEntityRequest"/>

@@ -53,7 +53,7 @@ namespace TreeStore.Model
                 Parent = parent
             };
 
-            return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResponse());
+            return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
 
         /// <Inheritdoc/>
@@ -79,13 +79,20 @@ namespace TreeStore.Model
         ///<inheritdoc/>
         public Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var entity = this.model.Entities.FindById(id);
+            if (entity is null)
+            {
+                this.logger.LogInformation("Entity(id='{entityId}') wasn't deleted: Entity(id='{entityId}') doesn't exist", id);
+
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(this.model.Entities.Delete(entity));
         }
 
         ///<inheritdoc/>
         public Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            return Task.FromResult(this.model.Categories.FindById(id)?.ToCategoryResponse());
+            return Task.FromResult(this.model.Categories.FindById(id)?.ToCategoryResult());
         }
 
         ///<inheritdoc/>
@@ -95,9 +102,9 @@ namespace TreeStore.Model
         }
 
         ///<inheritdoc/>
-        public Task<EntityResult> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
+        public Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(this.model.Entities.FindById(id)?.ToEntityResult());
         }
 
         /// <summary>
@@ -115,15 +122,27 @@ namespace TreeStore.Model
 
                 throw new InvalidOperationException($"Category(id='{id}') wasn't updated: Category(id='{id}') doesn't exist");
             }
-            category.Name = request.Name;
 
-            return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResponse());
+            request.Apply(category);
+
+            return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
 
         ///<inheritdoc/>
         public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var entity = this.model.Entities.FindById(id);
+
+            if (entity is null)
+            {
+                this.logger.LogError("Entity(id='{entityId}') wasn't updated: Entity(id='{entityId}') doesn't exist", id);
+
+                throw new InvalidOperationException($"Entity(id='{id}') wasn't updated: Entity(id='{id}') doesn't exist");
+            }
+
+            updateEntityRequest.Apply(entity);
+
+            return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
         }
     }
 }

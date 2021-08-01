@@ -1,49 +1,16 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
+﻿using Moq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
-using TreeStore.Server.Client;
 using Xunit;
 using static TreeStore.Test.Common.TreeStoreTestData;
 
 namespace TreeStore.Server.Host.Test.Controllers
 {
-    public class CategoryControllerTest : TreeStoreServerHostTestBase
+    public partial class CategoryControllerTest
     {
-        private readonly Category rootCategory;
-        private readonly IHost host;
-        private readonly Mock<ITreeStoreService> serviceMock;
-        private CancellationTokenSource cancellationTokenSource;
-        private TreeStoreClient service;
-
-        public CategoryControllerTest()
-        {
-            // model
-            this.rootCategory = DefaultRootCategory();
-
-            // server
-            this.serviceMock = this.Mocks.Create<ITreeStoreService>();
-            this.host = Microsoft.Extensions.Hosting.Host
-                .CreateDefaultBuilder()
-                .ConfigureWebHost(wh =>
-                {
-                    wh.UseTestServer();
-                    wh.UseStartup(whctx => new TestStartup(this.serviceMock.Object, whctx.Configuration));
-                })
-                .Build();
-            this.host.StartAsync();
-
-            // client
-            this.cancellationTokenSource = new CancellationTokenSource();
-            this.service = new TreeStoreClient(this.host.GetTestClient(), new NullLogger<TreeStoreClient>());
-        }
-
         #region CREATE
 
         [Fact]
@@ -54,7 +21,7 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToCategoryResponse());
+                .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
             var result = await this.service
@@ -62,7 +29,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResponse(), result);
+            Assert.Equal(category.ToCategoryResult(), result);
         }
 
         [Fact]
@@ -95,7 +62,7 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToCategoryResponse());
+                .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
             var result = await this.service
@@ -103,7 +70,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResponse(), result);
+            Assert.Equal(category.ToCategoryResult(), result);
         }
 
         [Fact]
@@ -135,7 +102,7 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.UpdateCategoryAsync(category.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToCategoryResponse());
+                .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
             var result = await this.service
@@ -143,7 +110,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResponse(), result);
+            Assert.Equal(category.ToCategoryResult(), result);
         }
 
         [Fact]

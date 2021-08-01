@@ -13,6 +13,7 @@ namespace TreeStore.Model.Test
     public class TreeStoreServiceTest : TreeStoreModelTestBase
     {
         private readonly Mock<ICategoryRepository> categoryRepositoryMock;
+        private readonly Mock<IEntityRepository> entityRepositoryMock;
         private readonly Mock<ITreeStoreModel> modelMock;
         private readonly TreeStoreService service;
         private Category rootCategory;
@@ -20,6 +21,7 @@ namespace TreeStore.Model.Test
         public TreeStoreServiceTest()
         {
             this.categoryRepositoryMock = this.Mocks.Create<ICategoryRepository>();
+            this.entityRepositoryMock = this.Mocks.Create<IEntityRepository>();
             this.modelMock = this.Mocks.Create<ITreeStoreModel>();
             this.service = new TreeStoreService(this.modelMock.Object, new NullLogger<TreeStoreService>());
         }
@@ -27,7 +29,7 @@ namespace TreeStore.Model.Test
         #region Category
 
         [Fact]
-        public void TreeStoreService_reads_root_category()
+        public void Reads_root_category()
         {
             // ARRANGE
             this.ArrangeCategoryRepository(mock =>
@@ -45,7 +47,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_creates_category()
+        public async Task Creates_category()
         {
             // ARRANGE
             var rootCategory = this.ArrangeRootCategory();
@@ -72,7 +74,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_creating_category_fails_if_parent_doesnt_exists()
+        public async Task Creating_category_fails_if_parent_doesnt_exists()
         {
             // ARRANGE
             var parentId = Guid.NewGuid();
@@ -95,7 +97,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_reads_category()
+        public async Task Reads_category()
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -111,11 +113,11 @@ namespace TreeStore.Model.Test
             var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResponse(), result);
+            Assert.Equal(category.ToCategoryResult(), result);
         }
 
         [Fact]
-        public async Task TreeStoreService_reading_category_returns_null_if_missing()
+        public async Task Reading_category_returns_null_if_missing()
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -135,7 +137,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_updates_category()
+        public async Task Updates_category()
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -163,7 +165,7 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
-        public async Task TreeStoreService_updating_category_fails_on_missing_category()
+        public async Task Updating_category_fails_on_missing_category()
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -184,9 +186,11 @@ namespace TreeStore.Model.Test
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task TreeStoreService_deletes_category_if_empty(bool recurse)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task Deletes_category_if_empty(bool recurse, bool deleteResult)
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -199,20 +203,20 @@ namespace TreeStore.Model.Test
 
                 mock
                     .Setup(r => r.Delete(category, recurse))
-                    .Returns(true);
+                    .Returns(deleteResult);
             });
 
             // ACT
             var result = await this.service.DeleteCategoryAsync(category.Id, recurse, CancellationToken.None);
 
             // ASSERT
-            Assert.True(result);
+            Assert.Equal(deleteResult, result);
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task TreeStoreService_deleting_category_returns_false_on_missing_category(bool recurse)
+        public async Task Deleting_category_returns_false_on_missing_category(bool recurse)
         {
             // ARRANGE
             var category = DefaultCategory(DefaultRootCategory());
@@ -235,7 +239,7 @@ namespace TreeStore.Model.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task TreeStoreService_copies_category(bool recurse)
+        public async Task Copies_category(bool recurse)
         {
             // ARRANGE
             var source = DefaultCategory(DefaultRootCategory());
@@ -266,7 +270,7 @@ namespace TreeStore.Model.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task TreeStoreService_copying_category_fails_on_missing_source(bool recurse)
+        public async Task Copying_category_fails_on_missing_source(bool recurse)
         {
             // ARRANGE
             var source = DefaultCategory(DefaultRootCategory());
@@ -291,7 +295,7 @@ namespace TreeStore.Model.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task TreeStoreService_copying_category_fails_on_missing_destination(bool recurse)
+        public async Task Copying_category_fails_on_missing_destination(bool recurse)
         {
             // ARRANGE
             var source = DefaultCategory(DefaultRootCategory());
@@ -343,5 +347,153 @@ namespace TreeStore.Model.Test
         }
 
         #endregion Category
+
+        #region Entity
+
+        [Fact]
+        public async Task Reads_entity()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+            });
+
+            // ACT
+            var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(entity.ToEntityResult(), result);
+        }
+
+        [Fact]
+        public async Task Reading_entity_returns_null_if_missing()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns((Entity)null);
+            });
+
+            // ACT
+            var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Updates_entity()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            Entity writtenEntity = default;
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<Entity>()))
+                    .Callback<Entity>(c => writtenEntity = c)
+                    .Returns(entity);
+            });
+
+            // ACT
+            var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal("changed", writtenEntity.Name);
+            Assert.Equal(entity.Id, writtenEntity.Id);
+            Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+        }
+
+        [Fact]
+        public async Task Updating_entity_fails_on_missing_entity()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns((Entity)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal($"Entity(id='{entity.Id}') wasn't updated: Entity(id='{entity.Id}') doesn't exist", result.Message);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Deletes_entity(bool deleteResult)
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+
+                mock
+                    .Setup(r => r.Delete(entity))
+                    .Returns(deleteResult);
+            });
+
+            // ACT
+            var result = await this.service.DeleteEntityAsync(entity.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(deleteResult, result);
+        }
+
+        [Fact]
+        public async Task Deleting_entity_returns_false_if_entity_missing()
+        {
+            // ARRANGE
+            var entity = DefaultEntity(DefaultRootCategory());
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns((Entity)null);
+            });
+
+            // ACT
+            var result = await this.service.DeleteEntityAsync(entity.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.False(result);
+        }
+
+        private void ArrangeEntityRepository(Action<Mock<IEntityRepository>> arrange)
+        {
+            this.modelMock
+                .Setup(m => m.Entities)
+                .Returns(this.entityRepositoryMock.Object);
+
+            arrange?.Invoke(this.entityRepositoryMock);
+        }
+
+        #endregion Entity
     }
 }

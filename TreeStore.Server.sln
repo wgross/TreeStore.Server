@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStore.Server.Host.Test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStore.Server.Client", "src\TreeStore.Server.Client\TreeStore.Server.Client.csproj", "{3A9367D1-9D0F-44A2-9C52-B10E5999F062}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeStore.Test.Common", "test\TreeStore.Test.Common\TreeStore.Test.Common.csproj", "{83092245-A82A-40CC-8132-67D3A155FEEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStore.Test.Common", "test\TreeStore.Test.Common\TreeStore.Test.Common.csproj", "{83092245-A82A-40CC-8132-67D3A155FEEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
