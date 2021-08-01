@@ -45,7 +45,7 @@ namespace TreeStore.Server.Host.Controllers
         [HttpGet, Route("entities")]
         public async Task<IActionResult> GetEntitiesAsync(CancellationToken cancellationToken)
         {
-            return this.Ok(new EntityResponseCollection
+            return this.Ok(new EntityCollectionResponse
             {
                 Entities = (await this.service.GetEntitiesAsync(cancellationToken)).ToArray()
             });

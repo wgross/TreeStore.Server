@@ -30,7 +30,12 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Updates the given properties at the given entity
         /// </summary>
-        public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken);
+        Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the given properties at the given tag.
+        /// </summary>
+        Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the category having the id <paramref name="id"/>.
@@ -40,12 +45,22 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Deletes the entity having the <paramref name="id"/>
         /// </summary>
-        public Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken);
+        Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates the category indentified by <paramref name="id"/> with the changes data defined in <paramref name="request"/>
+        /// Retrieves the specifed Tag
         /// </summary>
-        Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken);
+        Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the category identified by <paramref name="id"/> with the changes data defined in <paramref name="requestCategoryRequest"/>
+        /// </summary>
+        Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest requestCategoryRequest, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the tag identified by <paramref name="id"/> with the changed data from <paramref name="updateTagRequest"/>
+        /// </summary>
+        Task<TagResult> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the category identified by <paramref name="id"/>
@@ -53,9 +68,20 @@ namespace TreeStore.Model.Abstractions
         Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves all Tags of the model
+        /// </summary>
+        Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Copy the <paramref name="sourceCategoryId"/> as s subcategeory to <paramref name="destinationCategoryId"/>.
         /// It <paramref name="recurse"/> is true, all subcatageories and entites are clined as well.
         /// </summary>
         Task<CopyCategoryResponse> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes the tag specified by <paramref name="id"/>.
+        /// </summary>
+
+        Task<bool> DeleteTagAsync(Guid id, CancellationToken cancellationToken);
     }
 }

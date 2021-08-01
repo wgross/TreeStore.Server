@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Linq;
@@ -9,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
-using TreeStore.Server.Client;
 using Xunit;
 using static TreeStore.Test.Common.TreeStoreTestData;
 
@@ -17,39 +12,12 @@ namespace TreeStore.Server.Host.Test.Controllers
 {
     public class EntityControllerTest : TreeStoreServerHostTestBase
     {
-        private readonly Mock<ITreeStoreService> serviceMock;
-        private readonly IHost host;
-        private readonly CancellationTokenSource cancellationTokenSource;
-        private readonly TreeStoreClient service;
         private readonly Category rootCategory;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-                this.host.StopAsync().GetAwaiter().GetResult();
-            base.Dispose(disposing);
-        }
 
         public EntityControllerTest()
         {
             // model
             this.rootCategory = DefaultRootCategory();
-
-            // server
-            this.serviceMock = this.Mocks.Create<ITreeStoreService>();
-            this.host = Microsoft.Extensions.Hosting.Host
-                .CreateDefaultBuilder()
-                .ConfigureWebHost(wh =>
-                {
-                    wh.UseTestServer();
-                    wh.UseStartup(whctx => new TestStartup(this.serviceMock.Object, whctx.Configuration));
-                })
-                .Build();
-            this.host.StartAsync();
-
-            // client
-            this.cancellationTokenSource = new CancellationTokenSource();
-            this.service = new TreeStoreClient(this.host.GetTestClient(), new NullLogger<TreeStoreClient>());
         }
 
         #region CREATE

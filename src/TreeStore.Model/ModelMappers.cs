@@ -9,6 +9,11 @@ namespace TreeStore.Model
             return new EntityResult(entity.Id, entity.Name, entity.Category!.Id);
         }
 
+        public static TagResult ToTagResult(this Tag tag)
+        {
+            return new TagResult(tag.Id, tag.Name);
+        }
+
         public static CategoryResult ToCategoryResult(this Category category)
         {
             // category without a parent category isn't an allow model state

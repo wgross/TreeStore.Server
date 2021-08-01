@@ -9,6 +9,11 @@ namespace TreeStore.Model
             category.Name = updateCategoryRequest.Name;
         }
 
+        internal static void Apply(this UpdateTagRequest updateTagRequest, Tag tag)
+        {
+            tag.Name = updateTagRequest.Name;
+        }
+
         internal static void Apply(this UpdateEntityRequest updateEntityRequest, Entity entity)
         {
             entity.Name = updateEntityRequest.Name;

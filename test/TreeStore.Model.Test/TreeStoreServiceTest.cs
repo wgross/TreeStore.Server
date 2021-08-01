@@ -14,6 +14,7 @@ namespace TreeStore.Model.Test
     {
         private readonly Mock<ICategoryRepository> categoryRepositoryMock;
         private readonly Mock<IEntityRepository> entityRepositoryMock;
+        private readonly Mock<ITagRepository> tagRepositoryMock;
         private readonly Mock<ITreeStoreModel> modelMock;
         private readonly TreeStoreService service;
         private Category rootCategory;
@@ -22,6 +23,7 @@ namespace TreeStore.Model.Test
         {
             this.categoryRepositoryMock = this.Mocks.Create<ICategoryRepository>();
             this.entityRepositoryMock = this.Mocks.Create<IEntityRepository>();
+            this.tagRepositoryMock = this.Mocks.Create<ITagRepository>();
             this.modelMock = this.Mocks.Create<ITreeStoreModel>();
             this.service = new TreeStoreService(this.modelMock.Object, new NullLogger<TreeStoreService>());
         }
@@ -495,5 +497,152 @@ namespace TreeStore.Model.Test
         }
 
         #endregion Entity
+
+        #region Tag
+
+        [Fact]
+        public async Task Reads_tag()
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns(tag);
+            });
+
+            // ACT
+            var result = await this.service.GetTagByIdAsync(tag.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(tag.ToTagResult(), result);
+        }
+
+        [Fact]
+        public async Task Reading_tag_returns_null_if_missing()
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns((Tag)null);
+            });
+
+            // ACT
+            var result = await this.service.GetTagByIdAsync(tag.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Updates_tag()
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            Tag writtenTag = default;
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns(tag);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<Tag>()))
+                    .Callback<Tag>(c => writtenTag = c)
+                    .Returns(tag);
+            });
+
+            // ACT
+            var result = await this.service.UpdateTagAsync(tag.Id, new UpdateTagRequest(Name: "changed"), CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal("changed", writtenTag.Name);
+            Assert.Equal(tag.Id, writtenTag.Id);
+        }
+
+        [Fact]
+        public async Task Updating_tag_fails_on_missing_tag()
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns((Tag)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateTagAsync(tag.Id, new UpdateTagRequest(Name: "changed"), CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal($"Tag(id='{tag.Id}') wasn't updated: Tag(id='{tag.Id}') doesn't exist", result.Message);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Deletes_tag(bool deleteResult)
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns(tag);
+
+                mock
+                    .Setup(r => r.Delete(tag))
+                    .Returns(deleteResult);
+            });
+
+            // ACT
+            var result = await this.service.DeleteTagAsync(tag.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(deleteResult, result);
+        }
+
+        [Fact]
+        public async Task Deleting_tag_returns_false_if_tag_missing()
+        {
+            // ARRANGE
+            var tag = DefaultTag();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns((Tag)null);
+            });
+
+            // ACT
+            var result = await this.service.DeleteTagAsync(tag.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.False(result);
+        }
+
+        private void ArrangeTagRepository(Action<Mock<ITagRepository>> arrange)
+        {
+            this.modelMock
+                .Setup(m => m.Tags)
+                .Returns(this.tagRepositoryMock.Object);
+
+            arrange?.Invoke(this.tagRepositoryMock);
+        }
+
+        #endregion Tag
     }
 }

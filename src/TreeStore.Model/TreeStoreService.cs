@@ -144,5 +144,59 @@ namespace TreeStore.Model
 
             return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
         }
+
+        ///<inheritdoc/>
+        public Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken none)
+        {
+            return Task.FromResult(this.model.Tags.FindById(id)?.ToTagResult());
+        }
+
+        ///<inheritdoc/>
+        public Task<TagResult> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken none)
+        {
+            var tag = this.model.Tags.FindById(id);
+
+            if (tag is null)
+            {
+                this.logger.LogError("Tag(id='{tagId}') wasn't updated: Tag(id='{tagId}') doesn't exist", id);
+
+                throw new InvalidOperationException($"Tag(id='{id}') wasn't updated: Tag(id='{id}') doesn't exist");
+            }
+
+            updateTagRequest.Apply(tag);
+
+            this.model.Tags.Upsert(tag);
+
+            return Task.FromResult(tag.ToTagResult());
+        }
+
+        ///<inheritdoc/>
+        public Task<bool> DeleteTagAsync(Guid id, CancellationToken none)
+        {
+            var tag = this.model.Tags.FindById(id);
+            if (tag is null)
+            {
+                this.logger.LogError("Tag(id='{tagId}') wasn't deleted: Tag(id='{tagId}') doesn't exist", id);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(this.model.Tags.Delete(tag));
+        }
+
+        public Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TagCollectionResponse> GetTagsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<TagResult>> ITreeStoreService.GetTagsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
