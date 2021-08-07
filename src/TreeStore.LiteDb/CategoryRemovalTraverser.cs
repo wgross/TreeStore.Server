@@ -18,7 +18,7 @@ namespace TreeStore.LiteDb
             this.entityRepository = entityRepository;
         }
 
-        internal bool DeleteIfEmpty(Category category)
+        internal bool DeleteIfEmpty(CategoryModel category)
         {
             if (category.Id == this.categoryRepository.Root().Id)
                 return false;
@@ -34,15 +34,15 @@ namespace TreeStore.LiteDb
 
         #region Delete Recursive
 
-        public bool DeleteRecursively(Category category)
+        public bool DeleteRecursively(CategoryModel category)
         {
             if (category.Id == this.categoryRepository.Root().Id)
                 return false;
 
             // collect all entites and categories in the given parent category.
             // the delete them
-            var entitiesToDelete = new List<Entity>();
-            var categoriesToDelete = new List<Category>();
+            var entitiesToDelete = new List<EntityModel>();
+            var categoriesToDelete = new List<CategoryModel>();
 
             this.CollectItemsToDelete(category, entitiesToDelete, categoriesToDelete);
 
@@ -54,7 +54,7 @@ namespace TreeStore.LiteDb
             return this.DeleteCategoryInDb(category, recurse: false);
         }
 
-        private void CollectItemsToDelete(Category category, List<Entity> entitiesToDelete, List<Category> categoriesToDelete)
+        private void CollectItemsToDelete(CategoryModel category, List<EntityModel> entitiesToDelete, List<CategoryModel> categoriesToDelete)
         {
             foreach (var subEntity in this.SubEntites(category))
             {
@@ -68,12 +68,12 @@ namespace TreeStore.LiteDb
             }
         }
 
-        private bool DeleteCategoryInDb(Category category, bool recurse) => this.categoryRepository.Delete(category);
+        private bool DeleteCategoryInDb(CategoryModel category, bool recurse) => this.categoryRepository.Delete(category);
 
         #endregion Delete Recursive
 
-        private IEnumerable<Entity> SubEntites(Category category) => this.entityRepository.FindByCategory(category);
+        private IEnumerable<EntityModel> SubEntites(CategoryModel category) => this.entityRepository.FindByCategory(category);
 
-        private IEnumerable<Category> SubCategories(Category category) => this.categoryRepository.FindByParent(category);
+        private IEnumerable<CategoryModel> SubCategories(CategoryModel category) => this.categoryRepository.FindByParent(category);
     }
 }

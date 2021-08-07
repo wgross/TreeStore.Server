@@ -11,7 +11,7 @@ namespace TreeStore.Model.Test
         {
             // ACT
 
-            var facet = new Facet();
+            var facet = new FacetModel();
 
             // ASSERT
 
@@ -23,8 +23,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet();
-            var property = new FacetProperty();
+            var facet = new FacetModel();
+            var property = new FacetPropertyModel();
 
             // ACT
 
@@ -36,13 +36,29 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
+        public void Facet_gets_property_by_id()
+        {
+            // ARRANGE
+            var facet = new FacetModel();
+            var property = new FacetPropertyModel();
+
+            facet.AddProperty(property);
+
+            // ACT
+            var result = facet.GetProperty(property.Id);
+
+            // ASSERT
+            Assert.Same(property, result);
+        }
+
+        [Fact]
         public void Facet_removes_property()
         {
             // ARRANGE
 
-            var property1 = new FacetProperty();
-            var property2 = new FacetProperty();
-            var facet = new Facet("facet", property1, property2);
+            var property1 = new FacetPropertyModel();
+            var property2 = new FacetPropertyModel();
+            var facet = new FacetModel("facet", property1, property2);
 
             // ACT
 
@@ -58,11 +74,11 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet(string.Empty, new FacetProperty("name"));
+            var facet = new FacetModel(string.Empty, new FacetPropertyModel("name"));
 
             // ACT
 
-            var result = Assert.Throws<InvalidOperationException>(() => facet.AddProperty(new FacetProperty("name")));
+            var result = Assert.Throws<InvalidOperationException>(() => facet.AddProperty(new FacetPropertyModel("name")));
 
             // ASSERT
 

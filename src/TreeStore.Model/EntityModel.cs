@@ -6,35 +6,35 @@ using TreeStore.Model.Base;
 
 namespace TreeStore.Model
 {
-    public sealed class Entity : TaggedBase, IEntity, ICloneable
+    public sealed class EntityModel : TaggedBase, IEntity, ICloneable
     {
         #region Construction and initialization of this instance
 
-        public Entity(string name, params Tag[] tags)
+        public EntityModel(string name, params TagModel[] tags)
             : this(name, tags.AsEnumerable())
         {
         }
 
-        public Entity(string name, IEnumerable<Tag> tags)
+        public EntityModel(string name, IEnumerable<TagModel> tags)
             : base(name, tags.ToArray())
         {
         }
 
-        private Entity(string name, IEnumerable<Tag> tags, IDictionary<string, object?> values)
+        private EntityModel(string name, IEnumerable<TagModel> tags, IDictionary<string, object?> values)
             : base(name, tags.ToArray())
         {
             this.Values = new Dictionary<string, object?>(values);
         }
 
-        public Entity()
-            : base(string.Empty, new Tag[0])
+        public EntityModel()
+            : base(string.Empty, new TagModel[0])
         { }
 
         #endregion Construction and initialization of this instance
 
         #region Entity has Categories
 
-        public Category? Category { get; set; }
+        public CategoryModel? Category { get; set; }
 
         public string UniqueName
         {
@@ -42,19 +42,19 @@ namespace TreeStore.Model
             set { }
         }
 
-        public IEnumerable<Facet> Facets()
+        public IEnumerable<FacetModel> Facets()
         {
             if (this.Category is null)
                 return this.Tags.Select(t => t.Facet);
             return this.Category.Facets().Union(this.Tags.Select(t => t.Facet));
         }
 
-        public void SetCategory(Category category)
+        public void SetCategory(CategoryModel category)
         {
             this.Category = category;
         }
 
-        public object Clone() => new Entity(this.Name, this.Tags.ToArray(), this.Values);
+        public object Clone() => new EntityModel(this.Name, this.Tags.ToArray(), this.Values);
 
         #endregion Entity has Categories
     }

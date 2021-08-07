@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using TreeStore.Model.Abstractions;
 using Xunit;
 
 namespace TreeStore.Model.Test
@@ -15,7 +16,7 @@ namespace TreeStore.Model.Test
         {
             // ACT
 
-            var result = new FacetProperty("facet", FacetPropertyTypeValues.DateTime);
+            var result = new FacetPropertyModel("facet", FacetPropertyTypeValues.DateTime);
 
             // ASSERT
 
@@ -24,7 +25,7 @@ namespace TreeStore.Model.Test
         }
 
         [Theory]
-        [InlineData(FacetPropertyTypeValues.Bool)]
+        [InlineData(data: FacetPropertyTypeValues.Bool)]
         [InlineData(FacetPropertyTypeValues.DateTime)]
         [InlineData(FacetPropertyTypeValues.Decimal)]
         [InlineData(FacetPropertyTypeValues.Double)]
@@ -35,7 +36,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = facetPropertyType);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = facetPropertyType);
 
             // ACT
 
@@ -51,7 +52,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Long);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Long);
 
             // ACT & ASSERT
 
@@ -75,7 +76,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Long);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Long);
 
             // ACT
 
@@ -93,7 +94,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Bool);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Bool);
 
             // ACT & ASSERT
 
@@ -120,7 +121,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Bool);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Bool);
 
             // ACT
 
@@ -136,7 +137,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Double);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Double);
 
             // ACT & ASSERT
 
@@ -159,7 +160,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Double);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Double);
 
             // ACT & ASSERT
 
@@ -177,7 +178,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Decimal);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Decimal);
 
             // ACT & ASSERT
 
@@ -199,7 +200,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Decimal);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Decimal);
 
             // ACT & ASSERT
 
@@ -220,7 +221,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Guid);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Guid);
 
             // ACT & ASSERT
 
@@ -247,7 +248,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Guid);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.Guid);
 
             // ACT
 
@@ -263,7 +264,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.DateTime);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.DateTime);
 
             // ACT & ASSERT
 
@@ -290,7 +291,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = DefaultEntity(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.DateTime);
+            var entity = DefaultEntityModel(e => e.Tags.Single().Facet.Properties.Single().Type = FacetPropertyTypeValues.DateTime);
 
             // ACT
 

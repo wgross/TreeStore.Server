@@ -7,13 +7,13 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public sealed class CategoryLiteDbRepository : LiteDbRepositoryBase<Category>, ICategoryRepository
+    public sealed class CategoryLiteDbRepository : LiteDbRepositoryBase<CategoryModel>, ICategoryRepository
     {
         public const string collectionName = "categories";
 
         static CategoryLiteDbRepository()
         {
-            BsonMapper.Global.Entity<Category>()
+            BsonMapper.Global.Entity<CategoryModel>()
                 .DbRef(c => c.Parent, collectionName);
         }
 
@@ -26,30 +26,30 @@ namespace TreeStore.LiteDb
                 .Database
                 .GetCollection(this.CollectionName)
                 .EnsureIndex(
-                    name: nameof(Category.UniqueName),
-                    expression: $"$.{nameof(Category.UniqueName)}",
+                    name: nameof(CategoryModel.UniqueName),
+                    expression: $"$.{nameof(CategoryModel.UniqueName)}",
                     unique: true);
 
-            this.rootNode = new Lazy<Category>(() => this.FindRootCategory() ?? this.CreateRootCategory());
+            this.rootNode = new Lazy<CategoryModel>(() => this.FindRootCategory() ?? this.CreateRootCategory());
             this.logger = logger;
         }
 
         #region Ensure persistent root always exist
 
-        private readonly Lazy<Category> rootNode;
+        private readonly Lazy<CategoryModel> rootNode;
         private readonly TreeStoreLiteDbPersistence treeStoreLiteDbPersistence;
         private readonly ILogger<CategoryLiteDbRepository> logger;
 
         /// <summary>
         /// return the root node of the repositorty. If not exists it is created.
         /// </summary>
-        public Category Root() => this.rootNode.Value;
+        public CategoryModel Root() => this.rootNode.Value;
 
         // todo: abandon completely loaded root tree
-        private Category? FindRootCategory()
+        private CategoryModel? FindRootCategory()
         {
             var rootCategory = this.LiteRepository
-                .Query<Category>(CollectionName)
+                .Query<CategoryModel>(CollectionName)
                 .Include(c => c.Parent)
                 .Where(c => c.Parent == null)
                 .FirstOrDefault();
@@ -60,9 +60,9 @@ namespace TreeStore.LiteDb
             return rootCategory;
         }
 
-        private Category CreateRootCategory()
+        private CategoryModel CreateRootCategory()
         {
-            var rootCategory = new Category(string.Empty);
+            var rootCategory = new CategoryModel(string.Empty);
             this.LiteCollection().Upsert(rootCategory);
 
             this.Logger.FoundExistingRootCategory(rootCategory);
@@ -74,7 +74,7 @@ namespace TreeStore.LiteDb
 
         #region Create, Read, Update, Delete categories
 
-        public override Category Upsert(Category category)
+        public override CategoryModel Upsert(CategoryModel category)
         {
             using var scope = this.BeginScope(category);
 
@@ -84,7 +84,7 @@ namespace TreeStore.LiteDb
             return base.Upsert(category);
         }
 
-        public Category? FindByParentAndName(Category category, string name)
+        public CategoryModel? FindByParentAndName(CategoryModel category, string name)
         {
             using var scope = this.BeginScope(category);
 
@@ -94,7 +94,7 @@ namespace TreeStore.LiteDb
                 .SingleOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
-        public IEnumerable<Category> FindByParent(Category category)
+        public IEnumerable<CategoryModel> FindByParent(CategoryModel category)
         {
             using var scope = this.BeginScope(category);
 
@@ -103,11 +103,11 @@ namespace TreeStore.LiteDb
                 .ToArray();
         }
 
-        protected override ILiteCollection<Category> IncludeRelated(ILiteCollection<Category> from) => from.Include(c => c.Parent);
+        protected override ILiteCollection<CategoryModel> IncludeRelated(ILiteCollection<CategoryModel> from) => from.Include(c => c.Parent);
 
-        private ILiteQueryable<Category> QueryRelated() => this.LiteCollection().Query().Include(c => c.Parent);
+        private ILiteQueryable<CategoryModel> QueryRelated() => this.LiteCollection().Query().Include(c => c.Parent);
 
-        public bool Delete(Category category, bool recurse)
+        public bool Delete(CategoryModel category, bool recurse)
         {
             using var scope = this.BeginScope(category);
 
@@ -118,7 +118,7 @@ namespace TreeStore.LiteDb
                 : removalTraverser.DeleteIfEmpty(category);
         }
 
-        public void CopyTo(Category sourceCategory, Category destinationParentCategory, bool recurse)
+        public void CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse)
         {
             using var scope = this.BeginScope(sourceCategory);
 

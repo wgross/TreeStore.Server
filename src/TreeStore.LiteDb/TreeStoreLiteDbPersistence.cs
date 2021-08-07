@@ -53,7 +53,7 @@ namespace TreeStore.LiteDb
 
         public IRelationshipRepository Relationships => new RelationshipLiteDbRepository(LiteRepository, this.loggerFactory.CreateLogger<RelationshipLiteDbRepository>());
 
-        public bool DeleteCategory(Category category, bool recurse)
+        public bool DeleteCategory(CategoryModel category, bool recurse)
         {
             var traverser = new CategoryRemovalTraverser((CategoryLiteDbRepository)this.Categories, (EntityLiteDbRepository)this.Entities);
 
@@ -63,7 +63,7 @@ namespace TreeStore.LiteDb
             return traverser.DeleteIfEmpty(category);
         }
 
-        public void CopyCategory(Category source, Category destination, bool recurse)
+        public void CopyCategory(CategoryModel source, CategoryModel destination, bool recurse)
         {
             var traverser = new CategoryCopyTraverser((CategoryLiteDbRepository)this.Categories, (EntityLiteDbRepository)this.Entities);
 

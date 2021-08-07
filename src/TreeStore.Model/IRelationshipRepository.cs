@@ -4,9 +4,9 @@ namespace TreeStore.Model
 {
     public interface IRelationshipRepository : IRepository<Relationship>
     {
-        IEnumerable<Relationship> FindByEntity(Entity entity);
+        IEnumerable<Relationship> FindByEntity(EntityModel entity);
 
-        IEnumerable<Relationship> FindByTag(Tag tag);
+        IEnumerable<Relationship> FindByTag(TagModel tag);
 
         void Delete(IEnumerable<Relationship> relationships);
     }

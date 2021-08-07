@@ -28,14 +28,14 @@ namespace TreeStore.Model.Test
             return new TreeStoreModel(this.Persistence.Object);
         }
 
-        protected Tag DefaultTag(Action<Tag> setup = null) => Setup(new Tag("t", new Facet("f", new FacetProperty("p"))), setup);
+        protected TagModel DefaultTagModel(Action<TagModel> setup = null) => Setup(new TagModel("t", new FacetModel("f", new FacetPropertyModel("p"))), setup);
 
-        protected Entity DefaultEntity(Action<Entity> setup = null, params Tag[] tags) => Setup(new Entity("e", tags), setup);
+        protected EntityModel DefaultEntityModel(Action<EntityModel> setup = null, params TagModel[] tags) => Setup(new EntityModel("e", tags), setup);
 
-        protected Entity DefaultEntity(Action<Entity> setup = null) => Setup(new Entity("e", DefaultTag()), setup);
+        protected EntityModel DefaultEntityModel(Action<EntityModel> setup = null) => Setup(new EntityModel("e", DefaultTagModel()), setup);
 
-        protected Relationship DefaultRelationship(Action<Relationship> setup = null) => DefaultRelationship(DefaultEntity(), DefaultEntity(), setup);
+        protected Relationship DefaultRelationshipModel(Action<Relationship> setup = null) => DefaultRelationshipModel(DefaultEntityModel(), DefaultEntityModel(), setup);
 
-        protected Relationship DefaultRelationship(Entity from, Entity to, Action<Relationship> setup = null) => Setup(new Relationship("r", from, to), setup);
+        protected Relationship DefaultRelationshipModel(EntityModel from, EntityModel to, Action<Relationship> setup = null) => Setup(new Relationship("r", from, to), setup);
     }
 }

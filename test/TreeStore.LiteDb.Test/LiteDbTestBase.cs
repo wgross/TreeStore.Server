@@ -2,6 +2,7 @@
 using Moq;
 using System;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.LiteDb.Test
 {
@@ -27,24 +28,24 @@ namespace TreeStore.LiteDb.Test
 
         #region Default Tag
 
-        protected Tag DefaultTag(params Action<Tag>[] setup)
+        protected TagModel DefaultTag(params Action<TagModel>[] setup)
         {
-            var tmp = new Tag("tag", new("facet"));
+            var tmp = new TagModel("tag", new("facet"));
             setup.ForEach(s => s(tmp));
             return tmp;
         }
 
-        public static void WithoutProperties(Tag tag) => tag.Facet.Properties.Clear();
+        public static void WithoutProperties(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
 
-        public static void WithDefaultProperty(Tag tag) => tag.Facet.AddProperty(new("prop", FacetPropertyTypeValues.Guid));
+        public static void WithDefaultProperty(TagModel tag) => tag.Facet.AddProperty(new("prop", FacetPropertyTypeValues.Guid));
 
         #endregion Default Tag
 
         #region Default Entity
 
-        protected Entity DefaultEntity(params Action<Entity>[] setup)
+        protected EntityModel DefaultEntity(params Action<EntityModel>[] setup)
         {
-            var tmp = new Entity("e");
+            var tmp = new EntityModel("e");
 
             // an entity is never w/o a catagory
             WithEntityCategory(this.CategoryRepository.Root())(tmp);
@@ -53,13 +54,13 @@ namespace TreeStore.LiteDb.Test
             return tmp;
         }
 
-        public void WithDefaultTag(Entity entity) => entity.AddTag(this.DefaultTag(WithDefaultProperty));
+        public void WithDefaultTag(EntityModel entity) => entity.AddTag(this.DefaultTag(WithDefaultProperty));
 
-        public static void WithoutTags(Entity entity) => entity.Tags.Clear();
+        public static void WithoutTags(EntityModel entity) => entity.Tags.Clear();
 
-        public static Action<Entity> WithEntityCategory(Category c) => e => e.SetCategory(c);
+        public static Action<EntityModel> WithEntityCategory(CategoryModel c) => e => e.SetCategory(c);
 
-        public static void WithoutCategory(Entity e) => e.Category = null;
+        public static void WithoutCategory(EntityModel e) => e.Category = null;
 
         #endregion Default Entity
 
@@ -68,9 +69,9 @@ namespace TreeStore.LiteDb.Test
         /// <summary>
         /// Creates a default category under the root category <see cref="CategoryRepository.Root"/>
         /// </summary>
-        protected Category DefaultCategory(params Action<Category>[] setup)
+        protected CategoryModel DefaultCategory(params Action<CategoryModel>[] setup)
         {
-            var tmp = new Category("c");
+            var tmp = new CategoryModel("c");
             this.CategoryRepository.Root().AddSubCategory(tmp);
             setup.ForEach(s => s(tmp));
             return tmp;
@@ -79,7 +80,7 @@ namespace TreeStore.LiteDb.Test
         /// <summary>
         /// Detaches the category from its current category and add ist to the <paramref name="parentCategory"/>
         /// </summary>
-        protected Action<Category> WithParentCategory(Category parentCategory)
+        protected Action<CategoryModel> WithParentCategory(CategoryModel parentCategory)
         {
             return c =>
             {

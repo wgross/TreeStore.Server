@@ -1,7 +1,7 @@
 ﻿namespace TreeStore.Model
 {
-    public interface ITagRepository : IRepository<Tag>
+    public interface ITagRepository : IRepository<TagModel>
     {
-        Tag? FindByName(string name);
+        TagModel? FindByName(string name);
     }
 }

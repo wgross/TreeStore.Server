@@ -38,8 +38,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2);
 
             // ACT
@@ -63,8 +63,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2);
 
             this.relationshipRepository.Upsert(relationship);
@@ -92,9 +92,9 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var tag = this.tagRepository.Upsert(new Tag("tag", new Facet("facet", new FacetProperty("prop"))));
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var tag = this.tagRepository.Upsert(new TagModel("tag", new FacetModel("facet", new FacetPropertyModel("prop"))));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2, tag);
 
             // ACT
@@ -116,9 +116,9 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var tag = this.tagRepository.Upsert(new Tag("tag", new Facet("facet", new FacetProperty("prop"))));
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var tag = this.tagRepository.Upsert(new TagModel("tag", new FacetModel("facet", new FacetPropertyModel("prop"))));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2, tag);
 
             this.relationshipRepository.Upsert(relationship);
@@ -141,9 +141,9 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var tag = this.tagRepository.Upsert(new Tag("tag", new Facet("facet", new FacetProperty("prop"))));
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var tag = this.tagRepository.Upsert(new TagModel("tag", new FacetModel("facet", new FacetPropertyModel("prop"))));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2, tag);
 
             // set facet property value
@@ -168,8 +168,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2);
 
             this.relationshipRepository.Upsert(relationship);
@@ -189,8 +189,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship = new Relationship("r", entity1, entity2);
 
             // ACT
@@ -207,8 +207,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship1 = new Relationship("r", entity1, entity2);
             var relationship2 = new Relationship("r", entity2, entity1);
 
@@ -230,8 +230,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.entityRepository.Upsert(new Entity("e1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("e2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("e1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("e2"));
             var relationship1 = new Relationship("r1", entity1, entity2);
             var relationship2 = new Relationship("r2", entity1, entity2);
 
@@ -252,12 +252,12 @@ namespace TreeStore.LiteDb.Test
         public void EntityRepositiry_finds_relationships_by_tag()
         {
             // ARRANGE
-            var tag1 = this.tagRepository.Upsert(new Tag("t1"));
-            var tag2 = this.tagRepository.Upsert(new Tag("t2"));
-            var entity1 = this.entityRepository.Upsert(new Entity("entity1"));
-            var entity2 = this.entityRepository.Upsert(new Entity("entity2"));
-            var entity3 = this.entityRepository.Upsert(new Entity("entity3"));
-            var entity4 = this.entityRepository.Upsert(new Entity("entity4"));
+            var tag1 = this.tagRepository.Upsert(new TagModel("t1"));
+            var tag2 = this.tagRepository.Upsert(new TagModel("t2"));
+            var entity1 = this.entityRepository.Upsert(new EntityModel("entity1"));
+            var entity2 = this.entityRepository.Upsert(new EntityModel("entity2"));
+            var entity3 = this.entityRepository.Upsert(new EntityModel("entity3"));
+            var entity4 = this.entityRepository.Upsert(new EntityModel("entity4"));
             var relationship1 = this.relationshipRepository.Upsert(new Relationship("r1", entity1, entity2, tag1));
             var relationship2 = this.relationshipRepository.Upsert(new Relationship("r1", entity3, entity4, tag2));
 

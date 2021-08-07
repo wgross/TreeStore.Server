@@ -11,12 +11,12 @@ namespace TreeStore.LiteDb
             logger.LogDebug("Deleting liteDbItem(id='{id}',type='{type}')", liteDbItem.Id, nameof(T));
         }
 
-        internal static void FoundExistingRootCategory(this ILogger logger, Category category)
+        internal static void FoundExistingRootCategory(this ILogger logger, CategoryModel category)
         {
             logger.LogInformation("Found existing root category(id='{id}')", category.Id);
         }
 
-        internal static void CreatedNewRootCatagory(this ILogger logger, Category category)
+        internal static void CreatedNewRootCatagory(this ILogger logger, CategoryModel category)
         {
             logger.LogInformation("Created new root category(id='{id}')", category.Id);
         }

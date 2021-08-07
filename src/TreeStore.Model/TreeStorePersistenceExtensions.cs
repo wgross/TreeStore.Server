@@ -5,7 +5,7 @@ namespace TreeStore.Model
 {
     public static class KosmographPersistenceExtensions
     {
-        public static bool RemoveWithRelationship(this ITreeStoreModel thisPersistence, Entity entity)
+        public static bool RemoveWithRelationship(this ITreeStoreModel thisPersistence, EntityModel entity)
         {
             foreach (var affectedRelationship in thisPersistence.Relationships.FindByEntity(entity).ToArray())
                 thisPersistence.Relationships.Delete(affectedRelationship);

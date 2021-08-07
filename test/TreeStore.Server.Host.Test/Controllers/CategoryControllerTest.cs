@@ -17,7 +17,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Create_new_category()
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
@@ -36,7 +36,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Create_new_category_rethrows_if_create_fails()
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
@@ -58,7 +58,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_category_by_id()
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
@@ -98,7 +98,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Update_category()
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.UpdateCategoryAsync(category.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
@@ -117,7 +117,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Update_rethrows_if_update_fails()
         {
             // ARRANGE
-            var entity = DefaultCategory(this.rootCategory);
+            var entity = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.UpdateCategoryAsync(entity.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
@@ -142,7 +142,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Delete_category(bool recurse)
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.DeleteCategoryAsync(category.Id, recurse, It.IsAny<CancellationToken>()))
@@ -161,7 +161,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Delete_category_fails()
         {
             // ARRANGE
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.DeleteCategoryAsync(category.Id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -186,8 +186,8 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Copy_category(bool recurse)
         {
             // ARRANGE
-            var sourceCategory = DefaultCategory(this.rootCategory);
-            var destinationCategory = DefaultCategory(this.rootCategory);
+            var sourceCategory = DefaultCategoryModel(this.rootCategory);
+            var destinationCategory = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))
@@ -208,8 +208,8 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Copy_category_rethrows_if_copy_fails(bool recurse)
         {
             // ARRANGE
-            var sourceCategory = DefaultCategory(this.rootCategory);
-            var destinationCategory = DefaultCategory(this.rootCategory);
+            var sourceCategory = DefaultCategoryModel(this.rootCategory);
+            var destinationCategory = DefaultCategoryModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))

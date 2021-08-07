@@ -26,8 +26,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var entity1 = this.persistence.Entities.Upsert(new Entity("e1"));
-            var entity2 = this.persistence.Entities.Upsert(new Entity("e2"));
+            var entity1 = this.persistence.Entities.Upsert(new EntityModel("e1"));
+            var entity2 = this.persistence.Entities.Upsert(new EntityModel("e2"));
             var relationship = this.persistence.Relationships.Upsert(new Relationship("r", entity1, entity2));
 
             // ACT

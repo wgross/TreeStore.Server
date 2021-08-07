@@ -6,14 +6,14 @@ using TreeStore.Model.Abstractions;
 
 namespace TreeStore.LiteDb
 {
-    public class EntityLiteDbRepository : LiteDbRepositoryBase<Entity>, IEntityRepository
+    public class EntityLiteDbRepository : LiteDbRepositoryBase<EntityModel>, IEntityRepository
     {
         public const string CollectionName = "entities";
 
         static EntityLiteDbRepository()
         {
             BsonMapper.Global
-                .Entity<Entity>()
+                .Entity<EntityModel>()
                     .DbRef(e => e.Tags, TagLiteDbRepository.CollectionName)
                     .DbRef(e => e.Category, CategoryLiteDbRepository.collectionName);
         }
@@ -27,23 +27,23 @@ namespace TreeStore.LiteDb
                 .Database
                 .GetCollection(CollectionName)
                 .EnsureIndex(
-                    name: nameof(Entity.UniqueName),
-                    expression: $"$.{nameof(Entity.UniqueName)}",
+                    name: nameof(EntityModel.UniqueName),
+                    expression: $"$.{nameof(EntityModel.UniqueName)}",
                     unique: true);
 
             // retrieve entities by category id
             persistence
                 .LiteRepository
                 .Database
-                .GetCollection<Entity>(CollectionName)
+                .GetCollection<EntityModel>(CollectionName)
                 .EnsureIndex(e => e.Category);
         }
 
-        protected override ILiteCollection<Entity> IncludeRelated(ILiteCollection<Entity> from) => from.Include(e => e.Tags);
+        protected override ILiteCollection<EntityModel> IncludeRelated(ILiteCollection<EntityModel> from) => from.Include(e => e.Tags);
 
-        protected ILiteQueryable<Entity> QueryRelated() => this.LiteCollection().Query().Include(e => e.Tags).Include(e => e.Category);
+        protected ILiteQueryable<EntityModel> QueryRelated() => this.LiteCollection().Query().Include(e => e.Tags).Include(e => e.Category);
 
-        public override Entity Upsert(Entity entity)
+        public override EntityModel Upsert(EntityModel entity)
         {
             if (entity.Category is null)
                 throw InvalidModelException.EntityWithoutCategory(entity.Id, entity.Name);
@@ -58,7 +58,7 @@ namespace TreeStore.LiteDb
             }
         }
 
-        public override bool Delete(Entity entity)
+        public override bool Delete(EntityModel entity)
         {
             var relationshipExists = this.LiteRepository
                 .Query<Relationship>("relationships")
@@ -77,13 +77,13 @@ namespace TreeStore.LiteDb
             return false;
         }
 
-        public IEnumerable<Entity> FindByTag(Tag tag) => this.QueryRelated()
+        public IEnumerable<EntityModel> FindByTag(TagModel tag) => this.QueryRelated()
             // todo: optimize
             // i'm sure this is a table scan...LiteDb 5 may index that?
             .Where(e => e.Tags.Contains(tag))
             .ToArray();
 
-        public IEnumerable<Entity> FindByCategory(Category category) => this.QueryRelated()
+        public IEnumerable<EntityModel> FindByCategory(CategoryModel category) => this.QueryRelated()
             .Where(e => e.Category!.Id == category.Id)
             .ToArray();
 
@@ -91,7 +91,7 @@ namespace TreeStore.LiteDb
         //    .Where(e => e.Category != null && e.Category.Id == category.Id)
         //    .ToArray();
 
-        public Entity? FindByCategoryAndName(Category category, string name) => this.QueryRelated()
+        public EntityModel? FindByCategoryAndName(CategoryModel category, string name) => this.QueryRelated()
             .Where(e => e.Category!.Id == category.Id && e.Name.Equals(name))
             .FirstOrDefault();
     }

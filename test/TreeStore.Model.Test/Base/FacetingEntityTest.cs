@@ -9,8 +9,8 @@ namespace TreeStore.Model.Test.Base
     {
         public static IEnumerable<object[]> GetFactingInstances()
         {
-            yield return new Tag().Yield().ToArray();
-            yield return new Category().Yield().ToArray();
+            yield return new TagModel().Yield().ToArray();
+            yield return new CategoryModel().Yield().ToArray();
         }
 
         [Theory]
@@ -32,7 +32,7 @@ namespace TreeStore.Model.Test.Base
         {
             // ARRANGE
 
-            var facet = new Facet();
+            var facet = new FacetModel();
 
             // ACT
 

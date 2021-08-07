@@ -4,7 +4,7 @@ namespace TreeStore.Model
 {
     public static class EntityExtensions
     {
-        public static void SetFacetProperty<T>(this Entity thisEntity, string tagName, string propertyName, T value) => thisEntity
+        public static void SetFacetProperty<T>(this EntityModel thisEntity, string tagName, string propertyName, T value) => thisEntity
             .SetFacetProperty<T>(thisEntity
                 .Tags
                 .Single(t => t.Name.Equals(tagName))

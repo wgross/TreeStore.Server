@@ -2,12 +2,12 @@
 
 namespace TreeStore.Model
 {
-    public interface IEntityRepository : IRepository<Entity>
+    public interface IEntityRepository : IRepository<EntityModel>
     {
-        IEnumerable<Entity> FindByTag(Tag tag);
+        IEnumerable<EntityModel> FindByTag(TagModel tag);
 
-        IEnumerable<Entity> FindByCategory(Category category);
+        IEnumerable<EntityModel> FindByCategory(CategoryModel category);
 
-        Entity? FindByCategoryAndName(Category category, string name);
+        EntityModel? FindByCategoryAndName(CategoryModel category, string name);
     }
 }

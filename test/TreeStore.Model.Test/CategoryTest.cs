@@ -11,7 +11,7 @@ namespace TreeStore.Model.Test
         public void Category_has_no_parent()
         {
             // ACT
-            var result = new Category();
+            var result = new CategoryModel();
 
             // ASSERT
             Assert.Null(result.Parent);
@@ -21,8 +21,8 @@ namespace TreeStore.Model.Test
         public void Category_corrects_Parent_for_ctor_subcategories()
         {
             // ACT
-            var category = new Category();
-            var result = new Category("cat", new Facet(), category);
+            var category = new CategoryModel();
+            var result = new CategoryModel("cat", new FacetModel(), category);
 
             // ASSERT
             Assert.Same(result, category.Parent);
@@ -35,8 +35,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet();
-            var category = new Category();
+            var facet = new FacetModel();
+            var category = new CategoryModel();
 
             // ACT
 
@@ -52,8 +52,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var category = new Category();
-            var subcategory = new Category();
+            var category = new CategoryModel();
+            var subcategory = new CategoryModel();
 
             // ACT
 
@@ -69,8 +69,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet1 = new Facet();
-            var category = new Category("cat", facet1);
+            var facet1 = new FacetModel();
+            var category = new CategoryModel("cat", facet1);
 
             // ACT
 
@@ -86,13 +86,13 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var category = new Category();
-            var subcategory = new Category();
+            var category = new CategoryModel();
+            var subcategory = new CategoryModel();
             category.AddSubCategory(subcategory);
 
             // ACT
 
-            var result = (Category)category.Clone();
+            var result = (CategoryModel)category.Clone();
 
             // ASSERT
 

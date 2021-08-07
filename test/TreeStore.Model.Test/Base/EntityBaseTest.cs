@@ -10,11 +10,11 @@ namespace TreeStore.Model.Test
     {
         public static IEnumerable<object[]> GetEntityBaseInstancesForInitzialization()
         {
-            yield return new Entity().Yield().ToArray();
-            yield return new Category().Yield().ToArray();
-            yield return new Tag().Yield().ToArray();
-            yield return new Facet().Yield().ToArray();
-            yield return new FacetProperty().Yield().ToArray();
+            yield return new EntityModel().Yield().ToArray();
+            yield return new CategoryModel().Yield().ToArray();
+            yield return new TagModel().Yield().ToArray();
+            yield return new FacetModel().Yield().ToArray();
+            yield return new FacetPropertyModel().Yield().ToArray();
         }
 
         public static IEnumerable<object[]> GetEntityBaseInstancesForEquality()
@@ -22,11 +22,11 @@ namespace TreeStore.Model.Test
             var refId = Guid.NewGuid();
             var differentId = Guid.NewGuid();
 
-            yield return new object[] { new Entity { Id = refId }, new Entity { Id = refId }, new Entity { Id = differentId }, new FacetProperty { Id = refId } };
-            yield return new object[] { new Category { Id = refId }, new Category { Id = refId }, new Category { Id = differentId }, new Tag { Id = refId } };
-            yield return new object[] { new Tag { Id = refId }, new Tag { Id = refId }, new Tag { Id = differentId }, new Facet { Id = refId } };
-            yield return new object[] { new Facet { Id = refId }, new Facet { Id = refId }, new Facet { Id = differentId }, new FacetProperty { Id = refId } };
-            yield return new object[] { new FacetProperty { Id = refId }, new FacetProperty { Id = refId }, new FacetProperty { Id = differentId }, new Entity { Id = refId } };
+            yield return new object[] { new EntityModel { Id = refId }, new EntityModel { Id = refId }, new EntityModel { Id = differentId }, new FacetPropertyModel { Id = refId } };
+            yield return new object[] { new CategoryModel { Id = refId }, new CategoryModel { Id = refId }, new CategoryModel { Id = differentId }, new TagModel { Id = refId } };
+            yield return new object[] { new TagModel { Id = refId }, new TagModel { Id = refId }, new TagModel { Id = differentId }, new FacetModel { Id = refId } };
+            yield return new object[] { new FacetModel { Id = refId }, new FacetModel { Id = refId }, new FacetModel { Id = differentId }, new FacetPropertyModel { Id = refId } };
+            yield return new object[] { new FacetPropertyModel { Id = refId }, new FacetPropertyModel { Id = refId }, new FacetPropertyModel { Id = differentId }, new EntityModel { Id = refId } };
         }
 
         [Theory]

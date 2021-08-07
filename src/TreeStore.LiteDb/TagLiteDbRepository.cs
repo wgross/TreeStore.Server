@@ -4,7 +4,7 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public class TagLiteDbRepository : LiteDbRepositoryBase<Tag>, ITagRepository
+    public class TagLiteDbRepository : LiteDbRepositoryBase<TagModel>, ITagRepository
     {
         public const string CollectionName = "tags";
 
@@ -14,14 +14,14 @@ namespace TreeStore.LiteDb
             liteDbrepository.Database
                 .GetCollection(CollectionName)
                 .EnsureIndex(
-                    name: nameof(Tag.Name),
-                    expression: $"LOWER($.{nameof(Tag.Name)})",
+                    name: nameof(TagModel.Name),
+                    expression: $"LOWER($.{nameof(TagModel.Name)})",
                     unique: true);
         }
 
-        protected override ILiteCollection<Tag> IncludeRelated(ILiteCollection<Tag> from) => from;
+        protected override ILiteCollection<TagModel> IncludeRelated(ILiteCollection<TagModel> from) => from;
 
-        public Tag FindByName(string name) => this.LiteCollection()
+        public TagModel FindByName(string name) => this.LiteCollection()
             .Query()
             .Where(t => t.Name.Equals(name))
             .FirstOrDefault();

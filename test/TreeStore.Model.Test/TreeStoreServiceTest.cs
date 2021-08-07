@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -17,7 +18,7 @@ namespace TreeStore.Model.Test
         private readonly Mock<ITagRepository> tagRepositoryMock;
         private readonly Mock<ITreeStoreModel> modelMock;
         private readonly TreeStoreService service;
-        private Category rootCategory;
+        private CategoryModel rootCategory;
 
         public TreeStoreServiceTest()
         {
@@ -53,16 +54,16 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
             var rootCategory = this.ArrangeRootCategory();
-            var category = DefaultCategory(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory);
 
-            Category categoryWritten = default;
+            CategoryModel categoryWritten = default;
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
-                    .Setup(r => r.Upsert(It.IsAny<Category>()))
-                    .Callback<Category>(c => categoryWritten = c)
-                    .Returns<Category>(c => c);
+                    .Setup(r => r.Upsert(It.IsAny<CategoryModel>()))
+                    .Callback<CategoryModel>(c => categoryWritten = c)
+                    .Returns<CategoryModel>(c => c);
             });
 
             // ACT
@@ -80,13 +81,13 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
             var parentId = Guid.NewGuid();
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(parentId))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -102,7 +103,7 @@ namespace TreeStore.Model.Test
         public async Task Reads_category()
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -122,13 +123,13 @@ namespace TreeStore.Model.Test
         public async Task Reading_category_returns_null_if_missing()
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(category.Id))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -142,8 +143,8 @@ namespace TreeStore.Model.Test
         public async Task Updates_category()
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
-            Category writtenCategory = default;
+            var category = DefaultCategoryModel(DefaultRootCategory());
+            CategoryModel writtenCategory = default;
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -152,8 +153,8 @@ namespace TreeStore.Model.Test
                     .Returns(category);
 
                 mock
-                    .Setup(r => r.Upsert(It.IsAny<Category>()))
-                    .Callback<Category>(c => writtenCategory = c)
+                    .Setup(r => r.Upsert(It.IsAny<CategoryModel>()))
+                    .Callback<CategoryModel>(c => writtenCategory = c)
                     .Returns(category);
             });
 
@@ -170,13 +171,13 @@ namespace TreeStore.Model.Test
         public async Task Updating_category_fails_on_missing_category()
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(category.Id))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -195,7 +196,7 @@ namespace TreeStore.Model.Test
         public async Task Deletes_category_if_empty(bool recurse, bool deleteResult)
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -221,13 +222,13 @@ namespace TreeStore.Model.Test
         public async Task Deleting_category_returns_false_on_missing_category(bool recurse)
         {
             // ARRANGE
-            var category = DefaultCategory(DefaultRootCategory());
+            var category = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(category.Id))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -244,8 +245,8 @@ namespace TreeStore.Model.Test
         public async Task Copies_category(bool recurse)
         {
             // ARRANGE
-            var source = DefaultCategory(DefaultRootCategory());
-            var destination = DefaultCategory(DefaultRootCategory());
+            var source = DefaultCategoryModel(DefaultRootCategory());
+            var destination = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -275,14 +276,14 @@ namespace TreeStore.Model.Test
         public async Task Copying_category_fails_on_missing_source(bool recurse)
         {
             // ARRANGE
-            var source = DefaultCategory(DefaultRootCategory());
-            var destination = DefaultCategory(DefaultRootCategory());
+            var source = DefaultCategoryModel(DefaultRootCategory());
+            var destination = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(source.Id))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -300,8 +301,8 @@ namespace TreeStore.Model.Test
         public async Task Copying_category_fails_on_missing_destination(bool recurse)
         {
             // ARRANGE
-            var source = DefaultCategory(DefaultRootCategory());
-            var destination = DefaultCategory(DefaultRootCategory());
+            var source = DefaultCategoryModel(DefaultRootCategory());
+            var destination = DefaultCategoryModel(DefaultRootCategory());
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -311,7 +312,7 @@ namespace TreeStore.Model.Test
 
                 mock
                     .Setup(r => r.FindById(destination.Id))
-                    .Returns((Category)null);
+                    .Returns((CategoryModel)null);
             });
 
             // ACT
@@ -332,7 +333,7 @@ namespace TreeStore.Model.Test
             arrange?.Invoke(this.categoryRepositoryMock);
         }
 
-        private Category ArrangeRootCategory()
+        private CategoryModel ArrangeRootCategory()
         {
             var root = DefaultRootCategory();
             this.categoryRepositoryMock
@@ -342,9 +343,9 @@ namespace TreeStore.Model.Test
             return root;
         }
 
-        private Category DefaultRootCategory()
+        private CategoryModel DefaultRootCategory()
         {
-            this.rootCategory ??= new Category();
+            this.rootCategory ??= new CategoryModel();
             return this.rootCategory;
         }
 
@@ -356,7 +357,7 @@ namespace TreeStore.Model.Test
         public async Task Reads_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
             this.ArrangeEntityRepository(mock =>
             {
@@ -376,13 +377,13 @@ namespace TreeStore.Model.Test
         public async Task Reading_entity_returns_null_if_missing()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
             this.ArrangeEntityRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(entity.Id))
-                    .Returns((Entity)null);
+                    .Returns((EntityModel)null);
             });
 
             // ACT
@@ -396,9 +397,9 @@ namespace TreeStore.Model.Test
         public async Task Updates_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
-            Entity writtenEntity = default;
+            EntityModel writtenEntity = default;
 
             this.ArrangeEntityRepository(mock =>
             {
@@ -407,8 +408,8 @@ namespace TreeStore.Model.Test
                     .Returns(entity);
 
                 mock
-                    .Setup(r => r.Upsert(It.IsAny<Entity>()))
-                    .Callback<Entity>(c => writtenEntity = c)
+                    .Setup(r => r.Upsert(It.IsAny<EntityModel>()))
+                    .Callback<EntityModel>(c => writtenEntity = c)
                     .Returns(entity);
             });
 
@@ -425,13 +426,13 @@ namespace TreeStore.Model.Test
         public async Task Updating_entity_fails_on_missing_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
             this.ArrangeEntityRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(entity.Id))
-                    .Returns((Entity)null);
+                    .Returns((EntityModel)null);
             });
 
             // ACT
@@ -447,7 +448,7 @@ namespace TreeStore.Model.Test
         public async Task Deletes_entity(bool deleteResult)
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
             this.ArrangeEntityRepository(mock =>
             {
@@ -471,13 +472,13 @@ namespace TreeStore.Model.Test
         public async Task Deleting_entity_returns_false_if_entity_missing()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultRootCategory());
+            var entity = DefaultEntityModel(DefaultRootCategory());
 
             this.ArrangeEntityRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(entity.Id))
-                    .Returns((Entity)null);
+                    .Returns((EntityModel)null);
             });
 
             // ACT
@@ -501,10 +502,79 @@ namespace TreeStore.Model.Test
         #region Tag
 
         [Fact]
+        public async Task Creates_tag()
+        {
+            // ARRANGE
+            TagModel storedTag = null;
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<TagModel>()))
+                    .Callback<TagModel>(t => storedTag = t)
+                    .Returns<TagModel>(t => t);
+            });
+
+            // ACT
+            var createTagRequest = new CreateTagRequest(
+                Name: "t",
+                Facet: new FacetRequest(
+                    new CreateFacetPropertyRequest(
+                        Name: "p",
+                        Type: FacetPropertyTypeValues.String)));
+
+            var result = await this.service.CreateTagAsync(createTagRequest, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal("t", result.Name);
+            Assert.Equal("p", result.Facet.Properties.Single().Name);
+            Assert.Equal(FacetPropertyTypeValues.String, result.Facet.Properties.Single().Type);
+
+            Assert.Equal("t", storedTag.Name);
+            Assert.Equal("p", storedTag.Facet.Properties.Single().Name);
+            Assert.Equal(FacetPropertyTypeValues.String, storedTag.Facet.Properties.Single().Type);
+        }
+
+        [Fact]
+        public async Task Creating_tag_fails_on_null()
+        {
+            // ACT
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(() => this.service.CreateTagAsync(null, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("createTagRequest", result.ParamName);
+        }
+
+        [Fact]
+        public async Task Reads_all_tags()
+        {
+            // ARRANGE
+            var tag = DefaultTagModel();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindAll())
+                    .Returns(new[] { tag });
+            });
+
+            // ACT
+            var result = await this.service.GetTagsAsync(CancellationToken.None);
+
+            // ASSERT
+            var tagResult = tag.ToTagResult();
+
+            Assert.Equal(tagResult.Facet.Properties, result.Single().Facet.Properties);
+            Assert.Equal(tagResult.Facet.Name, result.Single().Facet.Name);
+            Assert.Equal(tagResult.Facet.Id, result.Single().Facet.Id);
+            Assert.Equal(tagResult.Name, result.Single().Name);
+            Assert.Equal(tagResult.Id, result.Single().Id);
+        }
+
+        [Fact]
         public async Task Reads_tag()
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
             this.ArrangeTagRepository(mock =>
             {
@@ -517,20 +587,26 @@ namespace TreeStore.Model.Test
             var result = await this.service.GetTagByIdAsync(tag.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(tag.ToTagResult(), result);
+            var tagResult = tag.ToTagResult();
+
+            Assert.Equal(tagResult.Facet.Properties, result.Facet.Properties);
+            Assert.Equal(tagResult.Facet.Name, result.Facet.Name);
+            Assert.Equal(tagResult.Facet.Id, result.Facet.Id);
+            Assert.Equal(tagResult.Name, result.Name);
+            Assert.Equal(tagResult.Id, result.Id);
         }
 
         [Fact]
         public async Task Reading_tag_returns_null_if_missing()
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
             this.ArrangeTagRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(tag.Id))
-                    .Returns((Tag)null);
+                    .Returns((TagModel)null);
             });
 
             // ACT
@@ -544,9 +620,9 @@ namespace TreeStore.Model.Test
         public async Task Updates_tag()
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
-            Tag writtenTag = default;
+            TagModel writtenTag = default;
 
             this.ArrangeTagRepository(mock =>
             {
@@ -555,8 +631,8 @@ namespace TreeStore.Model.Test
                     .Returns(tag);
 
                 mock
-                    .Setup(r => r.Upsert(It.IsAny<Tag>()))
-                    .Callback<Tag>(c => writtenTag = c)
+                    .Setup(r => r.Upsert(It.IsAny<TagModel>()))
+                    .Callback<TagModel>(c => writtenTag = c)
                     .Returns(tag);
             });
 
@@ -572,13 +648,13 @@ namespace TreeStore.Model.Test
         public async Task Updating_tag_fails_on_missing_tag()
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
             this.ArrangeTagRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(tag.Id))
-                    .Returns((Tag)null);
+                    .Returns((TagModel)null);
             });
 
             // ACT
@@ -594,7 +670,7 @@ namespace TreeStore.Model.Test
         public async Task Deletes_tag(bool deleteResult)
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
             this.ArrangeTagRepository(mock =>
             {
@@ -618,13 +694,13 @@ namespace TreeStore.Model.Test
         public async Task Deleting_tag_returns_false_if_tag_missing()
         {
             // ARRANGE
-            var tag = DefaultTag();
+            var tag = DefaultTagModel();
 
             this.ArrangeTagRepository(mock =>
             {
                 mock
                     .Setup(r => r.FindById(tag.Id))
-                    .Returns((Tag)null);
+                    .Returns((TagModel)null);
             });
 
             // ACT

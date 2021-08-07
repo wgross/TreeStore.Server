@@ -13,12 +13,12 @@ namespace TreeStore.LiteDb
             this.entityRepository = entityRepository;
         }
 
-        internal void CopyCategory(Category src, Category dst)
+        internal void CopyCategory(CategoryModel src, CategoryModel dst)
         {
             this.CopyAndSaveCategory(src, dst);
         }
 
-        internal void CopyCategoryRecursive(Category src, Category dst)
+        internal void CopyCategoryRecursive(CategoryModel src, CategoryModel dst)
         {
             // copy the top most src as child of the dst
             var srcClone = this.CopyAndSaveCategory(src, dst);
@@ -32,23 +32,23 @@ namespace TreeStore.LiteDb
                 this.CopyAndSaveEntity(srcEntity, srcClone);
         }
 
-        private Category CopyAndSaveCategory(Category src, Category dst)
+        private CategoryModel CopyAndSaveCategory(CategoryModel src, CategoryModel dst)
         {
             return this.categoryRepository.Upsert(this.CopyToNewParentCategory(src, dst));
         }
 
-        private void CopyAndSaveEntity(Entity srcEntity, Category dstCategory) => this.entityRepository.Upsert(this.CopyToNewParentCategory(srcEntity, dstCategory));
+        private void CopyAndSaveEntity(EntityModel srcEntity, CategoryModel dstCategory) => this.entityRepository.Upsert(this.CopyToNewParentCategory(srcEntity, dstCategory));
 
-        private Category CopyToNewParentCategory(Category category, Category dstParent)
+        private CategoryModel CopyToNewParentCategory(CategoryModel category, CategoryModel dstParent)
         {
-            var tmp = new Category(category.Name);
+            var tmp = new CategoryModel(category.Name);
             dstParent.AddSubCategory(tmp);
             return tmp;
         }
 
-        private Entity CopyToNewParentCategory(Entity entity, Category dstCategory)
+        private EntityModel CopyToNewParentCategory(EntityModel entity, CategoryModel dstCategory)
         {
-            var tmp = (Entity)entity.Clone();
+            var tmp = (EntityModel)entity.Clone();
             tmp.SetCategory(dstCategory);
             return tmp;
         }

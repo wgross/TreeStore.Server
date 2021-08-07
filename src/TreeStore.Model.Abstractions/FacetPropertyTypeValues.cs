@@ -1,4 +1,4 @@
-﻿namespace TreeStore.Model
+﻿namespace TreeStore.Model.Abstractions
 {
     public enum FacetPropertyTypeValues
     {

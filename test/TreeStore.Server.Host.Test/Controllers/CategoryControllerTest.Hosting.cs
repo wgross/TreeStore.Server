@@ -5,12 +5,12 @@ namespace TreeStore.Server.Host.Test.Controllers
 {
     public partial class CategoryControllerTest : TreeStoreServerHostTestBase
     {
-        private readonly Category rootCategory;
+        private readonly CategoryModel rootCategory;
 
         public CategoryControllerTest()
         {
             // model
-            this.rootCategory = DefaultRootCategory();
+            this.rootCategory = DefaultRootCategoryModel();
         }
     }
 }

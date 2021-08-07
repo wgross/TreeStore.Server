@@ -47,7 +47,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_creates_subcategory_to_root()
         {
             // ARRANGE
-            var category = new Category("category");
+            var category = new CategoryModel("category");
 
             // just to add a parent
             this.CategoryRepository.Root().AddSubCategory(category);
@@ -76,7 +76,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_creating_fails_for_orphaned_category()
         {
             // ARRANGE
-            var category = new Category("category");
+            var category = new CategoryModel("category");
 
             // ACT
             var result = Assert.Throws<InvalidOperationException>(() => this.CategoryRepository.Upsert(category));
@@ -90,10 +90,10 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_writes_category_with_Facet()
         {
             // ARRANGE
-            var category = new Category("category");
+            var category = new CategoryModel("category");
 
             this.CategoryRepository.Root().AddSubCategory(category);
-            category.AssignFacet(new Facet("facet", new FacetProperty("prop")));
+            category.AssignFacet(new FacetModel("facet", new FacetPropertyModel("prop")));
 
             // ACT
             var result = this.CategoryRepository.Upsert(category);
@@ -120,12 +120,12 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_creating_fails_for_duplicate_child_name()
         {
             // ARRANGE
-            var category = new Category("category");
+            var category = new CategoryModel("category");
 
             this.CategoryRepository.Root().AddSubCategory(category);
             category = this.CategoryRepository.Upsert(category);
 
-            var second_category = new Category("category-2");
+            var second_category = new CategoryModel("category-2");
             this.CategoryRepository.Root().AddSubCategory(second_category);
             second_category = this.CategoryRepository.Upsert(second_category);
 
@@ -147,7 +147,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_reads_category_by_id_including_parent()
         {
             // ARRANGE
-            var category = new Category("category");
+            var category = new CategoryModel("category");
 
             // just to add a parent
             this.CategoryRepository.Root().AddSubCategory(category);
@@ -196,7 +196,7 @@ namespace TreeStore.LiteDb.Test
             this.CategoryRepository.Upsert(category);
 
             // ACT
-            var result = this.CategoryRepository.FindByParentAndName(new Category(), "name");
+            var result = this.CategoryRepository.FindByParentAndName(new CategoryModel(), "name");
 
             // ASSERT
             Assert.Null(result);
@@ -250,7 +250,7 @@ namespace TreeStore.LiteDb.Test
 
             // ACT
 
-            var result = this.CategoryRepository.FindByParent(new Category());
+            var result = this.CategoryRepository.FindByParent(new CategoryModel());
 
             // ASSERT
 

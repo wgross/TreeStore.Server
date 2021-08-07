@@ -1,8 +1,9 @@
 ﻿using System;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public abstract class NamedBase
+    public abstract class NamedBase : IIdentifiable, INamed, IEquatable<object?>
     {
         #region Construction and initialization of this instance
 
@@ -19,9 +20,20 @@ namespace TreeStore.Model
 
         #endregion Construction and initialization of this instance
 
+        #region IIdentfiable
+
+        /// <inheritdoc/>
         public Guid Id { get; set; } = Guid.NewGuid();
 
+        #endregion IIdentfiable
+
+        #region INamed
+
         public string Name { get; set; }
+
+        #endregion INamed
+
+        #region IEquatable
 
         public override bool Equals(object? obj)
         {
@@ -35,5 +47,7 @@ namespace TreeStore.Model
         }
 
         public override int GetHashCode() => (this.GetType(), this.Id).GetHashCode();
+
+        #endregion IEquatable
     }
 }

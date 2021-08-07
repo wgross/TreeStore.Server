@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -47,7 +48,7 @@ namespace TreeStore.Model
                 throw new InvalidOperationException($"Category(name='{request.Name}' wasn't created: Category(id='{request.ParentId}') wasn't found");
             }
 
-            var category = new Category
+            var category = new CategoryModel
             {
                 Name = request.Name,
                 Parent = parent
@@ -108,9 +109,9 @@ namespace TreeStore.Model
         }
 
         /// <summary>
-        /// Provides the root <see cref="Category"/> of this model.
+        /// Provides the root <see cref="CategoryModel"/> of this model.
         /// </summary>
-        public Category GetRootCategory() => this.model.Categories.Root();
+        public CategoryModel GetRootCategory() => this.model.Categories.Root();
 
         ///<inheritdoc/>
         public Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
@@ -184,19 +185,19 @@ namespace TreeStore.Model
             return Task.FromResult(this.model.Tags.Delete(tag));
         }
 
+        /// <inheritdoc/>
         public Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (createTagRequest is null)
+                throw new ArgumentNullException(nameof(createTagRequest));
+
+            return Task.FromResult(this.model.Tags.Upsert(createTagRequest!.Apply()).ToTagResult());
         }
 
-        public Task<TagCollectionResponse> GetTagsAsync(CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
-
-        Task<IEnumerable<TagResult>> ITreeStoreService.GetTagsAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            return Task.FromResult(this.model.Tags.FindAll().Select(t => t.ToTagResult()));
         }
     }
 }

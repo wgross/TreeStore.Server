@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿using System.Linq;
+using TreeStore.Model.Abstractions;
+using Xunit;
+using static TreeStore.Model.Test.TestDataSources;
 
 namespace TreeStore.Model.Test
 {
@@ -9,11 +12,13 @@ namespace TreeStore.Model.Test
         {
             // ACT
 
-            var result = new Tag("tag");
+            var result = new TagModel("t");
 
             // ASSERT
 
-            Assert.Equal("tag", result.Facet.Name);
+            Assert.Equal("t", result.Facet.Name);
         }
+
+       
     }
 }

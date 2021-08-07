@@ -11,8 +11,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var category = new Category();
-            var entity = new Entity();
+            var category = new CategoryModel();
+            var entity = new EntityModel();
 
             // ACT
 
@@ -28,8 +28,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var category = new Category();
-            var entity = new Entity("Name");
+            var category = new CategoryModel();
+            var entity = new EntityModel("Name");
 
             // ACT
 
@@ -45,8 +45,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var tag = new Tag();
-            var entity = new Entity();
+            var tag = new TagModel();
+            var entity = new EntityModel();
 
             // ACT
 
@@ -62,11 +62,11 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity = new Entity();
+            var entity = new EntityModel();
 
             // ACT
 
-            var result = Assert.Throws<ArgumentNullException>(() => entity.AddTag((Tag)null));
+            var result = Assert.Throws<ArgumentNullException>(() => entity.AddTag((TagModel)null));
 
             // ASSERT
 
@@ -78,8 +78,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var tag = new Tag();
-            var entity = new Entity();
+            var tag = new TagModel();
+            var entity = new EntityModel();
             entity.AddTag(tag);
 
             // ACT
@@ -96,9 +96,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet();
-            var category = new Category("cat", facet);
-            var entity = new Entity();
+            var facet = new FacetModel();
+            var category = new CategoryModel("cat", facet);
+            var entity = new EntityModel();
             entity.SetCategory(category);
 
             // ACT
@@ -115,9 +115,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var tag = new Tag("tag", new Facet("facet", new FacetProperty()));
+            var tag = new TagModel("tag", new FacetModel("facet", new FacetPropertyModel()));
 
-            var entity = new Entity();
+            var entity = new EntityModel();
             entity.AddTag(tag);
 
             // ACT
@@ -134,10 +134,10 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var tag = new Tag("tag", new Facet("facet", new FacetProperty()));
-            var category = new Category("cat", new Facet("facet", new FacetProperty()));
+            var tag = new TagModel("tag", new FacetModel("facet", new FacetPropertyModel()));
+            var category = new CategoryModel("cat", new FacetModel("facet", new FacetPropertyModel()));
 
-            var entity = new Entity();
+            var entity = new EntityModel();
             entity.AddTag(tag);
             entity.SetCategory(category);
 
@@ -155,11 +155,11 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty());
-            var tag = new Tag("tag", facet);
-            var category = new Category("cat", facet);
+            var facet = new FacetModel("facet", new FacetPropertyModel());
+            var tag = new TagModel("tag", facet);
+            var category = new CategoryModel("cat", facet);
 
-            var entity = new Entity();
+            var entity = new EntityModel();
             entity.AddTag(tag);
             entity.SetCategory(category);
 
@@ -177,9 +177,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty("name"));
-            var tag = new Tag("tag", facet);
-            var entity = new Entity("e", tag);
+            var facet = new FacetModel("facet", new FacetPropertyModel("name"));
+            var tag = new TagModel("tag", facet);
+            var entity = new EntityModel("e", tag);
 
             // ACT
 
@@ -195,9 +195,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty("name"));
-            var tag = new Tag("tag", facet);
-            var entity = new Entity("e", tag);
+            var facet = new FacetModel("facet", new FacetPropertyModel("name"));
+            var tag = new TagModel("tag", facet);
+            var entity = new EntityModel("e", tag);
 
             // ACT
 
@@ -213,9 +213,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty("prop"));
-            var tag = new Tag("tag", facet);
-            var entity = new Entity();
+            var facet = new FacetModel("facet", new FacetPropertyModel("prop"));
+            var tag = new TagModel("tag", facet);
+            var entity = new EntityModel();
             entity.AddTag(tag);
 
             // ACT
@@ -232,9 +232,9 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty("name"));
-            var tag = new Tag("tag", facet);
-            var entity = new Entity("e", tag);
+            var facet = new FacetModel("facet", new FacetPropertyModel("name"));
+            var tag = new TagModel("tag", facet);
+            var entity = new EntityModel("e", tag);
             entity.SetFacetProperty(entity.Facets().Single().Properties.Single(), "1");
 
             // ACT
@@ -251,15 +251,15 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var facet = new Facet("facet", new FacetProperty("prop"));
-            var tag = new Tag("tag", facet);
-            var entity = new Entity();
+            var facet = new FacetModel("facet", new FacetPropertyModel("prop"));
+            var tag = new TagModel("tag", facet);
+            var entity = new EntityModel();
             entity.AddTag(tag);
             entity.SetFacetProperty(entity.Facets().Single().Properties.Single(), "1");
 
             // ACT
 
-            var result = (Entity)entity.Clone();
+            var result = (EntityModel)entity.Clone();
 
             // ASSERT
 

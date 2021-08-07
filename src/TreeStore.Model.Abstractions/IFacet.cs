@@ -2,9 +2,16 @@
 
 namespace TreeStore.Model.Abstractions
 {
-    public interface IFacet<FacetPropertyImpl> : INamed
-        where FacetPropertyImpl : IFacetProperty
+    /// <summary>
+    /// A Facet has a collection of name property definitions <see cref="Properties"/>
+    /// </summary>
+    /// <typeparam name="F"></typeparam>
+    public interface IFacet<F> : INamed
+        where F : IFacetProperty
     {
-        IEnumerable<IFacetProperty> Properties { get; }
+        /// <summary>
+        /// Defines the properties of a facte folowing the contract <see cref="IFacetProperty"/>
+        /// </summary>
+        IEnumerable<F> Properties { get; }
     }
 }

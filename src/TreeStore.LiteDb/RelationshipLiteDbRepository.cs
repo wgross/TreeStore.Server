@@ -43,12 +43,12 @@ namespace TreeStore.LiteDb
         public void Delete(IEnumerable<Relationship> relationships)
             => relationships.ToList().ForEach(r => this.Delete(r));
 
-        public IEnumerable<Relationship> FindByEntity(Entity entity) => this.IncludeRelated(this.LiteCollection())
+        public IEnumerable<Relationship> FindByEntity(EntityModel entity) => this.IncludeRelated(this.LiteCollection())
             .Query()
             .Where(r => r.From!.Id.Equals(entity.Id) || r.To!.Id.Equals(entity.Id))
             .ToEnumerable();
 
-        public IEnumerable<Relationship> FindByTag(Tag tag) => this.IncludeRelated(this.LiteCollection())
+        public IEnumerable<Relationship> FindByTag(TagModel tag) => this.IncludeRelated(this.LiteCollection())
             .Query()
             // todo: optimize, needs index?
             .Where(r => r.Tags.Contains(tag))

@@ -6,15 +6,15 @@ namespace TreeStore.Model.Base
 {
     public abstract class TaggedBase : NamedBase
     {
-        public TaggedBase(string name, Tag[] tags)
+        public TaggedBase(string name, TagModel[] tags)
             : base(name)
         {
             this.Tags = tags.ToList();
         }
 
-        public List<Tag> Tags { get; set; } = new List<Tag>();
+        public List<TagModel> Tags { get; set; } = new List<TagModel>();
 
-        public void AddTag(Tag tag)
+        public void AddTag(TagModel tag)
         {
             if (tag is null)
                 throw new ArgumentNullException(nameof(tag));
@@ -22,7 +22,7 @@ namespace TreeStore.Model.Base
             this.Tags = this.Tags.Union(tag.Yield()).ToList();
         }
 
-        public void RemoveTag(Tag tag)
+        public void RemoveTag(TagModel tag)
         {
             if (this.Tags.Remove(tag))
             {
@@ -35,14 +35,14 @@ namespace TreeStore.Model.Base
 
         public Dictionary<string, object?> Values { get; set; } = new Dictionary<string, object?>();
 
-        public void SetFacetProperty<T>(FacetProperty facetProperty, T value)
+        public void SetFacetProperty<T>(FacetPropertyModel facetProperty, T value)
         {
             if (facetProperty.CanAssignValue(value))
                 this.Values[facetProperty.Id.ToString()] = value;
             else throw new InvalidOperationException($"property(name='{facetProperty.Name}') doesn't accept value of type {typeof(T)}");
         }
 
-        public (bool hasValue, object? value) TryGetFacetProperty(FacetProperty facetProperty)
+        public (bool hasValue, object? value) TryGetFacetProperty(FacetPropertyModel facetProperty)
             => (this.Values.TryGetValue(facetProperty.Id.ToString(), out var value), value);
     }
 }

@@ -1,24 +1,24 @@
 ﻿using System;
-using TreeStore.Model.Base;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class FacetProperty : NamedBase
+    public class FacetPropertyModel : NamedBase, IFacetProperty
     {
         public FacetPropertyTypeValues Type { get; set; }
 
         #region Construction and initialization of this instance
 
-        public FacetProperty(string name)
+        public FacetPropertyModel(string name)
             : this(name, FacetPropertyTypeValues.String)
         { }
 
-        public FacetProperty()
+        public FacetPropertyModel()
             : base()
         {
         }
 
-        public FacetProperty(string name, FacetPropertyTypeValues type)
+        public FacetPropertyModel(string name, FacetPropertyTypeValues type)
             : base(name)
 
         {

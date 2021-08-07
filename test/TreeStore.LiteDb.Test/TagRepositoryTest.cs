@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 using Xunit;
 
 namespace TreeStore.LiteDb.Test
@@ -67,7 +68,7 @@ namespace TreeStore.LiteDb.Test
 
             // ACT
             tag.Name = "name2";
-            tag.AssignFacet("facet2", f => f.AddProperty(new FacetProperty("prop2", FacetPropertyTypeValues.Double)));
+            tag.AssignFacet("facet2", f => f.AddProperty(new FacetPropertyModel("prop2", FacetPropertyTypeValues.Double)));
 
             this.repository.Upsert(tag);
 
@@ -93,7 +94,7 @@ namespace TreeStore.LiteDb.Test
             this.repository.Upsert(tag);
 
             // ACT
-            var result = Assert.Throws<LiteException>(() => this.repository.Upsert(new Tag("TAG")));
+            var result = Assert.Throws<LiteException>(() => this.repository.Upsert(new TagModel("TAG")));
 
             // ASSERT
             Assert.Equal("Cannot insert duplicate key in unique index 'Name'. The duplicate value is '\"tag\"'.", result.Message);

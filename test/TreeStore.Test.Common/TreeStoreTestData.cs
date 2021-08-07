@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Test.Common
 {
@@ -8,61 +9,61 @@ namespace TreeStore.Test.Common
     {
         #region Default Tag
 
-        public static Tag DefaultTag(params Action<Tag>[] setup)
+        public static TagModel DefaultTagModel(params Action<TagModel>[] setup)
         {
-            var tmp = new Tag("t", new Facet("f", new FacetProperty("p", FacetPropertyTypeValues.String)));
+            var tmp = new TagModel("t", new FacetModel("f", new FacetPropertyModel("p", FacetPropertyTypeValues.String)));
             setup.ForEach(s => s(tmp));
             return tmp;
         }
 
-        public static void WithDefaultProperty(Tag tag)
+        public static void WithDefaultProperty(TagModel tag)
         {
-            tag.Facet.Properties.Clear();
-            tag.Facet.AddProperty(new FacetProperty("p", FacetPropertyTypeValues.String));
+            tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
+            tag.Facet.AddProperty(new FacetPropertyModel("p", FacetPropertyTypeValues.String));
         }
 
-        public static void WithoutProperty(Tag tag) => tag.Facet.Properties.Clear();
+        public static void WithoutProperty(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
 
-        public static Action<Tag> WithProperty(string name, FacetPropertyTypeValues type)
+        public static Action<TagModel> WithProperty(string name, FacetPropertyTypeValues type)
         {
-            return tag => tag.Facet.AddProperty(new FacetProperty(name, type));
+            return tag => tag.Facet.AddProperty(new FacetPropertyModel(name, type));
         }
 
         #endregion Default Tag
 
         #region Default Entity
 
-        public static Entity DefaultEntity(Category category, params Action<Entity>[] setup)
+        public static EntityModel DefaultEntityModel(CategoryModel category, params Action<EntityModel>[] setup)
         {
-            var tmp = new Entity("e");
+            var tmp = new EntityModel("e");
             tmp.SetCategory(category);
             setup.ForEach(s => s(tmp));
             return tmp;
         }
 
-        public static void WithDefaultTag(Entity entity) => entity.Tags.Add(DefaultTag(WithDefaultProperty));
+        public static void WithDefaultTag(EntityModel entity) => entity.Tags.Add(DefaultTagModel(WithDefaultProperty));
 
-        public static Action<Entity> WithDefaultPropertySet<V>(V value)
+        public static Action<EntityModel> WithDefaultPropertySet<V>(V value)
             => e => e.SetFacetProperty(e.Tags.First().Facet.Properties.First(), value);
 
-        public static void WithoutTags(Entity entity) => entity.Tags.Clear();
+        public static void WithoutTags(EntityModel entity) => entity.Tags.Clear();
 
-        public static Action<Entity> WithEntityCategory(Category c) => e => e.SetCategory(c);
+        public static Action<EntityModel> WithEntityCategory(CategoryModel c) => e => e.SetCategory(c);
 
         #endregion Default Entity
 
         #region Default Category
 
-        public static Category DefaultRootCategory(params Action<Category>[] setup)
+        public static CategoryModel DefaultRootCategoryModel(params Action<CategoryModel>[] setup)
         {
-            var tmp = new Category("c");
+            var tmp = new CategoryModel("c");
             setup.ForEach(s => s(tmp));
             return tmp;
         }
 
-        public static Category DefaultCategory(Category parent, params Action<Category>[] setup)
+        public static CategoryModel DefaultCategoryModel(CategoryModel parent, params Action<CategoryModel>[] setup)
         {
-            var tmp = new Category("c");
+            var tmp = new CategoryModel("c");
             parent.AddSubCategory(tmp);
             setup.ForEach(s => s(tmp));
             return tmp;

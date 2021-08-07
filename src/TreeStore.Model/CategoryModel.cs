@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class Category : FacetingEntityBase, ICloneable, IIdentifiable
+    public class CategoryModel : FacetingEntityBase, ICloneable
     {
-        public Category()
-            : this(string.Empty, new Facet())
+        public CategoryModel()
+            : this(string.Empty, new FacetModel())
         { }
 
-        public Category(string name)
-            : this(name, new Facet())
+        public CategoryModel(string name)
+            : this(name, new FacetModel())
         { }
 
-        public Category(string name, Facet ownFacet, params Category[] subcategories)
+        public CategoryModel(string name, FacetModel ownFacet, params CategoryModel[] subcategories)
             : base(name, ownFacet)
         {
             foreach (var c in subcategories)
@@ -24,7 +23,7 @@ namespace TreeStore.Model
 
         #region Category owns a facet
 
-        public IEnumerable<Facet> Facets()
+        public IEnumerable<FacetModel> Facets()
         {
             if (this.Parent is null)
                 return this.Facet.Yield();
@@ -35,9 +34,9 @@ namespace TreeStore.Model
 
         #region Category is hierarchical
 
-        public Category? Parent { get; set; }
+        public CategoryModel? Parent { get; set; }
 
-        public void AddSubCategory(Category subcategory)
+        public void AddSubCategory(CategoryModel subcategory)
         {
             subcategory.Parent = this;
         }
@@ -52,13 +51,17 @@ namespace TreeStore.Model
 
         #endregion Category has a unique within the parenet catagory
 
-        public void DetachSubCategory(Category subcategory)
+        public void DetachSubCategory(CategoryModel subcategory)
         {
             subcategory.Parent = null;
         }
 
-        public object Clone() => new Category(this.Name);
-
         #endregion Category is hierarchical
+
+        #region ICloneable
+
+        public object Clone() => new CategoryModel(this.Name);
+
+        #endregion ICloneable
     }
 }

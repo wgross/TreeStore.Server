@@ -10,8 +10,8 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity1 = new Entity();
-            var entity2 = new Entity();
+            var entity1 = new EntityModel();
+            var entity2 = new EntityModel();
 
             // ACT
 
@@ -28,7 +28,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var tag = new Tag("tag", new Facet("facet", new FacetProperty()));
+            var tag = new TagModel("tag", new FacetModel("facet", new FacetPropertyModel()));
 
             var relationship = new Relationship();
             relationship.AddTag(tag);
@@ -47,10 +47,10 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity1 = new Entity();
-            var entity2 = new Entity();
-            var facet = new Facet("facet", new FacetProperty("name"));
-            var tag = new Tag("tag", facet);
+            var entity1 = new EntityModel();
+            var entity2 = new EntityModel();
+            var facet = new FacetModel("facet", new FacetPropertyModel("name"));
+            var tag = new TagModel("tag", facet);
             var relationship = new Relationship("r", entity1, entity2, tag);
 
             // ACT
@@ -67,10 +67,10 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
 
-            var entity1 = new Entity();
-            var entity2 = new Entity();
-            var facet = new Facet("facet", new FacetProperty("prop"));
-            var tag = new Tag("tag", facet);
+            var entity1 = new EntityModel();
+            var entity2 = new EntityModel();
+            var facet = new FacetModel("facet", new FacetPropertyModel("prop"));
+            var tag = new TagModel("tag", facet);
             var relationship = new Relationship(string.Empty, entity1, entity2, tag);
 
             // ACT

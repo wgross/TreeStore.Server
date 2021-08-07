@@ -6,7 +6,7 @@ namespace TreeStore.Model
 {
     public class Relationship : TaggedBase, IRelationship
     {
-        public Relationship(string name, Entity? from, Entity? to, params Tag[] tags)
+        public Relationship(string name, EntityModel? from, EntityModel? to, params TagModel[] tags)
             : base(name, tags)
         {
             this.From = from;
@@ -19,13 +19,13 @@ namespace TreeStore.Model
         }
 
         public Relationship()
-            : base(string.Empty, new Tag[0])
+            : base(string.Empty, new TagModel[0])
         {
         }
 
-        public Entity? From { get; set; }
+        public EntityModel? From { get; set; }
 
-        public Entity? To { get; set; }
+        public EntityModel? To { get; set; }
 
         IEntity? IRelationship.From => this.From;
 

@@ -11,7 +11,8 @@ These data structures are:
 The user of TreeStore will interact with the data structures using a file system provider loaded in a PowerShell instance.
 TreeStore.PS (FileSystemProvider) is not part of te development project. PowerShell is external software from Microsoft.
 
-![System Context](./_pix/system-context.png)
+![System Context](./_pix/system-context.svg)
+
 
 ## Solution Strategy
 
@@ -30,6 +31,8 @@ The TreeStore.Server provides access to its data structures as REST interfaces.
 
 ## Building Blocks
 
+![System Context](./_pix/building-blocks.svg)
+
 The [TreeStore.Model](./src/Treestore.Model/readme.md) implements the managed data structures for internal purposes.
 
 Public representations of the data structures and the parameters of the business processes are implemented in
@@ -37,3 +40,4 @@ Public representations of the data structures and the parameters of the business
 
 Access to these data structures from external process is possible using the REST interfaces published by
 [TreeStore.Server web service](./src/TreeStoreServer.Host/readme.md)
+

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Linq;
-using TreeStore.Model;
 using TreeStore.Model.Abstractions;
 
-namespace TreeStore.LiteDb.Test
+namespace TreeStore.Model.Test
 {
     public static class TestDataSources
     {
         #region Default Tag
 
-        public static TagModel DefaultTag(params Action<TagModel>[] setup)
+        public static TagModel DefaultTagModel(params Action<TagModel>[] setup)
         {
-            var tmp = new TagModel("t", new FacetModel("f", new FacetPropertyModel("p", FacetPropertyTypeValues.String)));
+            var tmp = new TagModel("t", new FacetModel("f", DefaultFacetPropertyModel()));
             setup.ForEach(s => s(tmp));
             return tmp;
         }
@@ -19,7 +18,7 @@ namespace TreeStore.LiteDb.Test
         public static void WithDefaultProperty(TagModel tag)
         {
             tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
-            tag.Facet.AddProperty(new FacetPropertyModel("p", FacetPropertyTypeValues.String));
+            tag.Facet.AddProperty(DefaultFacetPropertyModel());
         }
 
         public static void WithoutProperty(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
@@ -29,18 +28,25 @@ namespace TreeStore.LiteDb.Test
             return tag => tag.Facet.AddProperty(new FacetPropertyModel(name, type));
         }
 
+        public static FacetPropertyModel DefaultFacetPropertyModel(params Action<FacetPropertyModel>[] setup)
+        {
+            var tmp = new FacetPropertyModel("p", FacetPropertyTypeValues.String);
+            setup.ForEach(s => s(tmp));
+            return tmp;
+        }
+
         #endregion Default Tag
 
         #region Default Entity
 
-        public static EntityModel DefaultEntity(params Action<EntityModel>[] setup)
+        public static EntityModel DefaultEntityModel(params Action<EntityModel>[] setup)
         {
             var tmp = new EntityModel("e");
             setup.ForEach(s => s(tmp));
             return tmp;
         }
 
-        public static void WithDefaultTag(EntityModel entity) => entity.Tags.Add(DefaultTag(WithDefaultProperty));
+        public static void WithDefaultTag(EntityModel entity) => entity.Tags.Add(DefaultTagModel(WithDefaultProperty));
 
         public static Action<EntityModel> WithDefaultPropertySet<V>(V value)
             => e => e.SetFacetProperty(e.Tags.First().Facet.Properties.First(), value);
@@ -53,7 +59,7 @@ namespace TreeStore.LiteDb.Test
 
         #region Default Category
 
-        public static CategoryModel DefaultCategory(CategoryModel parent, params Action<CategoryModel>[] setup)
+        public static CategoryModel DefaultCategoryModel(CategoryModel parent, params Action<CategoryModel>[] setup)
         {
             var tmp = new CategoryModel("c");
             parent.AddSubCategory(tmp);

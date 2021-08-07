@@ -12,12 +12,12 @@ namespace TreeStore.Server.Host.Test.Controllers
 {
     public class EntityControllerTest : TreeStoreServerHostTestBase
     {
-        private readonly Category rootCategory;
+        private readonly CategoryModel rootCategory;
 
         public EntityControllerTest()
         {
             // model
-            this.rootCategory = DefaultRootCategory();
+            this.rootCategory = DefaultRootCategoryModel();
         }
 
         #region CREATE
@@ -26,7 +26,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Create_new_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(this.rootCategory);
+            var entity = DefaultEntityModel(this.rootCategory);
 
             this.serviceMock
                 .Setup(s => s.CreateEntityAsync(It.Is<CreateEntityRequest>(r => entity.Name.Equals(r.Name) && entity.Category.Id.Equals(r.CategoryId)), It.IsAny<CancellationToken>()))
@@ -43,7 +43,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Creating_entity_rethrows()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
@@ -64,7 +64,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_entity_by_id()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
@@ -96,7 +96,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_all_entities()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
@@ -117,7 +117,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Update_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
@@ -134,7 +134,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Updating_entity_fails()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
@@ -155,7 +155,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Delete_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(DefaultCategory(this.rootCategory));
+            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
 
             this.serviceMock
                 .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))

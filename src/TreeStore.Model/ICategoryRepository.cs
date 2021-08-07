@@ -5,21 +5,21 @@ namespace TreeStore.Model
 {
     public interface ICategoryRepository
     {
-        Category Root();
+        CategoryModel Root();
 
-        Category FindById(Guid id);
+        CategoryModel FindById(Guid id);
 
-        Category Upsert(Category entity);
+        CategoryModel Upsert(CategoryModel entity);
 
-        Category? FindByParentAndName(Category category, string name);
+        CategoryModel? FindByParentAndName(CategoryModel category, string name);
 
-        IEnumerable<Category> FindByParent(Category category);
+        IEnumerable<CategoryModel> FindByParent(CategoryModel category);
 
-        bool Delete(Category category, bool recurse);
+        bool Delete(CategoryModel category, bool recurse);
 
         /// <summary>
         /// Copy a category <paramref name="sourceCategory"/> to <paramref name="destinationParentCategory"/> as sub catagory.
         /// </summary>
-        void CopyTo(Category sourceCategory, Category destinationParentCategory, bool recurse);
+        void CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse);
     }
 }
