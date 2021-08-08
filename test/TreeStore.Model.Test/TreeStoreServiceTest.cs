@@ -354,6 +354,56 @@ namespace TreeStore.Model.Test
         #region Entity
 
         [Fact]
+        public async Task Creates_entity()
+        {
+            // ARRANGE
+            var rootCategory = DefaultRootCategoryModel();
+            var tag = DefaultTagModel();
+
+            EntityModel storedEntity = null;
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(rootCategory.Id))
+                    .Returns(rootCategory);
+            });
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns(tag);
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<EntityModel>()))
+                    .Callback<EntityModel>(e => storedEntity = e)
+                    .Returns<EntityModel>(e => e);
+            });
+
+            // ACT
+            var createEntityRequest = new CreateEntityRequest(
+                Name: "e",
+                CategoryId: rootCategory.Id,
+                Tags: new()
+                {
+                    Assigns = new[] { new AssignTagRequest(tag.Id) }
+                });
+
+            var result = await this.service.CreateEntityAsync(createEntityRequest, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal("e", result.Name);
+            Assert.Equal(tag.Id, result.TagIds.Single());
+
+            Assert.Equal("e", storedEntity.Name);
+            Assert.Equal(tag.Id, storedEntity.Tags.Single().Id);
+        }
+
+        [Fact]
         public async Task Reads_entity()
         {
             // ARRANGE
@@ -420,6 +470,110 @@ namespace TreeStore.Model.Test
             Assert.Equal("changed", writtenEntity.Name);
             Assert.Equal(entity.Id, writtenEntity.Id);
             Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+        }
+
+        [Fact]
+        public async Task Updates_entity_name()
+        {
+            // ARRANGE
+            var entity = DefaultEntityModel(DefaultRootCategory());
+
+            EntityModel writtenEntity = default;
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<EntityModel>()))
+                    .Callback<EntityModel>(c => writtenEntity = c)
+                    .Returns(entity);
+            });
+
+            // ACT
+            var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal("changed", writtenEntity.Name);
+            Assert.Equal(entity.Id, writtenEntity.Id);
+            Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+        }
+
+        [Fact]
+        public async Task Updates_entity_add_tag()
+        {
+            // ARRANGE
+            var entity = DefaultEntityModel(DefaultRootCategory());
+            var tag = DefaultTagModel();
+
+            this.ArrangeTagRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(tag.Id))
+                    .Returns(tag);
+            });
+
+            EntityModel writtenEntity = default;
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<EntityModel>()))
+                    .Callback<EntityModel>(c => writtenEntity = c)
+                    .Returns(entity);
+            });
+
+            // ACT
+            var updateEntityRequest = new UpdateEntityRequest(
+                Tags: new UpdateEntityTagsRequest(new AssignTagRequest(tag.Id)));
+
+            var result = await this.service.UpdateEntityAsync(entity.Id, updateEntityRequest, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(entity.Name, writtenEntity.Name);
+            Assert.Equal(entity.Id, writtenEntity.Id);
+            Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+            Assert.Equal(tag.Id, writtenEntity.Tags.Single().Id);
+        }
+
+        [Fact]
+        public async Task Updates_entity_remove_tag()
+        {
+            // ARRANGE
+            var entity = DefaultEntityModel(DefaultRootCategory(), WithDefaultTag);
+            var tag = entity.Tags.Single();
+
+            EntityModel writtenEntity = default;
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+
+                mock
+                    .Setup(r => r.Upsert(It.IsAny<EntityModel>()))
+                    .Callback<EntityModel>(c => writtenEntity = c)
+                    .Returns(entity);
+            });
+
+            // ACT
+            var updateEntityRequest = new UpdateEntityRequest(
+                Tags: new UpdateEntityTagsRequest(new UnassignTagRequest(tag.Id)));
+
+            var result = await this.service.UpdateEntityAsync(entity.Id, updateEntityRequest, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(entity.Name, writtenEntity.Name);
+            Assert.Equal(entity.Id, writtenEntity.Id);
+            Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+            Assert.Empty(writtenEntity.Tags);
         }
 
         [Fact]

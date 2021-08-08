@@ -11,7 +11,7 @@ namespace TreeStore.Model
     /// <summary>
     /// Implements the TreeStore behavior at the model
     /// </summary>
-    public sealed class TreeStoreService : ITreeStoreService
+    public sealed partial class TreeStoreService : ITreeStoreService
     {
         private readonly ITreeStoreModel model;
         private readonly ILogger<TreeStoreService> logger;
@@ -57,12 +57,6 @@ namespace TreeStore.Model
             return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
 
-        /// <Inheritdoc/>
-        public Task<EntityResult> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         ///<inheritdoc/>
         public Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken)
         {
@@ -78,34 +72,9 @@ namespace TreeStore.Model
         }
 
         ///<inheritdoc/>
-        public Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
-        {
-            var entity = this.model.Entities.FindById(id);
-            if (entity is null)
-            {
-                this.logger.LogInformation("Entity(id='{entityId}') wasn't deleted: Entity(id='{entityId}') doesn't exist", id);
-
-                return Task.FromResult(false);
-            }
-            return Task.FromResult(this.model.Entities.Delete(entity));
-        }
-
-        ///<inheritdoc/>
         public Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(this.model.Categories.FindById(id)?.ToCategoryResult());
-        }
-
-        ///<inheritdoc/>
-        public Task<IEnumerable<EntityResult>> GetEntitiesAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        ///<inheritdoc/>
-        public Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
-        {
-            return Task.FromResult(this.model.Entities.FindById(id)?.ToEntityResult());
         }
 
         /// <summary>
@@ -129,75 +98,6 @@ namespace TreeStore.Model
             return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
 
-        ///<inheritdoc/>
-        public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
-        {
-            var entity = this.model.Entities.FindById(id);
-
-            if (entity is null)
-            {
-                this.logger.LogError("Entity(id='{entityId}') wasn't updated: Entity(id='{entityId}') doesn't exist", id);
-
-                throw new InvalidOperationException($"Entity(id='{id}') wasn't updated: Entity(id='{id}') doesn't exist");
-            }
-
-            updateEntityRequest.Apply(entity);
-
-            return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
-        }
-
-        ///<inheritdoc/>
-        public Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken none)
-        {
-            return Task.FromResult(this.model.Tags.FindById(id)?.ToTagResult());
-        }
-
-        ///<inheritdoc/>
-        public Task<TagResult> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken none)
-        {
-            var tag = this.model.Tags.FindById(id);
-
-            if (tag is null)
-            {
-                this.logger.LogError("Tag(id='{tagId}') wasn't updated: Tag(id='{tagId}') doesn't exist", id);
-
-                throw new InvalidOperationException($"Tag(id='{id}') wasn't updated: Tag(id='{id}') doesn't exist");
-            }
-
-            updateTagRequest.Apply(tag);
-
-            this.model.Tags.Upsert(tag);
-
-            return Task.FromResult(tag.ToTagResult());
-        }
-
-        ///<inheritdoc/>
-        public Task<bool> DeleteTagAsync(Guid id, CancellationToken none)
-        {
-            var tag = this.model.Tags.FindById(id);
-            if (tag is null)
-            {
-                this.logger.LogError("Tag(id='{tagId}') wasn't deleted: Tag(id='{tagId}') doesn't exist", id);
-
-                return Task.FromResult(false);
-            }
-
-            return Task.FromResult(this.model.Tags.Delete(tag));
-        }
-
-        /// <inheritdoc/>
-        public Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
-        {
-            if (createTagRequest is null)
-                throw new ArgumentNullException(nameof(createTagRequest));
-
-            return Task.FromResult(this.model.Tags.Upsert(createTagRequest!.Apply()).ToTagResult());
-        }
-
-        /// <inheritdoc/>
-        public Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken)
-        {
-            return Task.FromResult(this.model.Tags.FindAll().Select(t => t.ToTagResult()));
-        }
+        
     }
 }

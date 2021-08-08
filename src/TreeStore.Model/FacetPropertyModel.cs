@@ -64,7 +64,7 @@ namespace TreeStore.Model
         {
             if (value is null)
                 return true; // facet property is nullable
-
+            
             switch (this.Type)
             {
                 case FacetPropertyTypeValues.Long:

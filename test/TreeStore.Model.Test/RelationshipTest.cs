@@ -59,14 +59,13 @@ namespace TreeStore.Model.Test
 
             // ASSERT
 
-            Assert.Equal("1", relationship.TryGetFacetProperty(facet.Properties.Single()).Item2);
+            Assert.Equal("1", relationship.GetFacetPropertyValue(facet.Properties.Single()).value);
         }
 
         [Fact]
         public void Relationship_getting_value_of_FacetProperty_returns_false_on_missng_value()
         {
             // ARRANGE
-
             var entity1 = new EntityModel();
             var entity2 = new EntityModel();
             var facet = new FacetModel("facet", new FacetPropertyModel("prop"));
@@ -74,11 +73,9 @@ namespace TreeStore.Model.Test
             var relationship = new Relationship(string.Empty, entity1, entity2, tag);
 
             // ACT
-
-            var (result, _) = relationship.TryGetFacetProperty(facet.Properties.Single());
+            var (fp, result, _) = relationship.GetFacetPropertyValue(facet.Properties.Single());
 
             // ASSERT
-
             Assert.False(result);
         }
     }

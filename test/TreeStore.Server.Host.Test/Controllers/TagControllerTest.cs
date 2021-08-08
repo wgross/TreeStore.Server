@@ -29,7 +29,12 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(tag.ToTagResult());
 
             // ACT
-            var result = await this.service.CreateTagAsync(new CreateTagRequest(tag.Name), CancellationToken.None);
+            var result = await this.service.CreateTagAsync(new CreateTagRequest(
+                Name: tag.Name,
+                Facet: new FacetRequest(new CreateFacetPropertyRequest(
+                    Name: tag.Facet.Properties.Single().Name,
+                    Type: tag.Facet.Properties.Single().Type)
+                )), CancellationToken.None);
 
             // ASSERT
             var tagResult = tag.ToTagResult();
@@ -135,7 +140,7 @@ namespace TreeStore.Server.Host.Test.Controllers
 
             this.serviceMock
                 .Setup(s => s.UpdateTagAsync(tag.Id, It.IsAny<UpdateTagRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<Guid, UpdateTagRequest, CancellationToken>((id, updt, c) => updt.Apply(tag))
+                //.Callback<Guid, UpdateTagRequest, CancellationToken>((id, updt, c) => updt.Apply(tag))
                 .ReturnsAsync(() => tag.ToTagResult());
 
             // ACT

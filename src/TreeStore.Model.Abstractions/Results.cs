@@ -11,5 +11,7 @@ namespace TreeStore.Model.Abstractions
 
     public sealed record CategoryResult(Guid Id, string Name, Guid ParentId);
 
-    public sealed record EntityResult(Guid Id, string Name, Guid CategoryId);
+    public sealed record EntityResult(Guid Id, string Name, Guid CategoryId, Guid[] TagIds, IEnumerable<FacetPropertyValueResult> Values);
+
+    public sealed record FacetPropertyValueResult(Guid Id, FacetPropertyTypeValues Type, object? Value);
 }

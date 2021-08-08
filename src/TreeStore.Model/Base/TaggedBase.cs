@@ -14,6 +14,10 @@ namespace TreeStore.Model.Base
 
         public List<TagModel> Tags { get; set; } = new List<TagModel>();
 
+        /// <summary>
+        /// Adds a reference to the <see cref="TagModel"/> <paramref name="tag"/> to the entity.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">if <paramref name="tag"/> is null</exception>
         public void AddTag(TagModel tag)
         {
             if (tag is null)
@@ -33,6 +37,16 @@ namespace TreeStore.Model.Base
             }
         }
 
+        /// <summary>
+        /// Removes a reference to a <see cref="TagModel"/> from the entity.
+        /// </summary>
+        public void RemoveTag(Guid tagId)
+        {
+            var tag = this.Tags.FirstOrDefault(t => t.Id == tagId);
+            if (tag is not null)
+                this.RemoveTag(tag);
+        }
+
         public Dictionary<string, object?> Values { get; set; } = new Dictionary<string, object?>();
 
         public void SetFacetProperty<T>(FacetPropertyModel facetProperty, T value)
@@ -42,7 +56,13 @@ namespace TreeStore.Model.Base
             else throw new InvalidOperationException($"property(name='{facetProperty.Name}') doesn't accept value of type {typeof(T)}");
         }
 
-        public (bool hasValue, object? value) TryGetFacetProperty(FacetPropertyModel facetProperty)
-            => (this.Values.TryGetValue(facetProperty.Id.ToString(), out var value), value);
+        public IEnumerable<(FacetPropertyModel facetProperty, bool hasValue, object? value)> GetFacetPropertyValues()
+        {
+            foreach (var facetProperty in this.Tags.SelectMany(t => t.Facet.Properties))
+                yield return GetFacetPropertyValue(facetProperty);
+        }
+
+        public (FacetPropertyModel facetProerty, bool hasValue, object? value) GetFacetPropertyValue(FacetPropertyModel facetProperty)
+            => (facetProperty, this.Values.TryGetValue(facetProperty.Id.ToString(), out var value), value);
     }
 }

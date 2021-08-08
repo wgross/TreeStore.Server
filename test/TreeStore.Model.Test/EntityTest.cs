@@ -187,7 +187,7 @@ namespace TreeStore.Model.Test
 
             // ASSERT
 
-            Assert.Equal("1", entity.TryGetFacetProperty(facet.Properties.Single()).value);
+            Assert.Equal("1", entity.GetFacetPropertyValue(facet.Properties.Single()).value);
         }
 
         [Fact]
@@ -212,18 +212,15 @@ namespace TreeStore.Model.Test
         public void Entity_getting_value_of_FacetProperty_returns_false_on_missing_value()
         {
             // ARRANGE
-
             var facet = new FacetModel("facet", new FacetPropertyModel("prop"));
             var tag = new TagModel("tag", facet);
             var entity = new EntityModel();
             entity.AddTag(tag);
 
             // ACT
-
-            var (result, _) = entity.TryGetFacetProperty(facet.Properties.Single());
+            var (fp, result, _) = entity.GetFacetPropertyValue(facet.Properties.Single());
 
             // ASSERT
-
             Assert.False(result);
         }
 

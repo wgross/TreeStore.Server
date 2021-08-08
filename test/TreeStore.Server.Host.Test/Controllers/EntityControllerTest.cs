@@ -26,24 +26,54 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Create_new_entity()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(this.rootCategory);
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
+            CreateEntityRequest writtenEntity = null;
             this.serviceMock
-                .Setup(s => s.CreateEntityAsync(It.Is<CreateEntityRequest>(r => entity.Name.Equals(r.Name) && entity.Category.Id.Equals(r.CategoryId)), It.IsAny<CancellationToken>()))
+                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<CreateEntityRequest, CancellationToken>((r, ct) => writtenEntity = r)
                 .ReturnsAsync(entity.ToEntityResult());
 
+            var request = new CreateEntityRequest(
+                    Name: entity.Name,
+                    CategoryId: entity.Category.Id,
+                    Tags: new CreateEntityTagsRequest(new AssignTagRequest(entity.Tags.Single().Id)),
+                    Values: new FacetPropertyValuesRequest(
+                        entity.GetFacetPropertyValues().Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray()));
+
             // ACT
-            var result = await this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None);
+            var result = await this.service.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResult(), result);
+            var expected = entity.ToEntityResult();
+
+            FacetPropertyValueResult resultValue(Guid id) => result.Values.First(v => v.Id == id);
+
+            Assert.Equal(expected.Id, result.Id);
+            Assert.Equal(expected.Name, result.Name);
+            Assert.Equal(expected.TagIds.Single(), result.TagIds.Single());
+            Assert.All(expected.Values, ev =>
+            {
+                Assert.Equal(ev.Value, resultValue(ev.Id).Value);
+                Assert.Equal(ev.Type, resultValue(ev.Id).Type);
+            });
+
+            UpdateFacetPropertyValueRequest writtenValue(Guid id) => writtenEntity.Values.Updates.First(u => u.Id == id);
+
+            Assert.Equal(expected.Name, writtenEntity.Name);
+            Assert.Equal(expected.TagIds.Single(), writtenEntity.Tags.Assigns.Select(c => c.TagId).Single());
+            Assert.All(expected.Values, ev =>
+            {
+                Assert.Equal(ev.Value, writtenValue(ev.Id).Value);
+                Assert.Equal(ev.Type, writtenValue(ev.Id).Type);
+            });
         }
 
         [Fact]
         public async Task Creating_entity_rethrows()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             this.serviceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
@@ -64,7 +94,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_entity_by_id()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             this.serviceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
@@ -74,7 +104,18 @@ namespace TreeStore.Server.Host.Test.Controllers
             var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResult(), result);
+            var expected = entity.ToEntityResult();
+
+            FacetPropertyValueResult resultValue(Guid id) => result.Values.First(v => v.Id == id);
+
+            Assert.Equal(expected.Id, result.Id);
+            Assert.Equal(expected.Name, result.Name);
+            Assert.Equal(expected.TagIds.Single(), result.TagIds.Single());
+            Assert.All(expected.Values, ev =>
+            {
+                Assert.Equal(ev.Value, resultValue(ev.Id).Value);
+                Assert.Equal(ev.Type, resultValue(ev.Id).Type);
+            });
         }
 
         [Fact]
@@ -96,7 +137,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_all_entities()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             this.serviceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
@@ -106,7 +147,11 @@ namespace TreeStore.Server.Host.Test.Controllers
             var result = await this.service.GetEntitiesAsync(CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResult(), result.Single());
+            var expected = entity.ToEntityResult();
+
+            Assert.Equal(expected.Id, result.Single().Id);
+            Assert.Equal(expected.Name, result.Single().Name);
+            Assert.Equal(expected.TagIds.Single(), result.Single().TagIds.Single());
         }
 
         #endregion READ
@@ -117,24 +162,58 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Update_entity()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
+            UpdateEntityRequest writtenEntity = null;
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<Guid, UpdateEntityRequest, CancellationToken>((id, updt, ct) => writtenEntity = updt)
                 .ReturnsAsync(entity.ToEntityResult());
 
+            var request = new UpdateEntityRequest(
+                  Name: entity.Name,
+                  Tags: new UpdateEntityTagsRequest(new[]
+                  {
+                        new AssignTagRequest(TagId:entity.Tags.Single().Id)
+                  }),
+                  Values: new FacetPropertyValuesRequest(entity
+                      .GetFacetPropertyValues()
+                      .Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value))
+                      .ToArray()));
+
             // ACT
-            var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None);
+            var result = await this.service.UpdateEntityAsync(entity.Id, request, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(entity.ToEntityResult(), result);
+            var expected = entity.ToEntityResult();
+
+            FacetPropertyValueResult resultValue(Guid id) => result.Values.First(v => v.Id == id);
+
+            Assert.Equal(expected.Id, result.Id);
+            Assert.Equal(expected.Name, result.Name);
+            Assert.Equal(expected.TagIds.Single(), result.TagIds.Single());
+            Assert.All(expected.Values, ev =>
+            {
+                Assert.Equal(ev.Value, resultValue(ev.Id).Value);
+                Assert.Equal(ev.Type, resultValue(ev.Id).Type);
+            });
+
+            UpdateFacetPropertyValueRequest writtenValue(Guid id) => writtenEntity.Values.Updates.First(u => u.Id == id);
+
+            Assert.Equal(expected.Name, writtenEntity.Name);
+            Assert.Equal(expected.TagIds.Single(), writtenEntity.Tags.Assigns.Select(c => c.TagId).Single());
+            Assert.All(expected.Values, ev =>
+            {
+                Assert.Equal(ev.Value, writtenValue(ev.Id).Value);
+                Assert.Equal(ev.Type, writtenValue(ev.Id).Type);
+            });
         }
 
         [Fact]
         public async Task Updating_entity_fails()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             this.serviceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
@@ -155,7 +234,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Delete_entity()
         {
             // ARRANGE
-            var entity = DefaultEntityModel(DefaultCategoryModel(this.rootCategory));
+            var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             this.serviceMock
                 .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))

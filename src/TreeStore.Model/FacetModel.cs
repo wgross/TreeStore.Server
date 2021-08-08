@@ -43,5 +43,10 @@ namespace TreeStore.Model
         /// Returns the <see cref="FacetPropertyModel"/> identified by <paramref name="id"/> or null.
         /// </summary>
         public FacetPropertyModel? GetProperty(Guid id) => this.Properties.FirstOrDefault(fp => fp.Id == id);
+
+        /// <summary>
+        /// Returns the <see cref="FacetPropertyModel"/> identified by <paramref name="name"/> or null.
+        /// </summary>
+        public FacetPropertyModel? GetProperty(string name) => this.Properties.FirstOrDefault(fp => fp.Name.Equals(name));
     }
 }

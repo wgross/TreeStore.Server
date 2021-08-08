@@ -18,8 +18,15 @@ namespace TreeStore.Test.Common
 
         public static void WithDefaultProperty(TagModel tag)
         {
+            // clear the properties
             tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
-            tag.Facet.AddProperty(new FacetPropertyModel("p", FacetPropertyTypeValues.String));
+            tag.Facet.AddProperty(new FacetPropertyModel("string", FacetPropertyTypeValues.String));
+            tag.Facet.AddProperty(new FacetPropertyModel("long", FacetPropertyTypeValues.Long));
+            tag.Facet.AddProperty(new FacetPropertyModel("double", FacetPropertyTypeValues.Double));
+            tag.Facet.AddProperty(new FacetPropertyModel("decimal", FacetPropertyTypeValues.Decimal));
+            tag.Facet.AddProperty(new FacetPropertyModel("datetime", FacetPropertyTypeValues.DateTime));
+            tag.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
+            tag.Facet.AddProperty(new FacetPropertyModel("bool", FacetPropertyTypeValues.Bool));
         }
 
         public static void WithoutProperty(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
@@ -33,6 +40,13 @@ namespace TreeStore.Test.Common
 
         #region Default Entity
 
+        public static EntityModel DefaultEntityModel(params Action<EntityModel>[] setup)
+        {
+            var tmp = new EntityModel("e");
+            setup.ForEach(s => s(tmp));
+            return tmp;
+        }
+
         public static EntityModel DefaultEntityModel(CategoryModel category, params Action<EntityModel>[] setup)
         {
             var tmp = new EntityModel("e");
@@ -41,7 +55,20 @@ namespace TreeStore.Test.Common
             return tmp;
         }
 
+        public static void WithDefaultCategory(EntityModel entity) => entity.SetCategory(DefaultRootCategoryModel());
+
         public static void WithDefaultTag(EntityModel entity) => entity.Tags.Add(DefaultTagModel(WithDefaultProperty));
+
+        public static void WithDefaultPropertyValues(EntityModel entity)
+        {
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("string"), "value");
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("long"), (long)1);
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("double"), (double)2.0);
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("decimal"), (decimal)3.0);
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("datetime"), DateTime.Today);
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("guid"), Guid.NewGuid());
+            entity.SetFacetProperty(entity.Tags.Single().Facet.GetProperty("bool"), true);
+        }
 
         public static Action<EntityModel> WithDefaultPropertySet<V>(V value)
             => e => e.SetFacetProperty(e.Tags.First().Facet.Properties.First(), value);

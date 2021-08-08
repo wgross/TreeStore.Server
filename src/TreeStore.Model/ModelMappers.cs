@@ -7,7 +7,12 @@ namespace TreeStore.Model
     {
         public static EntityResult ToEntityResult(this EntityModel entity)
         {
-            return new EntityResult(entity.Id, entity.Name, entity.Category!.Id);
+            return new EntityResult(
+                Id: entity.Id,
+                Name: entity.Name,
+                CategoryId: entity.Category!.Id,
+                TagIds: entity.Tags.Select(t => t.Id).ToArray(),
+                Values: entity.GetFacetPropertyValues().Select(fpv => new FacetPropertyValueResult(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray());
         }
 
         public static TagResult ToTagResult(this TagModel tag)

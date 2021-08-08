@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using TreeStore.Model.Abstractions.Json;
 using TreeStore.Server.Host.Middleware;
 
 namespace TreeStore.Server.Host
@@ -24,7 +25,8 @@ namespace TreeStore.Server.Host
                 .AddControllers()
                 // Add Controllers from this assembly explcitely bacause during test the test assembly would be
                 // searched for Controllers without success
-                .AddApplicationPart(typeof(Startup).Assembly);
+                .AddApplicationPart(typeof(Startup).Assembly)
+                .AddJsonOptions(options => TreeStoreJsonSerializerOptions.Apply(options.JsonSerializerOptions));
 
             services.AddSwaggerGen(c =>
             {
