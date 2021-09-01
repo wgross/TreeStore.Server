@@ -16,10 +16,13 @@ namespace TreeStore.Test.Common
             return tmp;
         }
 
-        public static void WithDefaultProperty(TagModel tag)
+        /// <summary>
+        /// Adds properties of all facet value types to the <see cref="TagModel"/>
+        /// </summary>
+        public static void WithDefaultProperties(TagModel tag)
         {
-            // clear the properties
-            tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
+            WithoutProperties(tag);
+
             tag.Facet.AddProperty(new FacetPropertyModel("string", FacetPropertyTypeValues.String));
             tag.Facet.AddProperty(new FacetPropertyModel("long", FacetPropertyTypeValues.Long));
             tag.Facet.AddProperty(new FacetPropertyModel("double", FacetPropertyTypeValues.Double));
@@ -29,7 +32,17 @@ namespace TreeStore.Test.Common
             tag.Facet.AddProperty(new FacetPropertyModel("bool", FacetPropertyTypeValues.Bool));
         }
 
-        public static void WithoutProperty(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
+        /// <summary>
+        /// Adds single Guid-property to the <see cref="TagModel"/>
+        /// </summary>
+        public static void WithDefaultProperty(TagModel tag)
+        {
+            WithoutProperties(tag);
+
+            tag.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
+        }
+
+        public static void WithoutProperties(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
 
         public static Action<TagModel> WithProperty(string name, FacetPropertyTypeValues type)
         {
@@ -57,7 +70,9 @@ namespace TreeStore.Test.Common
 
         public static void WithDefaultCategory(EntityModel entity) => entity.SetCategory(DefaultRootCategoryModel());
 
-        public static void WithDefaultTag(EntityModel entity) => entity.Tags.Add(DefaultTagModel(WithDefaultProperty));
+        public static void WithDefaultTag(EntityModel entity) => WithTag(DefaultTagModel(WithDefaultProperties))(entity);
+
+        public static Action<EntityModel> WithTag(TagModel tag) => e => e.Tags.Add(tag);
 
         public static void WithDefaultPropertyValues(EntityModel entity)
         {
@@ -94,6 +109,42 @@ namespace TreeStore.Test.Common
             parent.AddSubCategory(tmp);
             setup.ForEach(s => s(tmp));
             return tmp;
+        }
+
+        //public static Action<CategoryModel> WithParentCategory(CategoryModel category)
+        //{
+        //    return c => category.AddSubCategory(c);
+        //}
+
+        public static void WithoutProperties(CategoryModel category)
+        {
+            category.Facet.Properties = Array.Empty<FacetPropertyModel>();
+        }
+
+        /// <summary>
+        /// Adds properties of all facet value types to the <see cref="CategoryModel"/>
+        /// </summary>
+        /// <param name="category"></param>
+        public static void WithDefaultProperties(CategoryModel category)
+        {
+            WithoutProperties(category);
+
+            category.Facet.AddProperty(new FacetPropertyModel("string", FacetPropertyTypeValues.String));
+            category.Facet.AddProperty(new FacetPropertyModel("long", FacetPropertyTypeValues.Long));
+            category.Facet.AddProperty(new FacetPropertyModel("double", FacetPropertyTypeValues.Double));
+            category.Facet.AddProperty(new FacetPropertyModel("decimal", FacetPropertyTypeValues.Decimal));
+            category.Facet.AddProperty(new FacetPropertyModel("datetime", FacetPropertyTypeValues.DateTime));
+            category.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
+            category.Facet.AddProperty(new FacetPropertyModel("bool", FacetPropertyTypeValues.Bool));
+        }
+
+        /// <summary>
+        /// Adds single Guid-property to the <see cref="CategoryModel"/>
+        /// </summary>
+        public static void WithDefaultProperty(CategoryModel category)
+        {
+            category.Facet.Properties = Array.Empty<FacetPropertyModel>();
+            category.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
         }
 
         #endregion Default Category

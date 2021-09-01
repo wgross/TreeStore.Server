@@ -5,6 +5,7 @@ using System.Linq;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
 using Xunit;
+using static TreeStore.Test.Common.TreeStoreTestData;
 
 namespace TreeStore.LiteDb.Test
 {
@@ -20,10 +21,10 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void TagRepository_writes_Tag_to_repository()
+        public void TagRepository_writes_Tag()
         {
             // ARRANGE
-            var tag = DefaultTag(WithoutProperties);
+            var tag = DefaultTagModel(WithoutProperties);
 
             // ACT
             this.repository.Upsert(tag);
@@ -37,7 +38,7 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void TagRepository_writes_and_reads_Tag_with_Facet_from_repository()
+        public void TagRepository_writes_Tag_with_Facet()
         {
             // ARRANGE
             var tag = DefaultTag(WithDefaultProperty);
@@ -59,10 +60,10 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void TagRepository_updates_and_reads_Tag_with_Facet_from_repository()
+        public void TagRepository_updates_and_reads_Tag_with_Facet()
         {
             // ARRANGE
-            var tag = DefaultTag(WithDefaultProperty);
+            var tag = DefaultTag(WithDefaultProperties);
 
             this.repository.Upsert(tag);
 

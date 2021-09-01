@@ -47,7 +47,7 @@ namespace TreeStore.Server.Host.Test.Serialization
                     new AssignTagRequest(TagId:entityModel.Tags.Single().Id)
                 }),
                 Values: new FacetPropertyValuesRequest(entityModel
-                    .GetFacetPropertyValues()
+                    .FacetPropertyValues()
                     .Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value))
                     .ToArray()));
 
@@ -61,7 +61,7 @@ namespace TreeStore.Server.Host.Test.Serialization
 
             UpdateFacetPropertyValueRequest getResultValue(Guid id) => result.Values.Updates.First(v => v.Id == id);
 
-            Assert.All(entityModel.GetFacetPropertyValues(), fpv =>
+            Assert.All(entityModel.FacetPropertyValues(), fpv =>
             {
                 Assert.Equal(fpv.facetProperty.Type, getResultValue(fpv.facetProperty.Id).Type);
                 Assert.Equal(fpv.value, getResultValue(fpv.facetProperty.Id).Value);
@@ -81,7 +81,7 @@ namespace TreeStore.Server.Host.Test.Serialization
                     new AssignTagRequest(TagId:entityModel.Tags.Single().Id)
                 }),
                 Values: new FacetPropertyValuesRequest(entityModel
-                    .GetFacetPropertyValues()
+                    .FacetPropertyValues()
                     .Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value))
                     .ToArray()));
 
@@ -94,7 +94,7 @@ namespace TreeStore.Server.Host.Test.Serialization
 
             UpdateFacetPropertyValueRequest getResultValue(Guid id) => result.Values.Updates.First(v => v.Id == id);
 
-            Assert.All(entityModel.GetFacetPropertyValues(), fpv =>
+            Assert.All(entityModel.FacetPropertyValues(), fpv =>
             {
                 Assert.Equal(fpv.facetProperty.Type, getResultValue(fpv.facetProperty.Id).Type);
                 Assert.Equal(fpv.value, getResultValue(fpv.facetProperty.Id).Value);

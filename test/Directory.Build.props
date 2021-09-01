@@ -13,4 +13,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-</Project>
+ 
+ <ItemGroup>
+    <!-- path must be relative to the projects that will use the file-->
+    <Compile Include="..\TestData\TreeStoreTestData.cs" Link="TestData\TreeStoreTestData.cs" />
+  </ItemGroup>
+
+ </Project>

@@ -18,6 +18,17 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
+        public void Category_has_facet_with_same_name()
+        {
+            // ACT
+            var result = new CategoryModel("name");
+
+            // ASSERT
+            Assert.Equal("name", result.Name);
+            Assert.Equal("name", result.Facet.Name);
+        }
+
+        [Fact]
         public void Category_corrects_Parent_for_ctor_subcategories()
         {
             // ACT

@@ -2,7 +2,7 @@
 using Moq;
 using System;
 using TreeStore.Model;
-using TreeStore.Model.Abstractions;
+using static TreeStore.Test.Common.TreeStoreTestData;
 
 namespace TreeStore.LiteDb.Test
 {
@@ -35,9 +35,7 @@ namespace TreeStore.LiteDb.Test
             return tmp;
         }
 
-        public static void WithoutProperties(TagModel tag) => tag.Facet.Properties = Array.Empty<FacetPropertyModel>();
-
-        public static void WithDefaultProperty(TagModel tag) => tag.Facet.AddProperty(new("prop", FacetPropertyTypeValues.Guid));
+        //public static void WithDefaultProperty(TagModel tag) => tag.Facet.AddProperty(new("prop", FacetPropertyTypeValues.Guid));
 
         #endregion Default Tag
 
@@ -54,7 +52,12 @@ namespace TreeStore.LiteDb.Test
             return tmp;
         }
 
-        public void WithDefaultTag(EntityModel entity) => entity.AddTag(this.DefaultTag(WithDefaultProperty));
+        protected void WithRootCategory(EntityModel entity)
+        {
+            entity.SetCategory(this.CategoryRepository.Root());
+        }
+
+        public void WithDefaultTag(EntityModel entity) => entity.AddTag(this.DefaultTag(WithDefaultProperties));
 
         public static void WithoutTags(EntityModel entity) => entity.Tags.Clear();
 
@@ -63,32 +66,5 @@ namespace TreeStore.LiteDb.Test
         public static void WithoutCategory(EntityModel e) => e.Category = null;
 
         #endregion Default Entity
-
-        #region Default Category
-
-        /// <summary>
-        /// Creates a default category under the root category <see cref="CategoryRepository.Root"/>
-        /// </summary>
-        protected CategoryModel DefaultCategory(params Action<CategoryModel>[] setup)
-        {
-            var tmp = new CategoryModel("c");
-            this.CategoryRepository.Root().AddSubCategory(tmp);
-            setup.ForEach(s => s(tmp));
-            return tmp;
-        }
-
-        /// <summary>
-        /// Detaches the category from its current category and add ist to the <paramref name="parentCategory"/>
-        /// </summary>
-        protected Action<CategoryModel> WithParentCategory(CategoryModel parentCategory)
-        {
-            return c =>
-            {
-                c.Parent.DetachSubCategory(c);
-                parentCategory.AddSubCategory(c);
-            };
-        }
-
-        #endregion Default Category
     }
 }

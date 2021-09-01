@@ -12,7 +12,7 @@ namespace TreeStore.Model
                 Name: entity.Name,
                 CategoryId: entity.Category!.Id,
                 TagIds: entity.Tags.Select(t => t.Id).ToArray(),
-                Values: entity.GetFacetPropertyValues().Select(fpv => new FacetPropertyValueResult(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray());
+                Values: entity.FacetPropertyValues().Select(fpv => new FacetPropertyValueResult(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray());
         }
 
         public static TagResult ToTagResult(this TagModel tag)

@@ -2,7 +2,9 @@
 using System;
 using System.Linq;
 using TreeStore.Model;
+using TreeStore.Model.Abstractions;
 using Xunit;
+using static TreeStore.Test.Common.TreeStoreTestData;
 
 namespace TreeStore.LiteDb.Test
 {
@@ -47,7 +49,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_creates_subcategory_to_root()
         {
             // ARRANGE
-            var category = new CategoryModel("category");
+            var category = DefaultCategoryModel(this.CategoryRepository.Root(), WithoutProperties);
 
             // just to add a parent
             this.CategoryRepository.Root().AddSubCategory(category);
@@ -90,10 +92,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_writes_category_with_Facet()
         {
             // ARRANGE
-            var category = new CategoryModel("category");
-
-            this.CategoryRepository.Root().AddSubCategory(category);
-            category.AssignFacet(new FacetModel("facet", new FacetPropertyModel("prop")));
+            var category = DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "category", WithDefaultProperty);
 
             // ACT
             var result = this.CategoryRepository.Upsert(category);
@@ -113,7 +112,12 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal(this.CategoryRepository.Root().Id, resultInDb["Parent"].AsDocument["$id"].AsGuid);
             Assert.Equal("categories", resultInDb["Parent"].AsDocument["$ref"].AsString);
             Assert.Equal(category.UniqueName, resultInDb["UniqueName"].AsString);
-            Assert.True(resultInDb.ContainsKey("Facet")); // no further inspection. Feature isn't used.
+            Assert.True(resultInDb.ContainsKey("Facet"));
+            Assert.Equal(category.Facet.Id, resultInDb.BsonValue("facet", "_id").AsGuid);
+            Assert.Equal(category.Facet.Name, resultInDb.BsonValue("facet", "name").AsString);
+            Assert.Single(resultInDb.BsonValue("facet", "properties").AsArray);
+            Assert.Equal(category.Facet.Properties.Single().Id, resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("_id").AsGuid);
+            Assert.Equal(nameof(FacetPropertyTypeValues.Guid), resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("type").AsString);
         }
 
         [Fact]
@@ -147,10 +151,8 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_reads_category_by_id_including_parent()
         {
             // ARRANGE
-            var category = new CategoryModel("category");
+            var category = DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "category", WithDefaultProperty);
 
-            // just to add a parent
-            this.CategoryRepository.Root().AddSubCategory(category);
             this.CategoryRepository.Upsert(category);
 
             // ACT
@@ -160,6 +162,8 @@ namespace TreeStore.LiteDb.Test
             Assert.NotSame(category, result);
             Assert.Equal(category.Id, result.Id);
             Assert.Equal(this.CategoryRepository.Root().Id, result.Parent.Id);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.Facet.Name, result.Facet.Name);
         }
 
         [Fact]
@@ -178,7 +182,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_reads_category_by_parent_and_name(string name)
         {
             // ARRANGE
-            var category = DefaultCategory();
+            var category = DefaultCategoryModel(this.CategoryRepository.Root());
             this.CategoryRepository.Upsert(category);
 
             // ACT
@@ -192,7 +196,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_reading_category_by_parent_and_name_returns_null_on_unkown_id()
         {
             // ARRANGE
-            var category = DefaultCategory();
+            var category = DefaultCategoryModel(this.CategoryRepository.Root());
             this.CategoryRepository.Upsert(category);
 
             // ACT
@@ -206,9 +210,9 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_reads_category_by_parent()
         {
             // ARRANGE
-            var category = DefaultCategory();
+            var category = DefaultCategoryModel(this.CategoryRepository.Root());
             this.CategoryRepository.Upsert(category);
-            var subcategory = DefaultCategory(WithParentCategory(category), c => c.Name = "sub");
+            var subcategory = DefaultCategoryModel(category, c => c.Name = "sub");
             category.AddSubCategory(subcategory);
             this.CategoryRepository.Upsert(subcategory);
 
@@ -225,9 +229,9 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var category = DefaultCategory(c => c.Name = "cat");
+            var category = DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "cat");
             this.CategoryRepository.Upsert(category);
-            var subcategory = DefaultCategory(WithParentCategory(category), c => c.Name = "sub");
+            var subcategory = DefaultCategoryModel(category, c => c.Name = "sub");
             category.AddSubCategory(subcategory);
             this.CategoryRepository.Upsert(subcategory);
 
@@ -245,7 +249,7 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var category = DefaultCategory();
+            var category = DefaultCategoryModel(this.CategoryRepository.Root());
             this.CategoryRepository.Upsert(category);
 
             // ACT
@@ -267,7 +271,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_deletes_empty_category(bool recurse)
         {
             // ARRANGE
-            var category = DefaultCategory();
+            var category = DefaultCategoryModel(this.CategoryRepository.Root());
 
             // just to add a parent
             this.CategoryRepository.Root().AddSubCategory(category);
@@ -286,8 +290,8 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_deleting_category_fails_bc_subcategory()
         {
             // ARRANGE
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
-            var child_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(category)));
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
+            var child_category = this.CategoryRepository.Upsert(DefaultCategoryModel(category));
 
             // ACT
             var result = this.CategoryRepository.Delete(category, recurse: false);
@@ -314,7 +318,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_deleting_category_fails_bc_entity()
         {
             // ARRANGE
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
             var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(category)));
 
             // ACT
@@ -330,8 +334,8 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_deleting_category_includes_subcategory()
         {
             // ARRANGE
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
-            var child_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(category)));
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
+            var child_category = this.CategoryRepository.Upsert(DefaultCategoryModel(category));
 
             // ACT
             var result = this.CategoryRepository.Delete(category, recurse: true);
@@ -346,7 +350,7 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_deleting_category_includes_entities()
         {
             // ARRANGE
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
             var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(category)));
 
             // ACT
@@ -367,8 +371,8 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
             var root = this.CategoryRepository.Root();
-            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
-            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "dst"));
             var src_entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(src)));
 
             // ACT
@@ -391,12 +395,39 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void CategoryRepository_copies_category_without_entity()
+        public void CategoryRepository_copies_category_with_facet()
         {
             // ARRANGE
             var root = this.CategoryRepository.Root();
-            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
-            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "src", WithDefaultProperty));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "dst"));
+
+            // ACT
+            this.CategoryRepository.CopyTo(src, dst, recurse: true);
+
+            // ASSERT
+            var assert_src = this.CategoryRepository.FindById(src.Id);
+
+            // the category was copied
+            var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
+
+            Assert.NotEqual(src.Id, assert_dst_src.Id);
+            Assert.Equal(src.Name, assert_dst_src.Name);
+            Assert.Equal(src.Facet.Name, assert_dst_src.Facet.Name);
+            Assert.NotEqual(src.Facet.Id, assert_dst_src.Facet.Id);
+
+            // TODO: Wrong: propperty ids have to be changed.
+            Assert.Equal(src.Facet.Properties.Single().Id, assert_dst_src.Facet.Properties.Single().Id);
+            Assert.Equal(src.Facet.Properties.Single().Name, assert_dst_src.Facet.Properties.Single().Name);
+            Assert.Equal(src.Facet.Properties.Single().Type, assert_dst_src.Facet.Properties.Single().Type);
+        }
+
+        [Fact]
+        public void CategoryRepository_copies_category_without_entity()
+        {
+            // ARRANGE
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "dst"));
             var src_entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(src)));
 
             // ACT
@@ -421,10 +452,10 @@ namespace TreeStore.LiteDb.Test
         public void CategoryRepository_copies_category_with_subcategory()
         {
             // ARRANGE
-            var root = this.CategoryRepository.Root();
-            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
-            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
-            var src_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(src)));
+
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "dst"));
+            var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
             this.CategoryRepository.CopyTo(src, dst, recurse: true);
@@ -450,9 +481,9 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
             var root = this.CategoryRepository.Root();
-            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
-            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
-            var src_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(src)));
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "dst"));
+            var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
             this.CategoryRepository.CopyTo(src, dst, recurse: false);
@@ -477,10 +508,10 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
             var root = this.CategoryRepository.Root();
-            var src = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "src"));
-            var dst = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(root), c => c.Name = "dst"));
-            var dst_duplicate = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(dst), c => c.Name = src.Name));
-            var src_category = this.CategoryRepository.Upsert(DefaultCategory(WithParentCategory(src)));
+            var src = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "dst"));
+            var dst_duplicate = this.CategoryRepository.Upsert(DefaultCategoryModel(dst, c => c.Name = src.Name));
+            var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
             var result = Assert.Throws<LiteException>(() => this.CategoryRepository.CopyTo(src, dst, recurse: true));

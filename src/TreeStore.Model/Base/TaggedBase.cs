@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace TreeStore.Model.Base
 {
-    public abstract class TaggedBase : NamedBase
+    public abstract class TaggedBase : HasPropertyValuesBase
     {
-        public TaggedBase(string name, TagModel[] tags)
+        protected TaggedBase(string name, TagModel[] tags)
             : base(name)
         {
             this.Tags = tags.ToList();
@@ -30,10 +30,7 @@ namespace TreeStore.Model.Base
         {
             if (this.Tags.Remove(tag))
             {
-                foreach (var property in tag.Facet.Properties)
-                {
-                    this.Values.Remove(property.Id.ToString());
-                }
+                this.RemoveObsoletePropertyValues();
             }
         }
 
@@ -47,22 +44,7 @@ namespace TreeStore.Model.Base
                 this.RemoveTag(tag);
         }
 
-        public Dictionary<string, object?> Values { get; set; } = new Dictionary<string, object?>();
-
-        public void SetFacetProperty<T>(FacetPropertyModel facetProperty, T value)
-        {
-            if (facetProperty.CanAssignValue(value))
-                this.Values[facetProperty.Id.ToString()] = value;
-            else throw new InvalidOperationException($"property(name='{facetProperty.Name}') doesn't accept value of type {typeof(T)}");
-        }
-
-        public IEnumerable<(FacetPropertyModel facetProperty, bool hasValue, object? value)> GetFacetPropertyValues()
-        {
-            foreach (var facetProperty in this.Tags.SelectMany(t => t.Facet.Properties))
-                yield return GetFacetPropertyValue(facetProperty);
-        }
-
-        public (FacetPropertyModel facetProerty, bool hasValue, object? value) GetFacetPropertyValue(FacetPropertyModel facetProperty)
-            => (facetProperty, this.Values.TryGetValue(facetProperty.Id.ToString(), out var value), value);
+        public override IEnumerable<FacetPropertyModel> FacetProperties()
+            => this.Tags.SelectMany(t => t.Facet.Properties).Union(base.FacetProperties());
     }
 }

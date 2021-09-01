@@ -4,7 +4,9 @@ using System;
 using System.Linq;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
+using TreeStore.Test.Common;
 using Xunit;
+using static TreeStore.Test.Common.TreeStoreTestData;
 
 namespace TreeStore.LiteDb.Test
 {
@@ -23,7 +25,7 @@ namespace TreeStore.LiteDb.Test
         public void EntityRepository_writes_entity()
         {
             // ARRANGE
-            var entity = DefaultEntity(WithDefaultTag);
+            var entity = TreeStoreTestData.DefaultEntityModel(WithRootCategory, TreeStoreTestData.WithDefaultTag);
 
             // ACT
             this.EntityRepository.Upsert(entity);
@@ -84,11 +86,11 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void EntitiyRepository_write_entity_with_duplicate_name_to_different_categories()
+        public void EntitiyRepository_writes_entity_with_duplicate_name_to_different_categories()
         {
             // ARRANGE
             this.EntityRepository.Upsert(DefaultEntity());
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
             var secondEntity = DefaultEntity(WithEntityCategory(category));
 
             // ACT
@@ -257,13 +259,7 @@ namespace TreeStore.LiteDb.Test
         public void EntityRepository_writes_Entity_with_FacetProperty_values()
         {
             // ARRANGE
-            var value = Guid.NewGuid();
-            var tag = this.TagRepository.Upsert(DefaultTag(WithDefaultProperty));
-            var entity = this.EntityRepository.Upsert(DefaultEntity(e =>
-            {
-                e.AddTag(tag);
-                e.SetFacetProperty(tag.Facet.Properties.Single(), value);
-            }));
+            var entity = TreeStoreTestData.DefaultEntityModel(WithRootCategory, TreeStoreTestData.WithDefaultTag, TreeStoreTestData.WithDefaultPropertyValues);
 
             // ACT
             this.EntityRepository.Upsert(entity);
@@ -273,10 +269,22 @@ namespace TreeStore.LiteDb.Test
 
             Assert.NotNull(readEntity);
             Assert.Equal(entity.Id, readEntity.AsDocument["_id"].AsGuid);
-            Assert.Equal(
-                entity.Values[entity.Tags.Single().Facet.Properties.Single().Id.ToString()],
-                readEntity["Values"].AsDocument[entity.Tags.Single().Facet.Properties.Single().Id.ToString()].AsGuid);
             Assert.Equal(TagLiteDbRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+
+            // value of every type
+            var resultValuesDocument = readEntity.AsDocument["Values"].AsDocument;
+
+            BsonValue resultValue(Guid id) => resultValuesDocument.First(kv => kv.Key == id.ToString()).Value;
+
+            var facetPropertyValues = entity.FacetPropertyValues().ToArray();
+
+            Assert.Equal((string)(facetPropertyValues[0].value), resultValue(facetPropertyValues[0].facetProperty.Id).AsString);
+            Assert.Equal((long)(facetPropertyValues[1].value), resultValue(facetPropertyValues[1].facetProperty.Id).AsInt64);
+            Assert.Equal((double)(facetPropertyValues[2].value), resultValue(facetPropertyValues[2].facetProperty.Id).AsDouble);
+            Assert.Equal((decimal)(facetPropertyValues[3].value), resultValue(facetPropertyValues[3].facetProperty.Id).AsDecimal);
+            Assert.Equal((DateTime)(facetPropertyValues[4].value), resultValue(facetPropertyValues[4].facetProperty.Id).AsDateTime);
+            Assert.Equal((Guid)(facetPropertyValues[5].value), resultValue(facetPropertyValues[5].facetProperty.Id).AsGuid);
+            Assert.Equal((bool)(facetPropertyValues[6].value), resultValue(facetPropertyValues[6].facetProperty.Id).AsBoolean);
         }
 
         [Fact]
@@ -311,14 +319,14 @@ namespace TreeStore.LiteDb.Test
 
         #endregion Entity -0:*-> PropertyValues
 
-        #region Entity -0:1-> Category
+        #region Entity -1-> Category
 
         [Fact]
         public void EntityRespository_writes_entity_with_category()
         {
             // ARRANGE
 
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
             var entity = DefaultEntity(WithEntityCategory(category));
 
             // ACT
@@ -339,20 +347,19 @@ namespace TreeStore.LiteDb.Test
         public void EntityRespository_reads_entity_with_category_by_id()
         {
             // ARRANGE
-
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
-            var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(category)));
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), WithDefaultProperty));
+            var entity = this.EntityRepository.Upsert(DefaultEntityModel(WithEntityCategory(category)));
 
             // ACT
-
             var result = this.EntityRepository.FindById(entity.Id);
 
             // ASSERT
-
             Assert.Equal(category.Id, result.Category.Id);
             Assert.Equal(category, result.Category);
             Assert.NotSame(entity, result);
             Assert.NotSame(entity.Category, result.Category);
+            Assert.Empty(entity.Tags);
+            Assert.Equal(2, entity.Facets().Count());
         }
 
         [Fact]
@@ -360,7 +367,7 @@ namespace TreeStore.LiteDb.Test
         {
             // ARRANGE
 
-            var category = this.CategoryRepository.Upsert(DefaultCategory());
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root()));
             var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(category)));
 
             // ACT
@@ -388,6 +395,6 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal(entity.Id, result.Id);
         }
 
-        #endregion Entity -0:1-> Category
+        #endregion Entity -1-> Category
     }
 }

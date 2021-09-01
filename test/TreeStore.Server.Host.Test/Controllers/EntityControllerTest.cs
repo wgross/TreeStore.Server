@@ -39,7 +39,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                     CategoryId: entity.Category.Id,
                     Tags: new CreateEntityTagsRequest(new AssignTagRequest(entity.Tags.Single().Id)),
                     Values: new FacetPropertyValuesRequest(
-                        entity.GetFacetPropertyValues().Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray()));
+                        entity.FacetPropertyValues().Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray()));
 
             // ACT
             var result = await this.service.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None);
@@ -177,7 +177,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                         new AssignTagRequest(TagId:entity.Tags.Single().Id)
                   }),
                   Values: new FacetPropertyValuesRequest(entity
-                      .GetFacetPropertyValues()
+                      .FacetPropertyValues()
                       .Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value))
                       .ToArray()));
 

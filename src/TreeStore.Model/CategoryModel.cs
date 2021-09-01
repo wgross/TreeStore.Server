@@ -11,7 +11,7 @@ namespace TreeStore.Model
         { }
 
         public CategoryModel(string name)
-            : this(name, new FacetModel())
+            : this(name, new FacetModel(name))
         { }
 
         public CategoryModel(string name, FacetModel ownFacet, params CategoryModel[] subcategories)

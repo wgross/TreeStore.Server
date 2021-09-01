@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using TreeStore.Model.Abstractions;
-using Xunit;
-using static TreeStore.Model.Test.TestDataSources;
+﻿using Xunit;
 
 namespace TreeStore.Model.Test
 {
@@ -18,7 +15,5 @@ namespace TreeStore.Model.Test
 
             Assert.Equal("t", result.Facet.Name);
         }
-
-       
     }
 }

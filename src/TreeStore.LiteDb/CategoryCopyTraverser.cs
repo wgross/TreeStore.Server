@@ -42,6 +42,11 @@ namespace TreeStore.LiteDb
         private CategoryModel CopyToNewParentCategory(CategoryModel category, CategoryModel dstParent)
         {
             var tmp = new CategoryModel(category.Name);
+            tmp.Facet.Name = category.Facet.Name;
+
+            // TODO: this is wrong: property ids must be changed and also the entity values have to be tranferred to the
+            // proerties with the new Ids.
+            tmp.Facet.Properties = category.Facet.Properties;
             dstParent.AddSubCategory(tmp);
             return tmp;
         }

@@ -3,6 +3,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable> 
   </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\TreeStore.LiteDb\TreeStore.LiteDb.csproj" />
   </ItemGroup>
