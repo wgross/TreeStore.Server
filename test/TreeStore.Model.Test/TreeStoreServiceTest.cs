@@ -32,21 +32,25 @@ namespace TreeStore.Model.Test
         #region Category
 
         [Fact]
-        public void Reads_root_category()
+        public async Task Reads_root_category()
         {
             // ARRANGE
+            var rootCategeory = DefaultRootCategory();
             this.ArrangeCategoryRepository(mock =>
             {
                 mock
                     .Setup(r => r.Root())
-                    .Returns(DefaultRootCategory());
+                    .Returns(rootCategeory);
             });
 
             // ACT
-            var result = this.service.GetRootCategory();
+            var result = await this.service.GetRootCategoryAsync(CancellationToken.None);
 
             // ASSERT
-            Assert.Same(this.DefaultRootCategory(), result);
+            Assert.Equal(rootCategeory.Name, result.Name);
+            Assert.Equal(rootCategory.Id, result.Id);
+            Assert.Equal(rootCategeory.Name, result.Name);
+            Assert.Equal(Guid.Empty, result.ParentId);
         }
 
         [Fact]
@@ -54,7 +58,7 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
             var rootCategory = this.ArrangeRootCategory();
-            var category = DefaultCategoryModel(this.rootCategory);
+            var category = DefaultCategoryModel(this.rootCategory, WithDefaultProperties);
 
             CategoryModel categoryWritten = default;
 
@@ -67,13 +71,22 @@ namespace TreeStore.Model.Test
             });
 
             // ACT
-            var result = await this.service.CreateCategoryAsync(new CreateCategoryRequest(category.Name, this.rootCategory.Id), CancellationToken.None);
+            var request = new CreateCategoryRequest(
+                Name: category.Name,
+                ParentId: this.rootCategory.Id,
+                Facet: new(category.Facet.Properties.Select(fp => new CreateFacetPropertyRequest(fp.Name, fp.Type)).ToArray()));
+
+            var result = await this.service.CreateCategoryAsync(request, CancellationToken.None);
 
             // ASSERT
             Assert.Equal(category.Name, result.Name);
             Assert.Equal(rootCategory.Id, result.ParentId);
             Assert.Equal(category.Name, categoryWritten.Name);
             Assert.Equal(rootCategory.Id, categoryWritten.Parent.Id);
+
+            FacetPropertyResult getProperty(string name) => result.Facet.Properties.Single(pv => pv.Name == name);
+
+            Assert.All(category.Facet.Properties, fp => Assert.Equal(fp.Type, getProperty(fp.Name).Type));
         }
 
         [Fact]
@@ -159,12 +172,16 @@ namespace TreeStore.Model.Test
             });
 
             // ACT
-            var result = await this.service.UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(Name: "changed"), CancellationToken.None);
+            var request = new UpdateCategoryRequest(
+                Name: "changed");
+
+            var result = await this.service.UpdateCategoryAsync(category.Id, request, CancellationToken.None);
 
             // ASSERT
             Assert.Equal("changed", writtenCategory.Name);
             Assert.Equal(category.Id, writtenCategory.Id);
             Assert.Equal(category.Parent.Id, writtenCategory.Parent.Id);
+            // TODO: better test of facet property update
         }
 
         [Fact]

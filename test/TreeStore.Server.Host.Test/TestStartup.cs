@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TreeStore.Model.Abstractions;
 
@@ -8,7 +9,7 @@ namespace TreeStore.Server.Host.Test
     {
         private readonly ITreeStoreService service;
 
-        public TestStartup(ITreeStoreService service, IConfiguration configuration) : base(configuration)
+        public TestStartup(ITreeStoreService service, IWebHostEnvironment webHostEnvironment, IConfiguration configuration) : base(webHostEnvironment, configuration)
         {
             this.service = service;
         }

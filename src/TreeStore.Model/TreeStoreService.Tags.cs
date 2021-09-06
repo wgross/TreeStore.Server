@@ -64,6 +64,8 @@ namespace TreeStore.Model
             return Task.FromResult(this.model.Tags.FindAll().Select(t => t.ToTagResult()));
         }
 
+        #region Apply
+
         private TagModel Apply(CreateTagRequest createTagRequest)
         {
             var tag = new TagModel
@@ -71,7 +73,8 @@ namespace TreeStore.Model
                 Name = createTagRequest.Name
             };
 
-            this.Apply(createTagRequest.Facet, tag.Facet);
+            if (createTagRequest.Facet is not null)
+                this.Apply(createTagRequest.Facet, tag.Facet);
 
             return tag;
         }
@@ -86,21 +89,21 @@ namespace TreeStore.Model
             return tag;
         }
 
-        private void Apply(FacetRequest updateFacetRequest, FacetModel facet)
+        private void Apply(FacetRequest facetRequest, FacetModel facet)
         {
-            updateFacetRequest.Deletes?.ForEach(deletion =>
+            facetRequest.Deletes?.ForEach(deletion =>
             {
                 facet.RemoveProperty(deletion.Id);
             });
 
-            updateFacetRequest.Updates?.ForEach(update =>
+            facetRequest.Updates?.ForEach(update =>
             {
                 var facetProperty = facet.GetProperty(update.Id);
                 if (facetProperty is not null)
                     this.Apply(update, facetProperty);
             });
 
-            updateFacetRequest.Creates?.ForEach(creation =>
+            facetRequest.Creates?.ForEach(creation =>
             {
                 facet.AddProperty(this.Apply(creation));
             });
@@ -121,5 +124,7 @@ namespace TreeStore.Model
                 Type = createFacetPropertyRequest.Type,
             };
         }
+
+        #endregion Apply
     }
 }

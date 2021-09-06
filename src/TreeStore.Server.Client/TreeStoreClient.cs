@@ -77,6 +77,14 @@ namespace TreeStore.Server.Client
         #region /categories
 
         ///<inheritdoc/>
+        public async Task<CategoryResult> GetRootCategoryAsync(CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<CategoryResult>(
+                httpResponseMessage: await this.httpClient.GetAsync("categories", cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        ///<inheritdoc/>
         public async Task<CategoryResult> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -98,16 +106,6 @@ namespace TreeStore.Server.Client
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.PutAsJsonAsync($"categories/{id}", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-
-        ///<inheritdoc/>
-        public async Task<bool> DeleteCategoryAsync(Guid id, CancellationToken cancellationToken)
-        {
-            var response = await this.HandleJsonResponse<DeleteCategoryResponse>(
-                httpResponseMessage: await this.httpClient.DeleteAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return response.Deleted;
         }
 
         ///<inheritdoc/>

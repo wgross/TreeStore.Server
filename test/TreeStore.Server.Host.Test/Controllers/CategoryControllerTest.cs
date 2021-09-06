@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model;
@@ -29,7 +30,17 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResult(), result);
+            Assert.Equal(category.Id, result.Id);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.Parent.Id, result.ParentId);
+
+            FacetPropertyResult getFacetProperty(Guid id) => result.Facet.Properties.Single(fp => fp.Id == id);
+
+            Assert.All(category.Facet.Properties, fp =>
+            {
+                Assert.Equal(fp.Name, getFacetProperty(fp.Id).Name);
+                Assert.Equal(fp.Type, getFacetProperty(fp.Id).Type);
+            });
         }
 
         [Fact]
@@ -55,6 +66,33 @@ namespace TreeStore.Server.Host.Test.Controllers
         #region READ
 
         [Fact]
+        public async Task Read_root_category()
+        {
+            // ARRANGE
+            this.serviceMock
+                .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(this.rootCategory.ToCategoryResult());
+
+            // ACT
+            var result = await this.service
+                .GetRootCategoryAsync(CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(this.rootCategory.Id, result.Id);
+            Assert.Equal(this.rootCategory.Name, result.Name);
+            Assert.Equal(Guid.Empty, result.ParentId);
+
+            FacetPropertyResult getFacetProperty(Guid id) => result.Facet.Properties.Single(fp => fp.Id == id);
+
+            Assert.All(this.rootCategory.Facet.Properties, fp =>
+            {
+                Assert.Equal(fp.Name, getFacetProperty(fp.Id).Name);
+                Assert.Equal(fp.Type, getFacetProperty(fp.Id).Type);
+            });
+        }
+
+        [Fact]
         public async Task Read_category_by_id()
         {
             // ARRANGE
@@ -70,7 +108,17 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResult(), result);
+            Assert.Equal(category.Id, result.Id);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.Parent.Id, result.ParentId);
+
+            FacetPropertyResult getFacetProperty(Guid id) => result.Facet.Properties.Single(fp => fp.Id == id);
+
+            Assert.All(category.Facet.Properties, fp =>
+            {
+                Assert.Equal(fp.Name, getFacetProperty(fp.Id).Name);
+                Assert.Equal(fp.Type, getFacetProperty(fp.Id).Type);
+            });
         }
 
         [Fact]
@@ -110,7 +158,17 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ConfigureAwait(false);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResult(), result);
+            Assert.Equal(category.Id, result.Id);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.Parent.Id, result.ParentId);
+
+            FacetPropertyResult getFacetProperty(Guid id) => result.Facet.Properties.Single(fp => fp.Id == id);
+
+            Assert.All(category.Facet.Properties, fp =>
+            {
+                Assert.Equal(fp.Name, getFacetProperty(fp.Id).Name);
+                Assert.Equal(fp.Type, getFacetProperty(fp.Id).Type);
+            });
         }
 
         [Fact]

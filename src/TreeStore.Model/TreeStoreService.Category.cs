@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -48,11 +46,9 @@ namespace TreeStore.Model
                 throw new InvalidOperationException($"Category(name='{request.Name}' wasn't created: Category(id='{request.ParentId}') wasn't found");
             }
 
-            var category = new CategoryModel
-            {
-                Name = request.Name,
-                Parent = parent
-            };
+            var category = this.Apply(request, new CategoryModel());
+
+            parent.AddSubCategory(category);
 
             return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
@@ -80,7 +76,7 @@ namespace TreeStore.Model
         /// <summary>
         /// Provides the root <see cref="CategoryModel"/> of this model.
         /// </summary>
-        public CategoryModel GetRootCategory() => this.model.Categories.Root();
+        public Task<CategoryResult> GetRootCategoryAsync(CancellationToken cancellationToken) => Task.FromResult(this.model.Categories.Root().ToCategoryResult());
 
         ///<inheritdoc/>
         public Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
@@ -93,11 +89,31 @@ namespace TreeStore.Model
                 throw new InvalidOperationException($"Category(id='{id}') wasn't updated: Category(id='{id}') doesn't exist");
             }
 
-            request.Apply(category);
+            this.Apply(request, category);
 
             return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
         }
 
-        
+        #region Apply
+
+        public void Apply(UpdateCategoryRequest updateCategoryRequest, CategoryModel category)
+        {
+            category.Name = updateCategoryRequest.Name;
+
+            if (updateCategoryRequest.Facet is not null)
+                this.Apply(updateCategoryRequest.Facet, category.Facet);
+        }
+
+        private CategoryModel Apply(CreateCategoryRequest request, CategoryModel category)
+        {
+            category.Name = request.Name ?? category.Name;
+
+            if (request.Facet is not null)
+                this.Apply(request.Facet, category.Facet);
+
+            return category;
+        }
+
+        #endregion Apply
     }
 }

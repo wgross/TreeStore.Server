@@ -27,6 +27,12 @@ namespace TreeStore.Server.Host.Controllers
             return this.CreatedAtAction("GetCategoryById", new { id = result.Id }, result);
         }
 
+        [HttpGet, Route("categories")]
+        public async Task<IActionResult> GetRootCategoryAsync(CancellationToken cancellationToken)
+        {
+            return this.Ok(await this.service.GetRootCategoryAsync(cancellationToken));
+        }
+
         [HttpGet, Route("categories/{id}")]
         public async Task<IActionResult> GetCategoryByIdAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
         {

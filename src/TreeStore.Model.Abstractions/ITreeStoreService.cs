@@ -38,6 +38,12 @@ namespace TreeStore.Model.Abstractions
         Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Reads the root <see cref="CategoryResult"/>. The model creates the root by itself.
+        /// It does always exits and cant't be deleted.
+        /// </summary>
+        Task<CategoryResult> GetRootCategoryAsync(CancellationToken none);
+
+        /// <summary>
         /// Returns the category having the id <paramref name="id"/>.
         /// </summary>
         Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken);

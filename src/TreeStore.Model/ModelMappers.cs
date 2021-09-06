@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
@@ -22,8 +23,15 @@ namespace TreeStore.Model
 
         public static CategoryResult ToCategoryResult(this CategoryModel category)
         {
-            // category without a parent category isn't an allow model state
-            return new CategoryResult(category.Id, category.Name, category.Parent!.Id);
+            if (category.Parent is null)
+            {
+                // 'no parent' is indicated with Guid.Empty as parent id
+                return new CategoryResult(category.Id, category.Name, Guid.Empty, category.Facet?.ToFacetResult());
+            }
+            else
+            {
+                return new CategoryResult(category.Id, category.Name, category.Parent!.Id, category.Facet?.ToFacetResult());
+            }
         }
 
         public static FacetResult ToFacetResult(this FacetModel facet)
