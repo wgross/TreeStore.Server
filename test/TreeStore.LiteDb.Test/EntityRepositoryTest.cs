@@ -25,7 +25,7 @@ namespace TreeStore.LiteDb.Test
         public void EntityRepository_writes_entity()
         {
             // ARRANGE
-            var entity = TreeStoreTestData.DefaultEntityModel(WithRootCategory, TreeStoreTestData.WithDefaultTag);
+            var entity = DefaultEntityModel(WithEntityCategory(this.CategoryRepository.Root()));
 
             // ACT
             this.EntityRepository.Upsert(entity);
@@ -45,12 +45,58 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal("categories", readEntity.AsDocument["Category"].AsDocument["$ref"].AsString);
             Assert.Equal("categories", readEntity.AsDocument["Category"].AsDocument["$ref"].AsString);
 
+            // no tag
+            Assert.Empty(readEntity.AsDocument["Tags"].AsArray);
+
+            // no values
+            Assert.Empty(readEntity.AsDocument["Values"].AsDocument);
+        }
+
+        [Fact]
+        public void EntityRepository_writes_entity_tag()
+        {
+            // ARRANGE
+            var entity = DefaultEntityModel(WithEntityCategory(this.CategoryRepository.Root()), WithDefaultTag);
+            //var entity = TreeStoreTestData.DefaultEntityModel(WithRootCategory, TreeStoreTestData.WithDefaultTag);
+
+            // ACT
+            this.EntityRepository.Upsert(entity);
+
+            // ASSERT
+            var readEntity = this.entitiesCollection.FindAll().Single();
+
+            Assert.NotNull(readEntity);
+            Assert.Equal(entity.Id, readEntity.AsDocument["_id"].AsGuid);
+            Assert.Equal(entity.Name, readEntity.AsDocument["Name"].AsString);
+
+            // unique identifier from category and root is stored (name-is-under-parent constraint)
+            Assert.Equal($"{entity.Name.ToLowerInvariant()}_{this.CategoryRepository.Root().Id}", readEntity.AsDocument["UniqueName"].AsString);
+
             // single tag
             Assert.Single(readEntity.AsDocument["Tags"].AsArray);
             Assert.Equal(entity.Tags.Single().Id, readEntity.BsonValue("Tags").AsArray.Single().AsDocument.BsonValue("$id").AsGuid);
 
             // no values
             Assert.Empty(readEntity.AsDocument["Values"].AsDocument);
+        }
+
+        [Fact]
+        public void EntityRepository_writes_entity_values()
+        {
+            // ARRANGE
+            var entity = DefaultEntityModel(WithEntityCategory(DefaultRootCategoryModel(WithDefaultProperty)));
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(entity.FacetProperties().Single(), value);
+
+            // ACT
+            this.EntityRepository.Upsert(entity);
+
+            // ASSERT
+            var readEntity = this.entitiesCollection.FindAll().Single();
+
+            // single values
+            Assert.Equal(value, readEntity.AsDocument["Values"][entity.FacetProperties().Single().Id.ToString()].AsGuid);
         }
 
         [Fact]
@@ -228,16 +274,16 @@ namespace TreeStore.LiteDb.Test
         public void EntityRepository_finds_entities_by_tag()
         {
             // ARRANGE
-            var tag1 = this.TagRepository.Upsert(DefaultTag(t => t.Name = "t1"));
-            var tag2 = this.TagRepository.Upsert(DefaultTag(t => t.Name = "t2"));
+            var tag1 = this.TagRepository.Upsert(DefaultTagModel(t => t.Name = "t1"));
+            var tag2 = this.TagRepository.Upsert(DefaultTagModel(t => t.Name = "t2"));
 
-            var entity1 = this.EntityRepository.Upsert(DefaultEntity(e =>
+            var entity1 = this.EntityRepository.Upsert(DefaultEntityModel(WithEntityCategory(this.CategoryRepository.Root()), e =>
             {
                 e.Name = "entity1";
                 e.AddTag(tag1);
             }));
 
-            var entity2 = this.EntityRepository.Upsert(DefaultEntity(e =>
+            var entity2 = this.EntityRepository.Upsert(DefaultEntityModel(WithEntityCategory(this.CategoryRepository.Root()), e =>
             {
                 e.Name = "entity2";
                 e.AddTag(tag2);
@@ -347,7 +393,14 @@ namespace TreeStore.LiteDb.Test
         public void EntityRespository_reads_entity_with_category_by_id()
         {
             // ARRANGE
-            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), WithDefaultProperty));
+            var rootCategory = this.CategoryRepository.Root();
+            rootCategory.Facet.AddProperty(new("root-p1", FacetPropertyTypeValues.String));
+            this.CategoryRepository.Upsert(rootCategory);
+
+            var parentCategory = this.CategoryRepository.Upsert(DefaultCategoryModel(rootCategory, c => c.Name = "parent"));
+
+            var category = this.CategoryRepository.Upsert(DefaultCategoryModel(parentCategory, WithDefaultProperty));
+
             var entity = this.EntityRepository.Upsert(DefaultEntityModel(WithEntityCategory(category)));
 
             // ACT
@@ -355,11 +408,12 @@ namespace TreeStore.LiteDb.Test
 
             // ASSERT
             Assert.Equal(category.Id, result.Category.Id);
-            Assert.Equal(category, result.Category);
-            Assert.NotSame(entity, result);
-            Assert.NotSame(entity.Category, result.Category);
+
             Assert.Empty(entity.Tags);
-            Assert.Equal(2, entity.Facets().Count());
+
+            Assert.Equal(2, result.FacetProperties().Count());
+            Assert.Contains(category.Facet.Properties.Single(), result.FacetProperties());
+            Assert.Contains(rootCategory.Facet.Properties.Single(), result.FacetProperties());
         }
 
         [Fact]

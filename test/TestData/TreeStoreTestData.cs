@@ -129,13 +129,13 @@ namespace TreeStore.Test.Common
         {
             WithoutProperties(category);
 
-            category.Facet.AddProperty(new FacetPropertyModel("string", FacetPropertyTypeValues.String));
-            category.Facet.AddProperty(new FacetPropertyModel("long", FacetPropertyTypeValues.Long));
-            category.Facet.AddProperty(new FacetPropertyModel("double", FacetPropertyTypeValues.Double));
-            category.Facet.AddProperty(new FacetPropertyModel("decimal", FacetPropertyTypeValues.Decimal));
-            category.Facet.AddProperty(new FacetPropertyModel("datetime", FacetPropertyTypeValues.DateTime));
-            category.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
-            category.Facet.AddProperty(new FacetPropertyModel("bool", FacetPropertyTypeValues.Bool));
+            category.Facet.AddProperty(new("string", FacetPropertyTypeValues.String));
+            category.Facet.AddProperty(new("long", FacetPropertyTypeValues.Long));
+            category.Facet.AddProperty(new("double", FacetPropertyTypeValues.Double));
+            category.Facet.AddProperty(new("decimal", FacetPropertyTypeValues.Decimal));
+            category.Facet.AddProperty(new("datetime", FacetPropertyTypeValues.DateTime));
+            category.Facet.AddProperty(new("guid", FacetPropertyTypeValues.Guid));
+            category.Facet.AddProperty(new("bool", FacetPropertyTypeValues.Bool));
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace TreeStore.Test.Common
         public static void WithDefaultProperty(CategoryModel category)
         {
             category.Facet.Properties = Array.Empty<FacetPropertyModel>();
-            category.Facet.AddProperty(new FacetPropertyModel("guid", FacetPropertyTypeValues.Guid));
+            category.Facet.AddProperty(new("guid", FacetPropertyTypeValues.Guid));
         }
 
         #endregion Default Category

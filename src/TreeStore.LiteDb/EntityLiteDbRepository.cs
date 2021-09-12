@@ -9,6 +9,7 @@ namespace TreeStore.LiteDb
     public class EntityLiteDbRepository : LiteDbRepositoryBase<EntityModel>, IEntityRepository
     {
         public const string CollectionName = "entities";
+        private readonly TreeStoreLiteDbPersistence persistence;
 
         static EntityLiteDbRepository()
         {
@@ -37,6 +38,8 @@ namespace TreeStore.LiteDb
                 .Database
                 .GetCollection<EntityModel>(CollectionName)
                 .EnsureIndex(e => e.Category);
+
+            this.persistence = persistence;
         }
 
         protected override ILiteCollection<EntityModel> IncludeRelated(ILiteCollection<EntityModel> from) => from.Include(e => e.Tags);
@@ -75,6 +78,18 @@ namespace TreeStore.LiteDb
                 return true;
             }
             return false;
+        }
+
+        public override EntityModel? FindById(System.Guid id)
+        {
+            var result = base.FindById(id);
+            if (result is null)
+                return result;
+
+            if (result.Category is not null)
+                result.Category = this.persistence.Categories.FindById(result.Category.Id);
+
+            return result;
         }
 
         public IEnumerable<EntityModel> FindByTag(TagModel tag) => this.QueryRelated()

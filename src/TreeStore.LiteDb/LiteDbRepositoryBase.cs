@@ -54,7 +54,7 @@ namespace TreeStore.LiteDb
 
         public ILiteCollection<T> LiteCollection() => this.LiteRepository.Database.GetCollection<T>(this.CollectionName);
 
-        public T FindById(Guid id) => this.IncludeRelated(this.LiteCollection()).FindById(id);
+        public virtual T? FindById(Guid id) => this.IncludeRelated(this.LiteCollection()).FindById(id);
 
         public IEnumerable<T> FindAll() => this.IncludeRelated(this.LiteCollection()).FindAll();
 

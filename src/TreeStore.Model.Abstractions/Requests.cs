@@ -125,7 +125,7 @@ namespace TreeStore.Model.Abstractions
 
     public record CreateCategoryRequest(string Name, Guid ParentId, FacetRequest? Facet = null);
 
-    public record UpdateCategoryRequest(string Name, FacetRequest? Facet = null);
+    public record UpdateCategoryRequest(string? Name = null, FacetRequest? Facet = null);
 
     public record CopyCategoryRequest(Guid SourceId, Guid DestinationId, bool Recurse);
 

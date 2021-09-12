@@ -6,7 +6,7 @@ namespace TreeStore.Model
 {
     public interface IRepository<T> where T : NamedBase
     {
-        T FindById(Guid id);
+        T? FindById(Guid id);
 
         IEnumerable<T> FindAll();
 

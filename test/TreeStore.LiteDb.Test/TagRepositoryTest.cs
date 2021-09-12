@@ -63,13 +63,13 @@ namespace TreeStore.LiteDb.Test
         public void TagRepository_updates_and_reads_Tag_with_Facet()
         {
             // ARRANGE
-            var tag = DefaultTag(WithDefaultProperties);
+            var tag = DefaultTag(WithoutProperties);
 
             this.repository.Upsert(tag);
 
             // ACT
             tag.Name = "name2";
-            tag.AssignFacet("facet2", f => f.AddProperty(new FacetPropertyModel("prop2", FacetPropertyTypeValues.Double)));
+            tag.Facet.AddProperty(new("prop2", FacetPropertyTypeValues.Double));
 
             this.repository.Upsert(tag);
 

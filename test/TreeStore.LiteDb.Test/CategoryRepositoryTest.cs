@@ -36,9 +36,60 @@ namespace TreeStore.LiteDb.Test
 
             // the category document has expected content
             Assert.Equal(result.Id, resultInDb["_id"].AsGuid);
-            Assert.Null(resultInDb["Name"].AsString);
+            Assert.Equal("", resultInDb["Name"].AsString);
             Assert.False(resultInDb.ContainsKey("Parent"));
             Assert.Equal("_<root>", resultInDb["UniqueName"].AsString);
+            Assert.Equal(result.Facet.Id, resultInDb.BsonValue("Facet", "_id").AsGuid);
+        }
+
+        [Fact]
+        public void CategoryRepository_uses_persistent_root()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+
+            // ACT
+            var result = this.CategoryRepository.Root();
+
+            // ASSERT
+            Assert.Equal(root, result);
+            Assert.NotSame(root, result);
+            Assert.Equal(root.Id, result.Id);
+        }
+
+        [Fact]
+        public void CatageoryRepostory_updates_root_facet()
+        {
+            var root = this.CategoryRepository.Root();
+            WithDefaultProperty(root);
+
+            // ACT
+            var result = this.CategoryRepository.Upsert(root);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Empty(result.Name);
+
+            // root was created
+            var resultInDb = this.categoriesCollection.FindById(result.Id);
+
+            Assert.NotNull(resultInDb);
+
+            // the category document has expected content
+            Assert.Equal(result.Id, resultInDb["_id"].AsGuid);
+            Assert.Equal("", resultInDb["Name"].AsString);
+            Assert.False(resultInDb.ContainsKey("Parent"));
+            Assert.Equal("_<root>", resultInDb["UniqueName"].AsString);
+            Assert.True(resultInDb.ContainsKey("Facet"));
+            Assert.Equal(root.Facet.Id, resultInDb.BsonValue("facet", "_id").AsGuid);
+            Assert.Equal(root.Facet.Name, resultInDb.BsonValue("facet", "name").AsString);
+            Assert.Single(resultInDb.BsonValue("facet", "properties").AsArray);
+            Assert.Equal(root.Facet.Properties.Single().Id, resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("_id").AsGuid);
+            Assert.Equal(nameof(FacetPropertyTypeValues.Guid), resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("type").AsString);
+
+            var rootFromRead = this.CategoryRepository.Root();
+
+            Assert.Equal(root.FacetProperties().Single(), rootFromRead.Facet.Properties.Single());
         }
 
         #endregion Root
@@ -121,6 +172,39 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
+        public void CategoryRepository_writes_root_category_with_Facet()
+        {
+            // ARRANGE
+            var category = this.CategoryRepository.Root();
+
+            WithDefaultProperty(category);
+
+            // ACT
+            var result = this.CategoryRepository.Upsert(category);
+
+            // ASSERT
+            Assert.Same(category, result);
+            Assert.NotEqual(Guid.Empty, result.Id);
+
+            // category was created
+            var resultInDb = this.categoriesCollection.FindById(category.Id);
+
+            Assert.NotNull(resultInDb);
+
+            // the category document has expected content
+            Assert.Equal(category.Id, resultInDb["_id"].AsGuid);
+            Assert.Equal("", resultInDb["Name"].AsString);
+            Assert.True(resultInDb["Parent"].IsNull);
+            Assert.Equal(category.UniqueName, resultInDb["UniqueName"].AsString);
+            Assert.True(resultInDb.ContainsKey("Facet"));
+            Assert.Equal(category.Facet.Id, resultInDb.BsonValue("facet", "_id").AsGuid);
+            Assert.Equal("", resultInDb.BsonValue("facet", "name"));
+            Assert.Single(resultInDb.BsonValue("facet", "properties").AsArray);
+            Assert.Equal(category.Facet.Properties.Single().Id, resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("_id").AsGuid);
+            Assert.Equal(nameof(FacetPropertyTypeValues.Guid), resultInDb.BsonValue("facet", "properties").AsArray.Single().AsDocument.BsonValue("type").AsString);
+        }
+
+        [Fact]
         public void CategoryRepository_creating_fails_for_duplicate_child_name()
         {
             // ARRANGE
@@ -148,9 +232,36 @@ namespace TreeStore.LiteDb.Test
         #region READ
 
         [Fact]
+        public void CategoryRepository_reads_root_by_id()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            WithDefaultProperty(root);
+            this.CategoryRepository.Upsert(root);
+
+            // ACT
+            var result = this.CategoryRepository.FindById(root.Id);
+
+            // ASSERT
+            Assert.NotSame(root, result);
+            Assert.Equal(root.Id, result.Id);
+            Assert.Null(result.Parent);
+            Assert.Equal(root.Name, result.Name);
+            Assert.Equal(root.Facet.Id, result.Facet.Id);
+            Assert.Equal(root.Facet.Name, result.Facet.Name);
+            Assert.Equal(root.Facet.Properties.Single().Id, result.Facet.Properties.Single().Id);
+            Assert.Equal(root.Facet.Properties.Single().Name, result.Facet.Properties.Single().Name);
+            Assert.Equal(root.Facet.Properties.Single().Type, result.Facet.Properties.Single().Type);
+        }
+
+        [Fact]
         public void CategoryRepository_reads_category_by_id_including_parent()
         {
             // ARRANGE
+            var root = this.CategoryRepository.Root();
+            WithDefaultProperty(root);
+            this.CategoryRepository.Upsert(root);
+
             var category = DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "category", WithDefaultProperty);
 
             this.CategoryRepository.Upsert(category);
@@ -164,6 +275,79 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal(this.CategoryRepository.Root().Id, result.Parent.Id);
             Assert.Equal(category.Name, result.Name);
             Assert.Equal(category.Facet.Name, result.Facet.Name);
+            Assert.Equal(category.Facet.Properties.Single().Id, result.Facet.Properties.Single().Id);
+            Assert.Equal(category.Facet.Properties.Single().Name, result.Facet.Properties.Single().Name);
+            Assert.Equal(category.Facet.Properties.Single().Type, result.Facet.Properties.Single().Type);
+
+            Assert.Equal(root.Id, result.Parent.Id);
+            Assert.Equal(root.Name, result.Parent.Name);
+            Assert.Equal(root.Facet.Id, result.Parent.Facet.Id);
+            Assert.Equal(root.Facet.Name, result.Parent.Facet.Name);
+        }
+
+        [Fact]
+        public void CategoryRepository_reads_category_by_id_including_2_ancestors()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            WithDefaultProperty(root);
+            root = this.CategoryRepository.Upsert(root);
+
+            var category1 = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "1", WithDefaultProperty));
+            var category2 = this.CategoryRepository.Upsert(DefaultCategoryModel(category1, c => c.Name = "2", WithDefaultProperty));
+
+            // ACT
+            var result = this.CategoryRepository.FindById(category2.Id);
+
+            // ASSERT
+            Assert.Equal(category2.Id, result.Id);
+            Assert.Equal(category2.Facet.Id, result.Facet.Id);
+            Assert.Contains(category2.Facet.Properties.Single(), result.FacetProperties());
+
+            Assert.Equal(category1.Id, result.Parent.Id);
+            Assert.Equal(category1.Facet.Id, result.Parent.Facet.Id);
+            Assert.Contains(category1.Facet.Properties.Single(), result.FacetProperties());
+
+            Assert.Equal(root.Id, result.Parent.Parent.Id);
+            Assert.Equal(root.Facet.Id, result.Parent.Parent.Facet.Id);
+            Assert.Contains(root.Facet.Properties.Single(), result.FacetProperties());
+        }
+
+        [Fact]
+        public void CategoryRepository_reads_category_by_id_including_3_ancestors()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            WithDefaultProperty(root);
+            root = this.CategoryRepository.Upsert(root);
+
+            var category1 = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "1", WithDefaultProperty));
+            var category2 = this.CategoryRepository.Upsert(DefaultCategoryModel(category1, c => c.Name = "2", WithDefaultProperty));
+            var category3 = this.CategoryRepository.Upsert(DefaultCategoryModel(category2, c => c.Name = "3", WithDefaultProperty));
+
+            // ACT
+            var result = this.CategoryRepository.FindById(category3.Id);
+
+            // ASSERT
+            Assert.Equal(category3.Id, result.Id);
+            Assert.Equal(category3.Name, result.Name);
+            Assert.Equal(category3.Facet.Id, result.Facet.Id);
+            Assert.Contains(category3.Facet.Properties.Single(), result.FacetProperties());
+
+            Assert.Equal(category2.Id, result.Parent.Id);
+            Assert.Equal(category2.Name, result.Parent.Name);
+            Assert.Equal(category2.Facet.Id, result.Parent.Facet.Id);
+            Assert.Contains(category2.Facet.Properties.Single(), result.FacetProperties());
+
+            Assert.Equal(category1.Id, result.Parent.Parent.Id);
+            Assert.Equal(category1.Name, result.Parent.Parent.Name);
+            Assert.Equal(category1.Facet.Id, result.Parent.Parent.Facet.Id);
+            Assert.Contains(category1.Facet.Properties.Single(), result.FacetProperties());
+
+            Assert.Equal(root.Id, result.Parent.Parent.Parent.Id);
+            Assert.Equal(root.Name, result.Parent.Parent.Parent.Name);
+            Assert.Equal(root.Facet.Id, result.Parent.Parent.Parent.Facet.Id);
+            Assert.Contains(root.Facet.Properties.Single(), result.FacetProperties());
         }
 
         [Fact]
@@ -388,7 +572,8 @@ namespace TreeStore.LiteDb.Test
             Assert.Equal(src.Name, assert_dst_src.Name);
 
             // the entity was copied
-            var assert_dst_src_entity = this.EntityRepository.FindByCategoryAndName(assert_dst_src, src_entity.Name);
+            var assert_dst_src_entity = this.EntityRepository.FindByCategory(assert_dst_src).Single();
+            //var assert_dst_src_entity = this.EntityRepository.FindByCategoryAndName(assert_dst_src, src_entity.Name);
 
             Assert.Equal(src_entity.Name, assert_dst_src_entity.Name);
             Assert.NotEqual(src_entity.Id, assert_dst_src_entity.Id);
@@ -525,3 +710,4 @@ namespace TreeStore.LiteDb.Test
         #endregion COPY
     }
 }
+;

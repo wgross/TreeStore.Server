@@ -1,5 +1,4 @@
-﻿using TreeStore.Model.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -24,23 +23,6 @@ namespace TreeStore.Model.Test.Base
             // ASSERT
 
             Assert.Empty(result.Properties);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetFactingInstances))]
-        public void FacetingEntity_adds_facets(FacetingEntityBase faceted)
-        {
-            // ARRANGE
-
-            var facet = new FacetModel();
-
-            // ACT
-
-            faceted.AssignFacet(facet);
-
-            // ASSERT
-
-            Assert.Equal(facet, faceted.Facet);
         }
     }
 }

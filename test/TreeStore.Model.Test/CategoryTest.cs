@@ -29,6 +29,20 @@ namespace TreeStore.Model.Test
         }
 
         [Fact]
+        public void Category_name_changes_facet_name()
+        {
+            // ARRANGE
+            var result = new CategoryModel("name");
+
+            // ACT
+            result.Name = "changed-name";
+
+            // ASSERT
+            Assert.Equal("changed-name", result.Name);
+            Assert.Equal("changed-name", result.Facet.Name);
+        }
+
+        [Fact]
         public void Category_corrects_Parent_for_ctor_subcategories()
         {
             // ACT
@@ -40,23 +54,6 @@ namespace TreeStore.Model.Test
         }
 
         #endregion Category hierarchy structure
-
-        [Fact]
-        public void Category_assigns_Facet()
-        {
-            // ARRANGE
-
-            var facet = new FacetModel();
-            var category = new CategoryModel();
-
-            // ACT
-
-            category.AssignFacet(facet);
-
-            // ASSERT
-
-            Assert.Same(facet, category.Facet);
-        }
 
         [Fact]
         public void Category_adds_subcategory()

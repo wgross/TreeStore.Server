@@ -13,6 +13,8 @@ namespace TreeStore.LiteDb
 
         static CategoryLiteDbRepository()
         {
+            // https://github.com/mbdavid/LiteDB/issues/642
+            BsonMapper.Global.EmptyStringToNull = false;
             BsonMapper.Global.Entity<CategoryModel>()
                 .DbRef(c => c.Parent, collectionName);
         }
@@ -30,20 +32,18 @@ namespace TreeStore.LiteDb
                     expression: $"$.{nameof(CategoryModel.UniqueName)}",
                     unique: true);
 
-            this.rootNode = new Lazy<CategoryModel>(() => this.FindRootCategory() ?? this.CreateRootCategory());
             this.logger = logger;
         }
 
         #region Ensure persistent root always exist
 
-        private readonly Lazy<CategoryModel> rootNode;
         private readonly TreeStoreLiteDbPersistence treeStoreLiteDbPersistence;
         private readonly ILogger<CategoryLiteDbRepository> logger;
 
         /// <summary>
         /// return the root node of the repositorty. If not exists it is created.
         /// </summary>
-        public CategoryModel Root() => this.rootNode.Value;
+        public CategoryModel Root() => this.FindRootCategory() ?? this.CreateRootCategory();
 
         // todo: abandon completely loaded root tree
         private CategoryModel? FindRootCategory()
@@ -79,9 +79,22 @@ namespace TreeStore.LiteDb
             using var scope = this.BeginScope(category);
 
             if (category.Parent is null)
-                throw new InvalidOperationException("Category must have parent.");
+                if (category.Id != this.Root().Id)
+                    throw new InvalidOperationException("Category must have parent.");
 
             return base.Upsert(category);
+        }
+
+        public override CategoryModel? FindById(Guid id)
+        {
+            var result = base.FindById(id);
+            if (result is null)
+                return result;
+
+            if (result.Parent is not null)
+                result.Parent = this.FindById(result.Parent.Id);
+
+            return result;
         }
 
         public CategoryModel? FindByParentAndName(CategoryModel category, string name)

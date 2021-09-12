@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -83,8 +84,23 @@ namespace TreeStore.Model
             entity.Name = updateEntityRequest.Name ?? entity.Name;
 
             this.Apply(updateEntityRequest.Tags, entity);
+            this.Apply(updateEntityRequest.Values, entity);
 
             return entity;
+        }
+
+        private void Apply(FacetPropertyValuesRequest? values, EntityModel entity)
+        {
+            if (values is null)
+                return;
+
+            var facetProperties = entity.FacetProperties().ToDictionary(fp => fp.Id);
+
+            foreach (var value in values.Updates)
+            {
+                if (facetProperties.TryGetValue(value.Id, out var facetProperty))
+                    entity.SetFacetProperty(facetProperty, value.Value);
+            }
         }
 
         private void Apply(UpdateEntityTagsRequest? updateEntityTagsRequest, EntityModel entityModel)

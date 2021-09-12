@@ -29,7 +29,25 @@ namespace TreeStore.Model
 
         #region INamed
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get => this.name;
+            set
+            {
+                var oldValue = this.name;
+                if (StringComparer.Ordinal.Equals(oldValue, value))
+                    return;
+
+                this.name = value;
+                this.OnNameChanged(oldValue, this.name);
+            }
+        }
+
+        private string name = string.Empty;
+
+        protected virtual void OnNameChanged(string oldName, string name)
+        {
+        }
 
         #endregion INamed
 

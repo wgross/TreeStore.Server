@@ -98,7 +98,7 @@ namespace TreeStore.Model
 
         public void Apply(UpdateCategoryRequest updateCategoryRequest, CategoryModel category)
         {
-            category.Name = updateCategoryRequest.Name;
+            category.Name = updateCategoryRequest.Name ?? category.Name;
 
             if (updateCategoryRequest.Facet is not null)
                 this.Apply(updateCategoryRequest.Facet, category.Facet);

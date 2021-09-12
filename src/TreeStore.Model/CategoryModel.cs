@@ -7,7 +7,7 @@ namespace TreeStore.Model
     public class CategoryModel : FacetingEntityBase, ICloneable
     {
         public CategoryModel()
-            : this(string.Empty, new FacetModel())
+            : this(string.Empty, new FacetModel(string.Empty))
         { }
 
         public CategoryModel(string name)
@@ -21,14 +21,40 @@ namespace TreeStore.Model
                 c.Parent = this;
         }
 
+        #region Overrides
+
+        protected override void OnNameChanged(string oldName, string name)
+        {
+            if (this.Facet is null)
+                this.Facet = new FacetModel(name);
+            else
+                this.Facet.Name = name;
+
+            base.OnNameChanged(oldName, name);
+        }
+
+        protected override void OnAfterFacetChanged(FacetModel oldFacet, FacetModel newFacet)
+        {
+            newFacet.Name = this.Name;
+            base.OnAfterFacetChanged(oldFacet, newFacet);
+        }
+
+        #endregion Overrides
+
         #region Category owns a facet
 
         public IEnumerable<FacetModel> Facets()
         {
-            if (this.Parent is null)
-                return this.Facet.Yield();
-            return this.Facet.Yield().Union(this.Parent.Facets());
+            var current = this;
+            do
+            {
+                yield return current.Facet;
+                current = current.Parent;
+            }
+            while (current is not null);
         }
+
+        public IEnumerable<FacetPropertyModel> FacetProperties() => this.Facets().SelectMany(f => f.Properties);
 
         #endregion Category owns a facet
 
