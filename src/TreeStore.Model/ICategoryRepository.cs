@@ -7,7 +7,7 @@ namespace TreeStore.Model
     {
         CategoryModel Root();
 
-        CategoryModel FindById(Guid id);
+        CategoryModel? FindById(Guid id);
 
         CategoryModel Upsert(CategoryModel entity);
 

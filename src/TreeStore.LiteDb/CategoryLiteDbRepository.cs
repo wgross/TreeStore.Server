@@ -112,13 +112,17 @@ namespace TreeStore.LiteDb
             using var scope = this.BeginScope(category);
 
             return this.QueryRelated()
-                .Where(c => c.Parent != null && c.Parent.Id == category.Id)
+                // broken with 5.0.7 : // .Where(c => c.Parent != null && c.Parent.Id == category.Id)
+                .Find(Query.And(
+                    Query.Not("$.Parent.$id", BsonValue.Null),
+                    Query.EQ("$.Parent.$id", new BsonValue(category.Id))
+                ))
                 .ToArray();
         }
 
         protected override ILiteCollection<CategoryModel> IncludeRelated(ILiteCollection<CategoryModel> from) => from.Include(c => c.Parent);
 
-        private ILiteQueryable<CategoryModel> QueryRelated() => this.LiteCollection().Query().Include(c => c.Parent);
+        private ILiteCollection<CategoryModel> QueryRelated() => IncludeRelated(this.LiteCollection());
 
         public bool Delete(CategoryModel category, bool recurse)
         {

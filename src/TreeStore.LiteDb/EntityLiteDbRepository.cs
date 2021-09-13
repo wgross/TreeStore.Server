@@ -1,6 +1,7 @@
 ﻿using LiteDB;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Linq;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
 
@@ -42,9 +43,9 @@ namespace TreeStore.LiteDb
             this.persistence = persistence;
         }
 
-        protected override ILiteCollection<EntityModel> IncludeRelated(ILiteCollection<EntityModel> from) => from.Include(e => e.Tags);
+        protected override ILiteCollection<EntityModel> IncludeRelated(ILiteCollection<EntityModel> from) => from.Include(e => e.Tags).Include(e => e.Category);
 
-        protected ILiteQueryable<EntityModel> QueryRelated() => this.LiteCollection().Query().Include(e => e.Tags).Include(e => e.Category);
+        protected ILiteCollection<EntityModel> QueryRelated() => this.IncludeRelated(this.LiteCollection());
 
         public override EntityModel Upsert(EntityModel entity)
         {
@@ -95,19 +96,20 @@ namespace TreeStore.LiteDb
         public IEnumerable<EntityModel> FindByTag(TagModel tag) => this.QueryRelated()
             // todo: optimize
             // i'm sure this is a table scan...LiteDb 5 may index that?
-            .Where(e => e.Tags.Contains(tag))
+            // broken by 5.0.7: // .Where(e => e.Tags.Contains(tag))
+            .Find(Query.Any().EQ("$.Tags[*].$id", tag.Id))
             .ToArray();
 
         public IEnumerable<EntityModel> FindByCategory(CategoryModel category) => this.QueryRelated()
-            .Where(e => e.Category!.Id == category.Id)
+            // broken by 5.0.7: // .Where(e => e.Category!.Id == category.Id)
+            .Find(Query.EQ("$.Category.$id", new BsonValue(category.Id)))
             .ToArray();
 
-        //public IEnumerable<Entity> FindByCategory(Category category) => this.QueryRelated()
-        //    .Where(e => e.Category != null && e.Category.Id == category.Id)
-        //    .ToArray();
-
         public EntityModel? FindByCategoryAndName(CategoryModel category, string name) => this.QueryRelated()
-            .Where(e => e.Category!.Id == category.Id && e.Name.Equals(name))
+            // broken by 5.0.7: // .Where(e => e.Category!.Id == category.Id && e.Name.Equals(name))
+            .Find(Query.And(
+                    Query.EQ("$.Category.$id", new BsonValue(category.Id)),
+                    Query.EQ("$.Name", name)))
             .FirstOrDefault();
     }
 }
