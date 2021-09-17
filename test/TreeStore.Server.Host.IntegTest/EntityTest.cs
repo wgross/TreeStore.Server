@@ -79,7 +79,12 @@ namespace TreeStore.Server.Host.IntegTest
             Assert.Equal(rootCategory.Id, result.CategoryId);
             Assert.Equal(category.Facet.Properties.Single().Id, result.Values.Single().Id);
             Assert.Equal(category.Facet.Properties.Single().Type, result.Values.Single().Type);
-            Assert.Equal("changed", result.Values.Single().Value);
+            Assert.Equal("changed-value", result.Values.Single().Value);
+        }
+
+        [Fact]
+        public async Task Read_entities_by_category()
+        {
         }
     }
 }
