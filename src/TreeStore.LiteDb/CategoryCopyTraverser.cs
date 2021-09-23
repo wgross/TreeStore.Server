@@ -13,12 +13,12 @@ namespace TreeStore.LiteDb
             this.entityRepository = entityRepository;
         }
 
-        internal void CopyCategory(CategoryModel src, CategoryModel dst)
+        internal CategoryModel CopyCategory(CategoryModel src, CategoryModel dst)
         {
-            this.CopyAndSaveCategory(src, dst);
+            return this.CopyAndSaveCategory(src, dst);
         }
 
-        internal void CopyCategoryRecursive(CategoryModel src, CategoryModel dst)
+        internal CategoryModel CopyCategoryRecursive(CategoryModel src, CategoryModel dst)
         {
             // copy the top most src as child of the dst
             var srcClone = this.CopyAndSaveCategory(src, dst);
@@ -30,6 +30,8 @@ namespace TreeStore.LiteDb
             // copy all entities in src to dst
             foreach (var srcEntity in this.entityRepository.FindByCategory(src))
                 this.CopyAndSaveEntity(srcEntity, srcClone);
+
+            return srcClone;
         }
 
         private CategoryModel CopyAndSaveCategory(CategoryModel src, CategoryModel dst)

@@ -49,6 +49,12 @@ namespace TreeStore.Model.Abstractions
         Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the child categories of the specified category <paramref name="id"/>.
+        /// It returns null if the parent category doesn't exist.
+        /// </summary>
+        Task<IEnumerable<CategoryResult>?> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Deletes the entity having the <paramref name="id"/>
         /// </summary>
         Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken);
@@ -74,6 +80,11 @@ namespace TreeStore.Model.Abstractions
         Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Deletes the category identified by <paramref name="parentId"/> and <paramref name="childName"/>
+        /// </summary>
+        Task<bool> DeleteCategoryAsync(Guid parentId, string childName, bool recurse, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves all Tags of the model
         /// </summary>
         Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken);
@@ -82,7 +93,7 @@ namespace TreeStore.Model.Abstractions
         /// Copy the <paramref name="sourceCategoryId"/> as s subcategeory to <paramref name="destinationCategoryId"/>.
         /// It <paramref name="recurse"/> is true, all subcatageories and entites are clined as well.
         /// </summary>
-        Task<CopyCategoryResponse> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken);
+        Task<CategoryResult> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the tag specified by <paramref name="id"/>.

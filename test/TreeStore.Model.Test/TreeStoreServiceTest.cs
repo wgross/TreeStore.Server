@@ -41,6 +41,21 @@ namespace TreeStore.Model.Test
                 mock
                     .Setup(r => r.Root())
                     .Returns(rootCategory);
+
+                mock
+                    .Setup(r => r.FindById(rootCategory.Id))
+                    .Returns(rootCategory);
+
+                mock
+                    .Setup(r => r.FindByParent(rootCategory))
+                    .Returns(Array.Empty<CategoryModel>());
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByCategory(rootCategory))
+                    .Returns(Array.Empty<EntityModel>());
             });
 
             // ACT
@@ -123,13 +138,160 @@ namespace TreeStore.Model.Test
                 mock
                     .Setup(r => r.FindById(category.Id))
                     .Returns(category);
+
+                mock
+                    .Setup(r => r.FindByParent(category))
+                    .Returns(Array.Empty<CategoryModel>());
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByCategory(category))
+                    .Returns(Array.Empty<EntityModel>());
             });
 
             // ACT
             var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
 
             // ASSERT
-            Assert.Equal(category.ToCategoryResult(), result);
+            Assert.Equal(category.Id, result.Id);
+            Assert.Equal(category.Name, result.Name);
+            Assert.Equal(category.ToCategoryResult().Facet, result.Facet);
+            Assert.Empty(result.Categories);
+            Assert.Empty(result.Entities);
+        }
+
+        [Fact]
+        public async Task Reads_category_including_subcategories_and_entities()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+            var subcategory = DefaultCategoryModel(category);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
+
+                mock
+                    .Setup(r => r.FindByParent(category))
+                    .Returns(new[] { subcategory });
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByCategory(category))
+                    .Returns(new[] { entity });
+            });
+
+            // ACT
+            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(category.Id, result.Id);
+            Assert.Equal(subcategory.Id, result.Categories.Single().Id);
+            Assert.Equal(entity.Id, result.Entities.Single().Id);
+        }
+
+        [Fact]
+        public async Task Reading_category_including_subcategories_and_entities_puts_empty_array_for_missing_children()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
+
+                mock
+                    .Setup(r => r.FindByParent(category))
+                    .Returns(Array.Empty<CategoryModel>());
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByCategory(category))
+                    .Returns(Array.Empty<EntityModel>());
+            });
+
+            // ACT
+            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(category.Id, result.Id);
+            Assert.Empty(result.Categories);
+            Assert.Empty(result.Entities);
+        }
+
+        [Fact]
+        public async Task Reading_category_including_subcategories_and_entities_returns_null_on_missing_catagory()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns((CategoryModel)null);
+            });
+
+            // ACT
+            var result = await this.service.GetCategoryByIdAsync(category.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Reads_categories_children()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns(category.Parent);
+
+                mock
+                    .Setup(r => r.FindByParent(category.Parent))
+                    .Returns(new[] { category });
+            });
+
+            // ACT
+            var result = await this.service.GetCategoriesByIdAsync(category.Parent.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(new[] { category.ToCategoryResult() }, result);
+        }
+
+        [Fact]
+        public async Task Reading_categories_children_returns_null_on_missing_category()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns((CategoryModel)null);
+            });
+
+            // ACT
+            var result = await this.service.GetCategoriesByIdAsync(category.Parent.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Null(result);
         }
 
         [Fact]
@@ -249,7 +411,7 @@ namespace TreeStore.Model.Test
         [InlineData(false, true)]
         [InlineData(true, false)]
         [InlineData(true, true)]
-        public async Task Deletes_category_if_empty(bool recurse, bool deleteResult)
+        public async Task Deletes_category_by_id_if_empty(bool recurse, bool deleteResult)
         {
             // ARRANGE
             var category = DefaultCategoryModel(DefaultRootCategoryModel());
@@ -273,9 +435,41 @@ namespace TreeStore.Model.Test
         }
 
         [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task Deletes_category_by_name_if_empty(bool recurse, bool deleteResult)
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByParentAndName(category.Parent, category.Name))
+                    .Returns(category);
+
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns(category.Parent);
+
+                mock
+                    .Setup(r => r.Delete(category, recurse))
+                    .Returns(deleteResult);
+            });
+
+            // ACT
+            var result = await this.service.DeleteCategoryAsync(category.Parent.Id, category.Name, recurse, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(deleteResult, result);
+        }
+
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task Deleting_category_returns_false_on_missing_category(bool recurse)
+        public async Task Deleting_category_by_id_returns_false_on_missing_category(bool recurse)
         {
             // ARRANGE
             var category = DefaultCategoryModel(DefaultRootCategoryModel());
@@ -298,11 +492,78 @@ namespace TreeStore.Model.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        public async Task Deleting_category_by_name_returns_false_on_missing_category(bool recurse)
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                   .Setup(r => r.FindByParentAndName(category.Parent, category.Name))
+                   .Returns((CategoryModel)null);
+
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns(category.Parent);
+            });
+
+            // ACT
+            var result = await this.service
+                .DeleteCategoryAsync(category.Parent.Id, category.Name, recurse, CancellationToken.None);
+
+            // ASSERT
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Deleting_category_by_name_throws_on_missing_name(bool recurse)
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            // ACT
+            var result = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => this.service.DeleteCategoryAsync(category.Parent.Id, null, recurse, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("childName", result.ParamName);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Deleting_category_by_name_returns_false_on_missing_parent(bool recurse)
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns((CategoryModel)null);
+            });
+
+            // ACT
+            var result = await this.service
+                .DeleteCategoryAsync(category.Parent.Id, category.Name, recurse, CancellationToken.None);
+
+            // ASSERT
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public async Task Copies_category(bool recurse)
         {
             // ARRANGE
             var source = DefaultCategoryModel(DefaultRootCategoryModel());
             var destination = DefaultCategoryModel(DefaultRootCategoryModel());
+            var copy = DefaultCategoryModel(destination);
 
             this.ArrangeCategoryRepository(mock =>
             {
@@ -315,7 +576,8 @@ namespace TreeStore.Model.Test
                     .Returns(destination);
 
                 mock
-                    .Setup(r => r.CopyTo(source, destination, recurse));
+                    .Setup(r => r.CopyTo(source, destination, recurse))
+                    .Returns(copy);
             });
 
             // ACT
@@ -323,8 +585,11 @@ namespace TreeStore.Model.Test
                 .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None);
 
             // ASSERT
-            Assert.NotNull(result);
+            Assert.Equal(copy.Id, result.Id);
         }
+
+        // TODO: copy category with new name
+        // TODO: overwrite category with source category
 
         [Theory]
         [InlineData(false)]
@@ -579,7 +844,7 @@ namespace TreeStore.Model.Test
                 Values: new FacetPropertyValuesRequest(
                     new UpdateFacetPropertyValueRequest(entity.FacetProperties().Single().Id, entity.FacetProperties().Single().Type, value)));
 
-            var result = await this.service.UpdateEntityAsync(entity.Id,request, CancellationToken.None);
+            var result = await this.service.UpdateEntityAsync(entity.Id, request, CancellationToken.None);
 
             // ASSERT
             Assert.Equal(entity.Name, writtenEntity.Name);

@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,12 +21,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -49,12 +50,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateCategoryAsync(It.Is<CreateCategoryRequest>(r => category.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("fail"));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
                 .CreateCategoryAsync(new(category.Name, this.rootCategory.Id), CancellationToken.None));
 
             // ASSERT
@@ -69,12 +70,12 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Read_root_category()
         {
             // ARRANGE
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(this.rootCategory.ToCategoryResult());
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .GetRootCategoryAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -98,12 +99,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .GetCategoryByIdAsync(category.Id, CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -122,16 +123,64 @@ namespace TreeStore.Server.Host.Test.Controllers
         }
 
         [Fact]
+        public async Task Read_categories_by_id()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(this.rootCategory);
+
+            this.modelServiceMock
+                .Setup(s => s.GetCategoriesByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new[] { category.ToCategoryResult() });
+
+            // ACT
+            var result = await this.clientService
+                .GetCategoriesByIdAsync(category.Parent.Id, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(category.Id, result.Single().Id);
+            Assert.Equal(category.Name, result.Single().Name);
+            Assert.Equal(category.Parent.Id, result.Single().ParentId);
+
+            FacetPropertyResult getFacetProperty(Guid id) => result.Single().Facet.Properties.Single(fp => fp.Id == id);
+
+            Assert.All(category.Facet.Properties, fp =>
+            {
+                Assert.Equal(fp.Name, getFacetProperty(fp.Id).Name);
+                Assert.Equal(fp.Type, getFacetProperty(fp.Id).Type);
+            });
+        }
+
+        [Fact]
         public async Task Reading_unknown_category_by_id_returns_null()
         {
             // ARRANGE
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetCategoryByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((CategoryResult)null);
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .GetCategoryByIdAsync(Guid.NewGuid(), CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Read_categories_by_id_return_null_on_missing_category()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(this.rootCategory);
+
+            this.modelServiceMock
+                .Setup(s => s.GetCategoriesByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IEnumerable<CategoryResult>)null);
+
+            // ACT
+            var result = await this.clientService
+                .GetCategoriesByIdAsync(category.Parent.Id, CancellationToken.None)
                 .ConfigureAwait(false);
 
             // ASSERT
@@ -148,12 +197,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateCategoryAsync(category.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(category.ToCategoryResult());
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .UpdateCategoryAsync(category.Id, new UpdateCategoryRequest(category.Name), CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -177,12 +226,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateCategoryAsync(entity.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
                 .Throws(new InvalidOperationException("fail"));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
                 .UpdateCategoryAsync(entity.Id, new UpdateCategoryRequest(entity.Name), CancellationToken.None))
                 .ConfigureAwait(false);
 
@@ -202,12 +251,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.DeleteCategoryAsync(category.Id, recurse, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .DeleteCategoryAsync(category.Id, recurse, CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -221,12 +270,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var category = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.DeleteCategoryAsync(category.Id, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .DeleteCategoryAsync(category.Id, false, CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -246,18 +295,20 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var sourceCategory = DefaultCategoryModel(this.rootCategory);
             var destinationCategory = DefaultCategoryModel(this.rootCategory);
+            var copiedCatagory = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CopyCategoryResponse());
+                .ReturnsAsync(copiedCatagory.ToCategoryResult());
 
             // ACT
-            var result = await this.service
+            var result = await this.clientService
                 .CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse: recurse, CancellationToken.None)
                 .ConfigureAwait(false);
 
             // ASSERT
             Assert.NotNull(result);
+            Assert.Equal(copiedCatagory.Id, result.Id);
         }
 
         [Theory]
@@ -269,12 +320,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             var sourceCategory = DefaultCategoryModel(this.rootCategory);
             var destinationCategory = DefaultCategoryModel(this.rootCategory);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("fail"));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
                .CopyCategoryToAsync(sourceCategory.Id, destinationCategory.Id, recurse: recurse, CancellationToken.None));
 
             // ASSERT

@@ -79,6 +79,39 @@ namespace TreeStore.Server.Host.IntegTest
         }
 
         [Fact]
+        public async Task Read_child_categories_by_id()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // ACT
+            var request = new CreateCategoryRequest(
+                Name: "c",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var category = await this.client.CreateCategoryAsync(request, CancellationToken.None);
+
+            // ACT
+            var result = await this.client.GetCategoriesByIdAsync(category.ParentId, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(category.Id, result.Single().Id);
+            Assert.Equal(category.Name, result.Single().Name);
+            Assert.Equal(category.ParentId, result.Single().ParentId);
+
+            FacetPropertyResult getResultProperty(Guid id) => result.Single().Facet.Properties.Single(p => p.Id == id);
+
+            Assert.All(category.Facet.Properties, p =>
+            {
+                Assert.Equal(p.Type, getResultProperty(p.Id).Type);
+                Assert.Equal(p.Name, getResultProperty(p.Id).Name);
+            });
+        }
+
+        [Fact]
         public async Task Update_category_by_id()
         {
             // ARRANGE
@@ -131,6 +164,29 @@ namespace TreeStore.Server.Host.IntegTest
 
             // ACT
             var result = await this.client.DeleteCategoryAsync(category.Id, recurse: false, CancellationToken.None);
+
+            // ASSERT
+            Assert.True(result);
+            Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task Delete_category_by_childname()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createRequest = new CreateCategoryRequest(
+                Name: "c",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None);
+
+            // ACT
+            var result = await this.client.DeleteCategoryAsync(rootCategory.Id, category.Name, recurse: false, CancellationToken.None);
 
             // ASSERT
             Assert.True(result);

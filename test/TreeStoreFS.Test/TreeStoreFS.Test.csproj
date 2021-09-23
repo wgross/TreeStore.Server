@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.9" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TreeStore.Model\TreeStore.Model.csproj" />
+    <ProjectReference Include="..\..\src\TreeStore.Server.Host\TreeStore.Server.Host.csproj" />
+    <ProjectReference Include="..\..\src\TreeStoreFS\TreeStoreFS.csproj" />
+    <ProjectReference Include="..\..\submodules\TreeStore.ProviderCore\test\PowerShellFilesystemProviderBase.Test\PowerShellFilesystemProviderBase.Test.csproj" />
+  </ItemGroup>
+
+</Project>

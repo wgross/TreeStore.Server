@@ -15,27 +15,27 @@ namespace TreeStore.Server.Host.Test
         protected IHost host { get; }
         protected MockRepository Mocks { get; } = new MockRepository(MockBehavior.Strict);
 
-        protected Mock<ITreeStoreService> serviceMock { get; }
+        protected Mock<ITreeStoreService> modelServiceMock { get; }
 
-        protected TreeStoreClient service;
+        protected TreeStoreClient clientService;
 
         public TreeStoreServerHostTestBase()
         {
             // server
-            this.serviceMock = this.Mocks.Create<ITreeStoreService>();
+            this.modelServiceMock = this.Mocks.Create<ITreeStoreService>();
 
             this.host = Microsoft.Extensions.Hosting.Host
                 .CreateDefaultBuilder()
                 .ConfigureWebHost(wh =>
                 {
                     wh.UseTestServer();
-                    wh.UseStartup(whctx => new TestStartup(this.serviceMock.Object, whctx.HostingEnvironment, whctx.Configuration));
+                    wh.UseStartup(whctx => new TestStartup(this.modelServiceMock.Object, whctx.HostingEnvironment, whctx.Configuration));
                 })
                 .Build();
             this.host.StartAsync();
 
             // client
-            this.service = new TreeStoreClient(this.host.GetTestClient(), new NullLogger<TreeStoreClient>());
+            this.clientService = new TreeStoreClient(this.host.GetTestClient(), new NullLogger<TreeStoreClient>());
         }
 
         protected virtual void Dispose(bool disposing)

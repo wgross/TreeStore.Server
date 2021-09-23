@@ -76,7 +76,7 @@ namespace TreeStore.Server.Client
 
         #region /categories
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public async Task<CategoryResult> GetRootCategoryAsync(CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -84,7 +84,7 @@ namespace TreeStore.Server.Client
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public async Task<CategoryResult> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -92,7 +92,17 @@ namespace TreeStore.Server.Client
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
+        public async Task<IEnumerable<CategoryResult>> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var categories = await this.HandleJsonResponse<CategoryCollectionResponse>(
+                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}/children", cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            return categories?.Categories;
+        }
+
+        /// <inheritdoc/>
         public async Task<CategoryResult> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -100,7 +110,7 @@ namespace TreeStore.Server.Client
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public async Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -108,10 +118,10 @@ namespace TreeStore.Server.Client
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        ///<inheritdoc/>
-        public async Task<CopyCategoryResponse> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public async Task<CategoryResult> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken)
         {
-            return await this.HandleJsonResponse<CopyCategoryResponse>(
+            return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient
                     .PostAsJsonAsync("categories/copy", new CopyCategoryRequest(
                             SourceId: sourceCategoryId,
@@ -122,11 +132,20 @@ namespace TreeStore.Server.Client
                     cancellationToken).ConfigureAwait(false);
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public async Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken)
         {
             var response = await this.HandleJsonResponse<DeleteCategoryResponse>(
                  httpResponseMessage: await this.httpClient.DeleteAsync($"categories/{id}?recurse={recurse}", cancellationToken).ConfigureAwait(false),
+                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            return response.Deleted;
+        }
+
+        public async Task<bool> DeleteCategoryAsync(Guid id, string childName, bool recurse, CancellationToken cancellationToken)
+        {
+            var response = await this.HandleJsonResponse<DeleteCategoryResponse>(
+                 httpResponseMessage: await this.httpClient.DeleteAsync($"categories/{id}/{childName}?recurse={recurse}", cancellationToken).ConfigureAwait(false),
                  cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return response.Deleted;

@@ -560,7 +560,7 @@ namespace TreeStore.LiteDb.Test
             var src_entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(src)));
 
             // ACT
-            this.CategoryRepository.CopyTo(src, dst, recurse: true);
+            var result = this.CategoryRepository.CopyTo(src, dst, recurse: true);
 
             // ASSERT
             var assert_src = this.CategoryRepository.FindById(src.Id);
@@ -568,6 +568,7 @@ namespace TreeStore.LiteDb.Test
             // the category was copied
             var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
 
+            Assert.Equal(assert_dst_src.Id, result.Id);
             Assert.NotEqual(src.Id, assert_dst_src.Id);
             Assert.Equal(src.Name, assert_dst_src.Name);
 
@@ -588,7 +589,7 @@ namespace TreeStore.LiteDb.Test
             var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(this.CategoryRepository.Root(), c => c.Name = "dst"));
 
             // ACT
-            this.CategoryRepository.CopyTo(src, dst, recurse: true);
+            var result = this.CategoryRepository.CopyTo(src, dst, recurse: true);
 
             // ASSERT
             var assert_src = this.CategoryRepository.FindById(src.Id);
@@ -596,6 +597,7 @@ namespace TreeStore.LiteDb.Test
             // the category was copied
             var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
 
+            Assert.Equal(assert_dst_src.Id, result.Id);
             Assert.NotEqual(src.Id, assert_dst_src.Id);
             Assert.Equal(src.Name, assert_dst_src.Name);
             Assert.Equal(src.Facet.Name, assert_dst_src.Facet.Name);
@@ -616,7 +618,7 @@ namespace TreeStore.LiteDb.Test
             var src_entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(src)));
 
             // ACT
-            this.CategoryRepository.CopyTo(src, dst, recurse: false);
+            var result = this.CategoryRepository.CopyTo(src, dst, recurse: false);
 
             // ASSERT
             var assert_src = this.CategoryRepository.FindById(src.Id);
@@ -624,6 +626,7 @@ namespace TreeStore.LiteDb.Test
             // category was copied
             var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
 
+            Assert.Equal(assert_dst_src.Id, result.Id);
             Assert.NotEqual(src.Id, assert_dst_src.Id);
             Assert.Equal(src.Name, assert_dst_src.Name);
 
@@ -643,7 +646,7 @@ namespace TreeStore.LiteDb.Test
             var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
-            this.CategoryRepository.CopyTo(src, dst, recurse: true);
+            var result = this.CategoryRepository.CopyTo(src, dst, recurse: true);
 
             // ASSERT
             var assert_src = this.CategoryRepository.FindById(src.Id);
@@ -651,6 +654,7 @@ namespace TreeStore.LiteDb.Test
             // the category was copied
             var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
 
+            Assert.Equal(assert_dst_src.Id, result.Id);
             Assert.NotEqual(src.Id, assert_dst_src.Id);
             Assert.Equal(src.Name, assert_dst_src.Name);
 
@@ -671,7 +675,7 @@ namespace TreeStore.LiteDb.Test
             var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
-            this.CategoryRepository.CopyTo(src, dst, recurse: false);
+            var result = this.CategoryRepository.CopyTo(src, dst, recurse: false);
 
             // ASSERT
             var assert_src = this.CategoryRepository.FindById(src.Id);
@@ -679,6 +683,7 @@ namespace TreeStore.LiteDb.Test
             // the category was copied
             var assert_dst_src = this.CategoryRepository.FindByParentAndName(dst, src.Name);
 
+            Assert.Equal(assert_dst_src.Id, result.Id);
             Assert.NotEqual(src.Id, assert_dst_src.Id);
             Assert.Equal(src.Name, assert_dst_src.Name);
 

@@ -24,12 +24,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateTagAsync(It.Is<CreateTagRequest>(r => tag.Name.Equals(r.Name)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tag.ToTagResult());
 
             // ACT
-            var result = await this.service.CreateTagAsync(new CreateTagRequest(
+            var result = await this.clientService.CreateTagAsync(new CreateTagRequest(
                 Name: tag.Name,
                 Facet: new FacetRequest(new CreateFacetPropertyRequest(
                     Name: tag.Facet.Properties.Single().Name,
@@ -52,12 +52,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateTagAsync(It.IsAny<CreateTagRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.CreateTagAsync(new CreateTagRequest(tag.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.CreateTagAsync(new CreateTagRequest(tag.Name), CancellationToken.None));
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -73,12 +73,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetTagByIdAsync(tag.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tag.ToTagResult());
 
             // ACT
-            var result = await this.service.GetTagByIdAsync(tag.Id, CancellationToken.None);
+            var result = await this.clientService.GetTagByIdAsync(tag.Id, CancellationToken.None);
 
             // ASSERT
             var tagResult = tag.ToTagResult();
@@ -94,12 +94,12 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Reading_unknown_tag_by_id_returns_null()
         {
             // ARRANGE
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetTagByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((TagResult)null);
 
             // ACT
-            var result = await this.service.GetTagByIdAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await this.clientService.GetTagByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
             // ASSERT
             Assert.Null(result);
@@ -111,12 +111,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetTagsAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[] { tag.ToTagResult() });
 
             // ACT
-            var result = await this.service.GetTagsAsync(CancellationToken.None);
+            var result = await this.clientService.GetTagsAsync(CancellationToken.None);
 
             // ASSERT
             var tagResult = tag.ToTagResult();
@@ -138,7 +138,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateTagAsync(tag.Id, It.IsAny<UpdateTagRequest>(), It.IsAny<CancellationToken>()))
                 //.Callback<Guid, UpdateTagRequest, CancellationToken>((id, updt, c) => updt.Apply(tag))
                 .ReturnsAsync(() => tag.ToTagResult());
@@ -154,7 +154,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                         Name: "new",
                         Type: FacetPropertyTypeValues.DateTime)));
 
-            var result = await this.service.UpdateTagAsync(tag.Id, updateTagRequest, CancellationToken.None);
+            var result = await this.clientService.UpdateTagAsync(tag.Id, updateTagRequest, CancellationToken.None);
 
             // ASSERT
             var tagResult = tag.ToTagResult();
@@ -172,12 +172,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateTagAsync(tag.Id, It.IsAny<UpdateTagRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.UpdateTagAsync(tag.Id, new UpdateTagRequest(tag.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.UpdateTagAsync(tag.Id, new UpdateTagRequest(tag.Name), CancellationToken.None));
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -193,12 +193,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var tag = DefaultTagModel();
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.DeleteTagAsync(tag.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // ACT
-            var result = await this.service.DeleteTagAsync(tag.Id, CancellationToken.None);
+            var result = await this.clientService.DeleteTagAsync(tag.Id, CancellationToken.None);
 
             // ASSERT
             Assert.True(result);

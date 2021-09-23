@@ -135,16 +135,15 @@ namespace TreeStore.LiteDb
                 : removalTraverser.DeleteIfEmpty(category);
         }
 
-        public void CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse)
+        public CategoryModel CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse)
         {
             using var scope = this.BeginScope(sourceCategory);
 
             CategoryCopyTraverser categoryCopyTraverser = new(this, this.treeStoreLiteDbPersistence.Entities);
 
-            if (recurse)
-                categoryCopyTraverser.CopyCategoryRecursive(sourceCategory, destinationParentCategory);
-            else
-                categoryCopyTraverser.CopyCategory(sourceCategory, destinationParentCategory);
+            return recurse
+                ? categoryCopyTraverser.CopyCategoryRecursive(sourceCategory, destinationParentCategory)
+                : categoryCopyTraverser.CopyCategory(sourceCategory, destinationParentCategory);
         }
 
         #endregion Create, Read, Update, Delete categories

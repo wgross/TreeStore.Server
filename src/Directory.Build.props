@@ -1,0 +1,8 @@
+<Project>
+ 
+  <ItemGroup>
+    <!-- path must be relative to the projects that will use the file-->
+    <Compile Include="..\Common\Guard.cs" Link="Common\Guard.cs" />
+  </ItemGroup>
+
+ </Project>

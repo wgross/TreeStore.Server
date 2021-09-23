@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -43,6 +44,16 @@ namespace TreeStore.Server.Host.Controllers
                 return this.Ok(result);
         }
 
+        [HttpGet, Route("categories/{id}/children")]
+        public async Task<IActionResult> GetCategoriesByIdAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken)
+        {
+            var result = await this.service.GetCategoriesByIdAsync(id, cancellationToken);
+            if (result is null)
+                return this.NotFound();
+            else
+                return this.Ok(new CategoryCollectionResponse { Categories = result.ToArray() });
+        }
+
         [HttpPut, Route("categories/{id}")]
         public async Task<IActionResult> UpdateEntityAsync([FromRoute(Name = "id")] Guid id, [FromBody] UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
@@ -56,6 +67,16 @@ namespace TreeStore.Server.Host.Controllers
             CancellationToken cancellationToken)
         {
             return this.Ok(new DeleteCategoryResponse(await this.service.DeleteCategoryAsync(id, recurse, cancellationToken)));
+        }
+
+        [HttpDelete, Route("categories/{id}/{childName}")]
+        public async Task<IActionResult> DeleteCategoryAsync(
+            [FromRoute(Name = "id")] Guid id,
+            [FromRoute(Name = "childName")] string childName,
+            [FromQuery(Name = "recurse")] bool recurse,
+            CancellationToken cancellationToken)
+        {
+            return this.Ok(new DeleteCategoryResponse(await this.service.DeleteCategoryAsync(id, childName, recurse, cancellationToken)));
         }
 
         [HttpPost, Route("categories/copy")]

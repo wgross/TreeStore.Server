@@ -29,7 +29,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             CreateEntityRequest writtenEntity = null;
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<CreateEntityRequest, CancellationToken>((r, ct) => writtenEntity = r)
                 .ReturnsAsync(entity.ToEntityResult());
@@ -42,7 +42,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                         entity.FacetPropertyValues().Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray()));
 
             // ACT
-            var result = await this.service.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None);
+            var result = await this.clientService.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -75,12 +75,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None));
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -96,12 +96,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(entity.ToEntityResult());
 
             // ACT
-            var result = await this.service.GetEntityByIdAsync(entity.Id, CancellationToken.None);
+            var result = await this.clientService.GetEntityByIdAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -122,12 +122,12 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Reading_unknown_entity_by_id_returns_null()
         {
             // ARRANGE
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetEntityByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((EntityResult)null);
 
             // ACT
-            var result = await this.service.GetEntityByIdAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await this.clientService.GetEntityByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
             // ASSERT
             Assert.Null(result);
@@ -139,12 +139,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[] { entity.ToEntityResult() });
 
             // ACT
-            var result = await this.service.GetEntitiesAsync(CancellationToken.None);
+            var result = await this.clientService.GetEntitiesAsync(CancellationToken.None);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -165,7 +165,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             UpdateEntityRequest writtenEntity = null;
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<Guid, UpdateEntityRequest, CancellationToken>((id, updt, ct) => writtenEntity = updt)
                 .ReturnsAsync(entity.ToEntityResult());
@@ -182,7 +182,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                       .ToArray()));
 
             // ACT
-            var result = await this.service.UpdateEntityAsync(entity.Id, request, CancellationToken.None);
+            var result = await this.clientService.UpdateEntityAsync(entity.Id, request, CancellationToken.None);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -215,12 +215,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None));
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -236,12 +236,12 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.serviceMock
+            this.modelServiceMock
                 .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // ACT
-            var result = await this.service.DeleteEntityAsync(entity.Id, CancellationToken.None);
+            var result = await this.clientService.DeleteEntityAsync(entity.Id, CancellationToken.None);
 
             // ASSERT
             Assert.True(result);

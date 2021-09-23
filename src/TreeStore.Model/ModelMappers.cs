@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TreeStore.Model.Abstractions;
 
@@ -6,6 +7,13 @@ namespace TreeStore.Model
 {
     public static class ModelMappers
     {
+        public static EntityReferenceResult ToEntityReferenceResult(this EntityModel entity)
+        {
+            return new EntityReferenceResult(
+                Id: entity.Id,
+                Name: entity.Name);
+        }
+
         public static EntityResult ToEntityResult(this EntityModel entity)
         {
             return new EntityResult(
@@ -21,6 +29,11 @@ namespace TreeStore.Model
             return new TagResult(tag!.Id, tag!.Name, tag!.Facet!.ToFacetResult());
         }
 
+        public static CategoryReferenceResult ToCategoryReferenceResult(this CategoryModel category)
+        {
+            return new CategoryReferenceResult(Id: category.Id, Name: category.Name);
+        }
+
         public static CategoryResult ToCategoryResult(this CategoryModel category)
         {
             if (category.Parent is null)
@@ -31,6 +44,27 @@ namespace TreeStore.Model
             else
             {
                 return new CategoryResult(category.Id, category.Name, category.Parent!.Id, category.Facet?.ToFacetResult());
+            }
+        }
+
+        public static CategoryResult ToCategoryResult(this CategoryModel category, IEnumerable<CategoryModel> categories, IEnumerable<EntityModel> entities)
+        {
+            if (category.Parent is null)
+            {
+                // 'no parent' is indicated with Guid.Empty as parent id
+                return new CategoryResult(category.Id, category.Name, Guid.Empty, category.Facet?.ToFacetResult())
+                {
+                    Categories = categories?.Select(c => c.ToCategoryReferenceResult())?.ToArray() ?? Array.Empty<CategoryResult>(),
+                    Entities = entities?.Select(e => e.ToEntityReferenceResult())?.ToArray() ?? Array.Empty<EntityResult>()
+                };
+            }
+            else
+            {
+                return new CategoryResult(category.Id, category.Name, category.Parent!.Id, category.Facet?.ToFacetResult())
+                {
+                    Categories = categories?.Select(c => c.ToCategoryReferenceResult())?.ToArray() ?? Array.Empty<CategoryResult>(),
+                    Entities = entities?.Select(e => e.ToEntityReferenceResult())?.ToArray() ?? Array.Empty<EntityResult>()
+                };
             }
         }
 

@@ -20,6 +20,6 @@ namespace TreeStore.Model
         /// <summary>
         /// Copy a category <paramref name="sourceCategory"/> to <paramref name="destinationParentCategory"/> as sub catagory.
         /// </summary>
-        void CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse);
+        CategoryModel CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse);
     }
 }
