@@ -6,6 +6,7 @@ using Xunit;
 
 namespace TreeStoreFS.Test
 {
+    [Collection(nameof(PowerShell))]
     public class ItemCmdletProviderTest : CmdletProviderTestBase
     {
         #region Get-Item -Path
@@ -36,7 +37,7 @@ namespace TreeStoreFS.Test
         }
 
         [Fact]
-        public void Powershell_reads_root_category_child()
+        public void Powershell_reads_roots_category_child()
         {
             // ARRANGE
             this.ArrangeFileSystem();
@@ -63,6 +64,40 @@ namespace TreeStoreFS.Test
             Assert.Equal(child.Property<Guid>("Id"), psobject.Property<Guid>("Id"));
             Assert.Equal("child", psobject.Property<string>("PSChildName"));
             Assert.True(psobject.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+        }
+
+        [Fact]
+        public void Powershell_reads_roots_entity_child()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            var child = this.PowerShell
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity")
+                .Invoke()
+                .Single();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            var result = this.PowerShell.AddCommand("Get-Item")
+                .AddParameter("Path", @"test:\child")
+                .Invoke()
+                .ToArray();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            var psobject = result.Single();
+
+            Assert.Equal(child.Property<Guid>("Id"), psobject.Property<Guid>("Id"));
+            Assert.Equal("child", psobject.Property<string>("PSChildName"));
+            Assert.False(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
@@ -165,6 +200,32 @@ namespace TreeStoreFS.Test
             // ASSERT
             Assert.False(this.PowerShell.HadErrors);
             Assert.False((bool)result.BaseObject);
+        }
+
+        [Fact]
+        public void Powershell_tests_entity_path_as_leaf()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity")
+                .Invoke()
+                .ToArray();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            var result = this.PowerShell
+                .AddCommand("Test-Path")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("PathType", "Leaf")
+                .Invoke()
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.True((bool)result.BaseObject);
         }
 
         #endregion Test-Path -Path -ItemType

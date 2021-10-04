@@ -81,10 +81,5 @@ namespace TreeStore.Server.Host.IntegTest
             Assert.Equal(category.Facet.Properties.Single().Type, result.Values.Single().Type);
             Assert.Equal("changed-value", result.Values.Single().Value);
         }
-
-        [Fact]
-        public async Task Read_entities_by_category()
-        {
-        }
     }
 }

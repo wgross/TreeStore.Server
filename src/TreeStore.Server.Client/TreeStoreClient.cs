@@ -249,7 +249,7 @@ namespace TreeStore.Server.Client
                     return new InvalidModelException(detail);
 
                 default:
-                    return new ArgumentException(nameof(exceptionName));
+                    return new ArgumentException($"Unknown exception type {exceptionName}");
             }
         }
 

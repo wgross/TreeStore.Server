@@ -44,7 +44,7 @@ namespace TreeStore.Model
         }
 
         ///<inheritdoc/>
-        public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
+        public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest request, CancellationToken cancellationToken)
         {
             var entity = this.model.Entities.FindById(id);
 
@@ -55,7 +55,20 @@ namespace TreeStore.Model
                 throw new InvalidOperationException($"Entity(id='{id}') wasn't updated: Entity(id='{id}') doesn't exist");
             }
 
-            this.Apply(updateEntityRequest, entity);
+            if (request.Name is not null)
+            {
+                // name is about to be updated.
+                // check if there is an entity having the same name
+                var category = this.model.Categories.FindByParentAndName(entity.Category!, request.Name);
+                if (category is not null)
+                {
+                    this.logger.LogError("Entity(id='{entityId}') wasn't updated: duplicate name with Category(id='{categoryId}')", id, category.Id);
+
+                    throw new InvalidOperationException($"Entity(id='{entity.Id}') wasn't updated: duplicate name with Category(id='{category.Id}')");
+                }
+            }
+
+            this.Apply(request, entity);
 
             return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
         }

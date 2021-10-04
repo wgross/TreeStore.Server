@@ -333,6 +333,14 @@ namespace TreeStore.Model.Test
                     .Returns(category);
             });
 
+            this.ArrangeEntityRepository(mock =>
+            {
+                // category.id+name can't be resolved to an entity
+                mock
+                    .Setup(r => r.FindByCategoryAndName(category.Parent, "changed"))
+                    .Returns((EntityModel)null);
+            });
+
             // ACT
             var request = new UpdateCategoryRequest(
                 Name: "changed");
@@ -344,6 +352,36 @@ namespace TreeStore.Model.Test
             Assert.Equal(category.Id, writtenCategory.Id);
             Assert.Equal(category.Parent.Id, writtenCategory.Parent.Id);
             // TODO: better test of facet property update
+        }
+
+        [Fact]
+        public async Task Updates_category_name_fails_on_duplicate_entity_name()
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Id))
+                    .Returns(category);
+            });
+
+            var entity = DefaultEntityModel();
+            this.ArrangeEntityRepository(mock =>
+            {
+                // category.id+name can be resolved to an entity
+                mock
+                    .Setup(r => r.FindByCategoryAndName(category.Parent, "changed"))
+                    .Returns(entity);
+            });
+
+            // ACT
+            var request = new UpdateCategoryRequest(Name: "changed");
+
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateCategoryAsync(category.Id, request, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal($"Category(id='{category.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')", result.Message);
         }
 
         [Fact]
@@ -523,6 +561,13 @@ namespace TreeStore.Model.Test
         {
             // ARRANGE
             var category = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(category.Parent.Id))
+                    .Returns(category);
+            });
 
             // ACT
             var result = await Assert.ThrowsAsync<ArgumentNullException>(
@@ -779,6 +824,13 @@ namespace TreeStore.Model.Test
                     .Returns(entity);
             });
 
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByParentAndName(entity.Category, "changed"))
+                    .Returns((CategoryModel)null);
+            });
+
             // ACT
             var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None);
 
@@ -808,6 +860,13 @@ namespace TreeStore.Model.Test
                     .Returns(entity);
             });
 
+            this.ArrangeCategoryRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindByParentAndName(entity.Category, "changed"))
+                    .Returns((CategoryModel)null);
+            });
+
             // ACT
             var result = await this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None);
 
@@ -815,6 +874,36 @@ namespace TreeStore.Model.Test
             Assert.Equal("changed", writtenEntity.Name);
             Assert.Equal(entity.Id, writtenEntity.Id);
             Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
+        }
+
+        [Fact]
+        public async Task Updating_entity_name_fails_on_duplicate_category_name()
+        {
+            // ARRANGE
+            var rootCategory = DefaultRootCategoryModel();
+            var category = DefaultCategoryModel(rootCategory);
+            var entity = DefaultEntityModel(WithEntityCategory(rootCategory));
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                // there is already a category with the same name
+                mock
+                    .Setup(r => r.FindByParentAndName(rootCategory, "changed"))
+                    .Returns(category);
+            });
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                mock
+                    .Setup(r => r.FindById(entity.Id))
+                    .Returns(entity);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(Name: "changed"), CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal($"Entity(id='{entity.Id}') wasn't updated: duplicate name with Category(id='{category.Id}')", result.Message);
         }
 
         [Fact]

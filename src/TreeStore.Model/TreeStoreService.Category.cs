@@ -73,8 +73,6 @@ namespace TreeStore.Model
         /// <inheritdoc/>
         public Task<bool> DeleteCategoryAsync(Guid parentId, string childName, bool recurse, CancellationToken cancellationToken)
         {
-            Guard.AgainstNull(childName, nameof(childName));
-
             var parentCategory = this.model.Categories.FindById(parentId);
             if (parentCategory is null)
             {
@@ -83,7 +81,7 @@ namespace TreeStore.Model
                 return Task.FromResult(false);
             }
 
-            var childCategory = this.model.Categories.FindByParentAndName(parentCategory!, childName);
+            var childCategory = this.model.Categories.FindByParentAndName(parentCategory!, Guard.Against.Null(childName, nameof(childName)));
             if (childCategory is null)
             {
                 this.logger.LogInformation("Category(parentId='{parentId}',name='{childName}') wasn't deleted: It doesn't exist", parentId, childName);
@@ -142,6 +140,19 @@ namespace TreeStore.Model
                 this.logger.LogError("Category(id='{categoryId}') wasn't updated: Category(id='{categoryId}') doesn't exist", id);
 
                 throw new InvalidOperationException($"Category(id='{id}') wasn't updated: Category(id='{id}') doesn't exist");
+            }
+
+            if (request.Name is not null)
+            {
+                // name is about to be updated.
+                // check if there is an entity having the same name
+                var entity = this.model.Entities.FindByCategoryAndName(category.Parent!, request.Name);
+                if (entity is not null)
+                {
+                    this.logger.LogError("Category(id='{categoryId}') wasn't updated: duplicate name with Entity(id='{entityId}')", id, entity.Id);
+
+                    throw new InvalidOperationException($"Category(id='{category.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')");
+                }
             }
 
             this.Apply(request, category);

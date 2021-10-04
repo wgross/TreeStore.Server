@@ -205,7 +205,7 @@ namespace TreeStore.LiteDb.Test
         }
 
         [Fact]
-        public void CategoryRepository_creating_fails_for_duplicate_child_name()
+        public void CategoryRepository_writing_fails_for_duplicate_child_name()
         {
             // ARRANGE
             var category = new CategoryModel("category");
@@ -219,12 +219,13 @@ namespace TreeStore.LiteDb.Test
 
             // ACT
             second_category.Name = category.Name;
-            var result = Assert.Throws<LiteException>(() => this.CategoryRepository.Upsert(second_category));
+            var result = Assert.Throws<InvalidOperationException>(() => this.CategoryRepository.Upsert(second_category));
 
             // ASSERT
+            Assert.Equal($"Can't write Category(name='{category.Name}'): duplicate name", result.Message);
             Assert.StartsWith(
                 $"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"category_",
-                result.Message);
+                result.InnerException.Message);
         }
 
         #endregion UPSERT

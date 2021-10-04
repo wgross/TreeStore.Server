@@ -81,8 +81,14 @@ namespace TreeStore.LiteDb
             if (category.Parent is null)
                 if (category.Id != this.Root().Id)
                     throw new InvalidOperationException("Category must have parent.");
-
-            return base.Upsert(category);
+            try
+            {
+                return base.Upsert(category);
+            }
+            catch (LiteException le) when (le.ErrorCode == LiteException.INDEX_DUPLICATE_KEY)
+            {
+                throw new InvalidOperationException($"Can't write Category(name='{category.Name}'): duplicate name", le);
+            }
         }
 
         public override CategoryModel? FindById(Guid id)

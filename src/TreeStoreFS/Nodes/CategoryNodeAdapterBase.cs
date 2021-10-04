@@ -11,22 +11,18 @@ using TreeStore.Model.Abstractions;
 
 namespace TreeStoreFS.Nodes
 {
-    public abstract class CategoryNodeAdapterBase :
-        // Enable provider node access
-        IServiceProvider,
+    public abstract class CategoryNodeAdapterBase : NodeAdapterBase,
+
         // Path Traversal
         IGetChildItems,
         // ItemCmdletProvider
         IGetItem, IItemExists,
-        // ContaierCmdletProvider
-        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive
+        // ContainerCmdletProvider
+        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IRenameChildItem
     {
         public CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
-        {
-            this.TreeStoreService = treeStoreService;
-        }
-
-        protected ITreeStoreService TreeStoreService { get; }
+            : base(treeStoreService)
+        { }
 
         protected abstract CategoryResult Category { get; }
 
@@ -34,19 +30,6 @@ namespace TreeStoreFS.Nodes
         /// Any tree store node has an Id.
         /// </summary>
         public Guid Id => this.Category.Id;
-
-        #region IServiceProvider
-
-        /// <inheritdoc/>
-        public object? GetService(Type serviceType)
-        {
-            if (this.GetType().IsAssignableTo(serviceType))
-                return this;
-
-            return null;
-        }
-
-        #endregion IServiceProvider
 
         #region IGetChildItems
 
@@ -70,7 +53,10 @@ namespace TreeStoreFS.Nodes
             if (result is null)
                 return Array.Empty<ProviderNode>();
 
-            return result.Select(c => this.CreateCategoryNode(c)).ToArray();
+            IEnumerable<ProviderNode> childCategories = this.Category.Categories.Select(c => this.CreateCategoryNode(c));
+            IEnumerable<ProviderNode> childEntities = this.Category.Entities.Select(e => this.CreateEntityNode(e));
+
+            return childCategories.Union(childEntities).ToArray();
         }
 
         #endregion IGetChildItems
@@ -87,18 +73,25 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         ProviderNode? INewChildItem.NewChildItem(string childName, string? itemTypeName, object? newItemValue)
         {
-            Guard.AgainstNull(childName, nameof(childName));
-            Guard.AgainstNull(itemTypeName, nameof(itemTypeName));
-
-            return itemTypeName.ToLowerInvariant() switch
+            return Guard.Against.Null(itemTypeName, nameof(itemTypeName)).ToLowerInvariant() switch
             {
-                "category" => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, childName))),
+                "category" => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
+                "entity" => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
 
                 _ => throw new NotImplementedException()
             };
         }
 
-        private async Task<CategoryResult?> NewChildContainer(Guid parentId, string childName)
+        private async Task<EntityResult> NewChildEntity(Guid parentId, string childName)
+        {
+            return await this.TreeStoreService.CreateEntityAsync(
+               new CreateEntityRequest(
+                   Name: childName,
+                   CategoryId: parentId),
+                   CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task<CategoryResult> NewChildContainer(Guid parentId, string childName)
         {
             return await this.TreeStoreService.CreateCategoryAsync(
                 new CreateCategoryRequest(
@@ -110,21 +103,17 @@ namespace TreeStoreFS.Nodes
 
         #endregion INewChildItem
 
-        protected ProviderNode CreateCategoryNode(CategoryResult category)
-        {
-            return new ContainerNode(category.Name, new CategoryNodeAdapter(this.TreeStoreService, category.Id));
-        }
+        // TODO: Evaluate: entityResult might be a complete entity node instead of an EntityReference because it can't have children like the catagory
+        private LeafNode CreateEntityNode(EntityReferenceResult entityResult) => new(entityResult.Name, new EntityNodeAdapter(this.TreeStoreService, entityResult.Id));
 
-        protected static T? Await<T>(Task<T?> action) => action.ConfigureAwait(false).GetAwaiter().GetResult();
+        protected ContainerNode CreateCategoryNode(CategoryReferenceResult category) => new(category.Name, new CategoryNodeAdapter(this.TreeStoreService, category.Id));
 
         #region IRemoveChildItem
 
         /// <inheritdoc/>
         void IRemoveChildItem.RemoveChildItem(string childName, bool recurse)
         {
-            Guard.AgainstNull(childName, nameof(childName));
-
-            Await(this.TreeStoreService.DeleteCategoryAsync(this.Category.Id, childName, recurse, CancellationToken.None));
+            Await(this.TreeStoreService.DeleteCategoryAsync(this.Category.Id, Guard.Against.Null(childName, nameof(childName)), recurse, CancellationToken.None));
         }
 
         #endregion IRemoveChildItem
@@ -141,11 +130,9 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         ProviderNode? ICopyChildItem.CopyChildItem(ProviderNode nodeToCopy, string[] destination)
         {
-            Guard.AgainstNull(nodeToCopy, nameof(nodeToCopy));
-
             CategoryResult? result = null;
 
-            if (nodeToCopy.Underlying is CategoryNodeAdapterBase categoryNode)
+            if (Guard.Against.Null(nodeToCopy, nameof(nodeToCopy)).Underlying is CategoryNodeAdapterBase categoryNode)
                 result = Await(this.TreeStoreService.CopyCategoryToAsync(categoryNode.Id, this.Category.Id, false, CancellationToken.None));
 
             return new ContainerNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
@@ -154,15 +141,56 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         ProviderNode? ICopyChildItemRecursive.CopyChildItemRecursive(ProviderNode nodeToCopy, string[] destination)
         {
-            Guard.AgainstNull(nodeToCopy, nameof(nodeToCopy));
-
             CategoryResult? result = null;
-            if (nodeToCopy.Underlying is CategoryNodeAdapterBase categoryNode)
+            if (Guard.Against.Null(nodeToCopy, nameof(nodeToCopy)).Underlying is CategoryNodeAdapterBase categoryNode)
                 result = Await(this.TreeStoreService.CopyCategoryToAsync(categoryNode.Id, this.Category.Id, true, CancellationToken.None));
 
             return new ContainerNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
         }
 
         #endregion ICopyChildItem, ICopyChildItemRecursive
+
+        #region IRenameChildItem
+
+        /// <inheritdoc/>
+        void IRenameChildItem.RenameChildItem(string childName, string newName)
+        {
+            var childToRename = this.GetChildByName(Guard.Against.NullOrEmpty(childName, nameof(childName)));
+            if (childToRename is null)
+            {
+                throw new InvalidOperationException($"Child item (name='{childName}') wasn't renamed: It doesn't exist");
+            }
+
+            var existingChild = this.GetChildByName(Guard.Against.NullOrEmpty(newName, nameof(newName)));
+            if (existingChild is not null)
+            {
+                throw new InvalidOperationException($"Child item (name='{childName}') wasn't renamed: There is already a child with name='{newName}'");
+            }
+
+            Await(this.RenameChildItemAsync(childToRename, newName));
+        }
+
+        private object? GetChildByName(string childName)
+            => (object?)this.Category.Categories.FirstOrDefault(c => c.Name.Equals(childName, StringComparison.OrdinalIgnoreCase))
+            ?? (object?)this.Category.Entities.FirstOrDefault(e => e.Name.Equals(childName, StringComparison.OrdinalIgnoreCase));
+
+        private async Task RenameChildItemAsync(object childToRename, string newName)
+        {
+            switch (childToRename)
+            {
+                case EntityReferenceResult er:
+                    await this.TreeStoreService.UpdateEntityAsync(er.Id, new UpdateEntityRequest(Name: newName), CancellationToken.None).ConfigureAwait(false);
+                    break;
+
+                case CategoryReferenceResult cr:
+                    await this.TreeStoreService.UpdateCategoryAsync(cr.Id, new UpdateCategoryRequest(Name: newName), CancellationToken.None).ConfigureAwait(false);
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Unkown reference type: '{childToRename.GetType()}'");
+            }
+        }
+
+        #endregion IRenameChildItem
     }
 }

@@ -6,6 +6,7 @@ using Xunit;
 
 namespace TreeStoreFS.Test
 {
+    [Collection(nameof(PowerShell))]
     public class ContainerCommandProviderTest : CmdletProviderTestBase
     {
         #region New-Item -Path -ItemType -Value
@@ -21,19 +22,36 @@ namespace TreeStoreFS.Test
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("ItemType", "category")
                 .Invoke()
-                .ToArray();
+                .Single();
 
             // ASSERT
             Assert.False(this.PowerShell.HadErrors);
 
-            var psobject = result.Single();
+            Assert.Equal("child", result.Property<string>("PSChildName"));
+            Assert.True(result.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", result.Property<string>("PSParentPath"));
+        }
 
-            Assert.Equal("child", psobject.Property<string>("PSChildName"));
-            Assert.True(psobject.Property<bool>("PSIsContainer"));
-            Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
-            Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+        [Fact]
+        public void Powershell_creates_entity()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // ACT
+            var result = this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity")
+                .Invoke()
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            Assert.Equal("child", result.Property<string>("PSChildName"));
         }
 
         #endregion New-Item -Path -ItemType -Value
@@ -41,7 +59,7 @@ namespace TreeStoreFS.Test
         #region Remove-Item -Path
 
         [Fact]
-        public void Powershell_removes_root_child_node()
+        public void Powershell_removes_root_child_category()
         {
             // ARRANGE
             this.ArrangeFileSystem();
@@ -71,6 +89,39 @@ namespace TreeStoreFS.Test
                 .Single();
 
             Assert.False((bool)childAfterRemove.BaseObject);
+        }
+
+        [Fact]
+        public void Powershell_removes_root_child_entity()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity")
+                .Invoke()
+                .ToArray();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            var result = this.PowerShell.AddCommand("Remove-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("Recurse") // TODO: remove asks bc HasChildItems is always true => Avoid.
+                .Invoke()
+                .ToArray();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            this.PowerShell.Commands.Clear();
+            var childAfterRemove = this.PowerShell
+                .AddCommand("Test-Path")
+                .AddParameter("Path", @"test:\child")
+                .Invoke()
+                .Single();
+
+            Assert.True((bool)childAfterRemove.BaseObject);
         }
 
         #endregion Remove-Item -Path
@@ -157,5 +208,40 @@ namespace TreeStoreFS.Test
         }
 
         #endregion Copy-Item -Path -Destination -Recurse
+
+        #region Rename-Item -Path
+
+        [Fact]
+        public void Powershell_renames_category()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "category")
+                .Invoke();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            this.PowerShell.AddCommand("Rename-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("NewName", "changed")
+                .Invoke();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            this.PowerShell.Commands.Clear();
+            var exists = this.PowerShell.AddCommand("Test-Path")
+                .AddParameter("Path", @"test:\changed")
+                .AddParameter("PathType", "Container")
+                .Invoke()
+                .Single();
+
+            Assert.True((bool)exists.BaseObject); ;
+        }
+
+        #endregion Rename-Item -Path
     }
 }

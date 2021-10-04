@@ -5,6 +5,7 @@ using Xunit;
 
 namespace TreeStoreFS.Test
 {
+    [Collection(nameof(PowerShell))]
     public class DriveCmdletProviderTest : CmdletProviderTestBase
     {
         public DriveCmdletProviderTest()

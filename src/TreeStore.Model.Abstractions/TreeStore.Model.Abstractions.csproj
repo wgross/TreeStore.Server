@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="..\Common\Guard.cs"/>
+  </ItemGroup>
+
 </Project>

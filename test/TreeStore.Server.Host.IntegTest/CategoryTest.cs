@@ -148,6 +148,62 @@ namespace TreeStore.Server.Host.IntegTest
         }
 
         [Fact]
+        public async Task Update_category_name_by_id_fails_on_duplicate_category_name()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createRequest1 = new CreateCategoryRequest(
+                Name: "c1",
+                ParentId: rootCategory.Id);
+
+            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None);
+
+            var createRequest2 = new CreateCategoryRequest(
+                Name: "c2",
+                ParentId: rootCategory.Id);
+
+            var category2 = await this.client.CreateCategoryAsync(createRequest2, CancellationToken.None);
+
+            // ACT
+            // give category1 the name of category2
+            var updateRequest = new UpdateCategoryRequest(Name: "c2");
+
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None));
+
+            // ASSERT
+            Assert.StartsWith("Can't write Category(name='c2'): duplicate name:", result.Message);
+        }
+
+        [Fact]
+        public async Task Update_category_name_by_id_fails_on_duplicate_entity_name()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createRequest1 = new CreateCategoryRequest(
+                Name: "c1",
+                ParentId: rootCategory.Id);
+
+            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None);
+
+            var createRequest2 = new CreateEntityRequest(
+                Name: "c2",
+                CategoryId: rootCategory.Id);
+
+            var entity = await this.client.CreateEntityAsync(createRequest2, CancellationToken.None);
+
+            // ACT
+            // give category1 the name of category2
+            var updateRequest = new UpdateCategoryRequest(Name: "c2");
+
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None));
+
+            // ASSERT
+            Assert.StartsWith($"Category(id='{category1.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')", result.Message);
+        }
+
+        [Fact]
         public async Task Delete_category_by_id()
         {
             // ARRANGE
