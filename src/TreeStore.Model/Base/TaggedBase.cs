@@ -18,7 +18,7 @@ namespace TreeStore.Model.Base
         /// Adds a reference to the <see cref="TagModel"/> <paramref name="tag"/> to the entity.
         /// </summary>
         /// <exception cref="ArgumentNullException">if <paramref name="tag"/> is null</exception>
-        public void AddTag(TagModel tag)
+        public void AddTag(TagModel? tag)
         {
             if (tag is null)
                 throw new ArgumentNullException(nameof(tag));
@@ -39,7 +39,7 @@ namespace TreeStore.Model.Base
         /// </summary>
         public void RemoveTag(Guid tagId)
         {
-            var tag = this.Tags.FirstOrDefault(t => t.Id == tagId);
+            var tag = this.Tags.Find(t => t.Id == tagId);
             if (tag is not null)
                 this.RemoveTag(tag);
         }

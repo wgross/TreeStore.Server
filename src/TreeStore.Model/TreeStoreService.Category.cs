@@ -113,7 +113,6 @@ namespace TreeStore.Model
         }
 
         /// <inheritdoc/>
-
         public Task<IEnumerable<CategoryResult>?> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var parentCategory = this.model.Categories.FindById(id);
@@ -123,7 +122,7 @@ namespace TreeStore.Model
 
                 return Task.FromResult((IEnumerable<CategoryResult>?)null);
             }
-            return Task.FromResult(this.model.Categories.FindByParent(parentCategory).Select(c => c.ToCategoryResult()));
+            return Task.FromResult<IEnumerable<CategoryResult>?>(this.model.Categories.FindByParent(parentCategory).Select(c => c.ToCategoryResult()));
         }
 
         /// <summary>

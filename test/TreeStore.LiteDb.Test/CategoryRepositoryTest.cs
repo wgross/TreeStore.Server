@@ -705,11 +705,11 @@ namespace TreeStore.LiteDb.Test
             var src_category = this.CategoryRepository.Upsert(DefaultCategoryModel(src));
 
             // ACT
-            var result = Assert.Throws<LiteException>(() => this.CategoryRepository.CopyTo(src, dst, recurse: true));
+            var result = Assert.Throws<InvalidOperationException>(() => this.CategoryRepository.CopyTo(src, dst, recurse: true));
 
             // ASSERT
             Assert.StartsWith(
-                expectedStartString: $"Cannot insert duplicate key in unique index 'UniqueName'.",
+                expectedStartString: "Can't write Category(name='src'): duplicate name",
                 actualString: result.Message);
         }
 

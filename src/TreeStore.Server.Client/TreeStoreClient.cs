@@ -27,7 +27,7 @@ namespace TreeStore.Server.Client
         #region /entities
 
         /// <inheritdoc/>
-        public async Task<EntityResult> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
+        public async Task<EntityResult?> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<EntityResult>(
                 httpResponseMessage: await this.httpClient.PostAsJsonAsync("entities", createEntityRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -35,7 +35,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<EntityResult> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<EntityResult>(
                 httpResponseMessage: await this.httpClient.GetAsync($"entities/{id}", cancellationToken).ConfigureAwait(false),
@@ -54,7 +54,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
+        public async Task<EntityResult?> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<EntityResult>(
                  httpResponseMessage: await this.httpClient.PutAsJsonAsync($"entities/{id}", updateEntityRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -77,7 +77,7 @@ namespace TreeStore.Server.Client
         #region /categories
 
         /// <inheritdoc/>
-        public async Task<CategoryResult> GetRootCategoryAsync(CancellationToken cancellationToken)
+        public async Task<CategoryResult?> GetRootCategoryAsync(CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.GetAsync("categories", cancellationToken).ConfigureAwait(false),
@@ -85,7 +85,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<CategoryResult> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
+        public async Task<CategoryResult?> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.PostAsJsonAsync("categories", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -93,7 +93,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<CategoryResult>> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<CategoryResult>?> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var categories = await this.HandleJsonResponse<CategoryCollectionResponse>(
                 httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}/children", cancellationToken).ConfigureAwait(false),
@@ -103,7 +103,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<CategoryResult> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
@@ -111,7 +111,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        public async Task<CategoryResult?> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.PutAsJsonAsync($"categories/{id}", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -119,7 +119,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<CategoryResult> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken)
+        public async Task<CategoryResult?> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient
@@ -156,7 +156,7 @@ namespace TreeStore.Server.Client
         #region /tags
 
         /// <inheritdoc/>
-        public async Task<TagResult> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
+        public async Task<TagResult?> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<TagResult>(
                httpResponseMessage: await this.httpClient.PostAsJsonAsync("tags", createTagRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -174,7 +174,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<TagResult> GetTagByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<TagResult>(
                  httpResponseMessage: await this.httpClient.GetAsync($"tags/{id}", cancellationToken).ConfigureAwait(false),
@@ -182,7 +182,7 @@ namespace TreeStore.Server.Client
         }
 
         /// <inheritdoc/>
-        public async Task<TagResult> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken cancellationToken)
+        public async Task<TagResult?> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<TagResult>(
                 httpResponseMessage: await this.httpClient.PutAsJsonAsync($"tags/{id}", updateTagRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
@@ -203,7 +203,7 @@ namespace TreeStore.Server.Client
 
         #region Common Implementation
 
-        private async Task<T> HandleJsonResponse<T>(HttpResponseMessage httpResponseMessage, CancellationToken cancellationToken)
+        private async Task<T?> HandleJsonResponse<T>(HttpResponseMessage httpResponseMessage, CancellationToken cancellationToken)
         {
             if (httpResponseMessage.IsSuccessStatusCode)
             {
@@ -213,16 +213,12 @@ namespace TreeStore.Server.Client
             }
             else
             {
-                switch (httpResponseMessage.StatusCode)
+                return httpResponseMessage.StatusCode switch
                 {
-                    case HttpStatusCode.NotFound:
-                        return default;
-
-                    case HttpStatusCode.BadRequest:
-                        throw await this.ThrowExceptionFromBadRequest(httpResponseMessage);
-                    default:
-                        throw new InvalidOperationException($"Unknown response status: {httpResponseMessage.StatusCode}");
-                }
+                    HttpStatusCode.NotFound => default,
+                    HttpStatusCode.BadRequest => throw await this.ThrowExceptionFromBadRequest(httpResponseMessage).ConfigureAwait(false),
+                    _ => throw new InvalidOperationException($"Unknown response status: {httpResponseMessage.StatusCode}"),
+                };
             }
         }
 
@@ -238,19 +234,14 @@ namespace TreeStore.Server.Client
             };
         }
 
-        private Exception CreateException(string exceptionName, string detail)
+        private Exception CreateException(string? exceptionName, string detail)
         {
-            switch (exceptionName)
+            return exceptionName switch
             {
-                case nameof(InvalidOperationException):
-                    return new InvalidOperationException(detail);
-
-                case nameof(InvalidModelException):
-                    return new InvalidModelException(detail);
-
-                default:
-                    return new ArgumentException($"Unknown exception type {exceptionName}");
-            }
+                nameof(InvalidOperationException) => new InvalidOperationException(detail),
+                nameof(InvalidModelException) => new InvalidModelException(detail),
+                _ => new ArgumentException($"Unknown exception type {exceptionName}"),
+            };
         }
 
         #endregion Common Implementation

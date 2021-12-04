@@ -34,7 +34,7 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var result = await this.client.CreateCategoryAsync(request, CancellationToken.None);
+            var result = await this.client.CreateCategoryAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(request.Name, result.Name);
@@ -59,10 +59,10 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var category = await this.client.CreateCategoryAsync(request, CancellationToken.None);
+            var category = await this.client.CreateCategoryAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
-            var result = await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None);
+            var result = await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(category.Id, result.Id);
@@ -92,10 +92,10 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var category = await this.client.CreateCategoryAsync(request, CancellationToken.None);
+            var category = await this.client.CreateCategoryAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
-            var result = await this.client.GetCategoriesByIdAsync(category.ParentId, CancellationToken.None);
+            var result = await this.client.GetCategoriesByIdAsync(category.ParentId, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(category.Id, result.Single().Id);
@@ -124,7 +124,7 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None);
+            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             var updateRequest = new UpdateCategoryRequest(
@@ -134,14 +134,12 @@ namespace TreeStore.Server.Host.IntegTest
                     new DeleteFacetPropertyRequest(category.Facet.Properties.ElementAt(1).Id),
                     new CreateFacetPropertyRequest(Name: "p3", Type: FacetPropertyTypeValues.Bool)));
 
-            var result = await this.client.UpdateCategoryAsync(category.Id, updateRequest, CancellationToken.None);
+            var result = await this.client.UpdateCategoryAsync(category.Id, updateRequest, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(category.Id, result.Id);
             Assert.Equal("changed", result.Name);
             Assert.Equal(category.ParentId, result.ParentId);
-
-            FacetPropertyResult getResultProperty(Guid id) => result.Facet.Properties.Single(p => p.Id == id);
 
             Assert.Equal(new[] { "changed", "p3" }, result.Facet.Properties.Select(p => p.Name).ToArray());
             Assert.Equal(new[] { FacetPropertyTypeValues.DateTime, FacetPropertyTypeValues.Bool }, result.Facet.Properties.Select(p => p.Type).ToArray());
@@ -157,19 +155,19 @@ namespace TreeStore.Server.Host.IntegTest
                 Name: "c1",
                 ParentId: rootCategory.Id);
 
-            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None);
+            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None).ConfigureAwait(false);
 
             var createRequest2 = new CreateCategoryRequest(
                 Name: "c2",
                 ParentId: rootCategory.Id);
 
-            var category2 = await this.client.CreateCategoryAsync(createRequest2, CancellationToken.None);
+            var category2 = await this.client.CreateCategoryAsync(createRequest2, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             // give category1 the name of category2
             var updateRequest = new UpdateCategoryRequest(Name: "c2");
 
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None)).ConfigureAwait(false);
 
             // ASSERT
             Assert.StartsWith("Can't write Category(name='c2'): duplicate name:", result.Message);
@@ -185,19 +183,19 @@ namespace TreeStore.Server.Host.IntegTest
                 Name: "c1",
                 ParentId: rootCategory.Id);
 
-            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None);
+            var category1 = await this.client.CreateCategoryAsync(createRequest1, CancellationToken.None).ConfigureAwait(false);
 
             var createRequest2 = new CreateEntityRequest(
                 Name: "c2",
                 CategoryId: rootCategory.Id);
 
-            var entity = await this.client.CreateEntityAsync(createRequest2, CancellationToken.None);
+            var entity = await this.client.CreateEntityAsync(createRequest2, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             // give category1 the name of category2
             var updateRequest = new UpdateCategoryRequest(Name: "c2");
 
-            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.client.UpdateCategoryAsync(category1.Id, updateRequest, CancellationToken.None)).ConfigureAwait(false);
 
             // ASSERT
             Assert.StartsWith($"Category(id='{category1.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')", result.Message);
@@ -216,14 +214,14 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None);
+            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
-            var result = await this.client.DeleteCategoryAsync(category.Id, recurse: false, CancellationToken.None);
+            var result = await this.client.DeleteCategoryAsync(category.Id, recurse: false, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.True(result);
-            Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None));
+            Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None).ConfigureAwait(false));
         }
 
         [Fact]
@@ -239,14 +237,14 @@ namespace TreeStore.Server.Host.IntegTest
                         new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
                         new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
 
-            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None);
+            var category = await this.client.CreateCategoryAsync(createRequest, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
-            var result = await this.client.DeleteCategoryAsync(rootCategory.Id, category.Name, recurse: false, CancellationToken.None);
+            var result = await this.client.DeleteCategoryAsync(rootCategory.Id, category.Name, recurse: false, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.True(result);
-            Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None));
+            Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None).ConfigureAwait(false));
         }
     }
 }

@@ -15,7 +15,7 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Creates a new entity from <paramref name="createEntityRequest"/>
         /// </summary>
-        Task<EntityResult> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken);
+        Task<EntityResult?> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reads all entities
@@ -41,7 +41,7 @@ namespace TreeStore.Model.Abstractions
         /// Reads the root <see cref="CategoryResult"/>. The model creates the root by itself.
         /// It does always exits and cant't be deleted.
         /// </summary>
-        Task<CategoryResult> GetRootCategoryAsync(CancellationToken none);
+        Task<CategoryResult?> GetRootCategoryAsync(CancellationToken none);
 
         /// <summary>
         /// Returns the category having the id <paramref name="id"/>.
@@ -98,7 +98,6 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Deletes the tag specified by <paramref name="id"/>.
         /// </summary>
-
         Task<bool> DeleteTagAsync(Guid id, CancellationToken cancellationToken);
     }
 }

@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace TreeStore.Model
+﻿namespace TreeStore.Model
 {
     public abstract class FacetingEntityBase : NamedBase
     {
-        public FacetingEntityBase(string name, FacetModel facet)
+        protected FacetingEntityBase(string name, FacetModel facet)
             : base(name)
         {
             this.Facet = facet;
@@ -27,7 +25,7 @@ namespace TreeStore.Model
 
         // public void AssignFacet(FacetModel facet) => this.Facet = facet;
 
-        virtual protected void OnAfterFacetChanged(FacetModel oldFacet, FacetModel newFacet)
+        protected virtual void OnAfterFacetChanged(FacetModel oldFacet, FacetModel newFacet)
         {
         }
     }

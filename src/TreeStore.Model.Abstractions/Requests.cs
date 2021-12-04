@@ -32,11 +32,11 @@ namespace TreeStore.Model.Abstractions
         public UpdateEntityTagsRequest(params EntityTagRequest[]? Requests)
         {
             var adds = Requests?.OfType<AssignTagRequest>().ToArray();
-            if (adds!.Any())
+            if (adds!.Length > 0)
                 this.Assigns = adds;
 
             var removes = Requests?.OfType<UnassignTagRequest>().ToArray();
-            if (removes!.Any())
+            if (removes!.Length > 0)
                 this.Unassigns = removes;
         }
 
@@ -66,7 +66,7 @@ namespace TreeStore.Model.Abstractions
             Updates = requests.ToArray();
         }
 
-        public UpdateFacetPropertyValueRequest[] Updates { get; init; }
+        public UpdateFacetPropertyValueRequest[]? Updates { get; init; }
     }
 
     public record UpdateFacetPropertyValueRequest(Guid Id, FacetPropertyTypeValues Type, object? Value);
@@ -86,15 +86,15 @@ namespace TreeStore.Model.Abstractions
         public FacetRequest(params FacetPropertyRequest[]? Properties)
         {
             var updates = Properties?.OfType<UpdateFacetPropertyRequest>().ToArray();
-            if (updates!.Any())
+            if (updates!.Length > 0)
                 this.Updates = updates;
 
             var creates = Properties?.OfType<CreateFacetPropertyRequest>().ToArray();
-            if (creates!.Any())
+            if (creates!.Length > 0)
                 this.Creates = creates;
 
             var deletes = Properties?.OfType<DeleteFacetPropertyRequest>().ToArray();
-            if (deletes!.Any())
+            if (deletes!.Length > 0)
                 this.Deletes = deletes;
         }
 

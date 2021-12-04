@@ -87,7 +87,7 @@ namespace TreeStore.Model
         {
             createEntityTagsRequest?.Assigns?.ForEach(creation =>
             {
-                // throws is tag is null
+                // throws if tag is null
                 entityModel.AddTag(this.model.Tags.FindById(creation.TagId));
             });
         }
@@ -97,22 +97,27 @@ namespace TreeStore.Model
             entity.Name = updateEntityRequest.Name ?? entity.Name;
 
             this.Apply(updateEntityRequest.Tags, entity);
-            this.Apply(updateEntityRequest.Values, entity);
+            Apply(updateEntityRequest.Values, entity);
 
             return entity;
         }
 
-        private void Apply(FacetPropertyValuesRequest? values, EntityModel entity)
+        private static void Apply(FacetPropertyValuesRequest? values, EntityModel entity)
         {
             if (values is null)
                 return;
 
             var facetProperties = entity.FacetProperties().ToDictionary(fp => fp.Id);
 
+            if (values.Updates is null)
+                return;
+
             foreach (var value in values.Updates)
             {
                 if (facetProperties.TryGetValue(value.Id, out var facetProperty))
+                {
                     entity.SetFacetProperty(facetProperty, value.Value);
+                }
             }
         }
 

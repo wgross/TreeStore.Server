@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{865E1C7C-11DF-4FF4-A276-873C17FDCEE0}"
 EndProject
@@ -49,17 +49,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerShell.Comman
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerShell.ConsoleHost", "submodules\TreeStore.ProviderCore\submodules\PowerShell\src\Microsoft.PowerShell.ConsoleHost\Microsoft.PowerShell.ConsoleHost.csproj", "{91550D79-CACE-4077-A66A-A838005FF996}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerShell.MarkdownRender", "submodules\TreeStore.ProviderCore\submodules\PowerShell\src\Microsoft.PowerShell.MarkdownRender\Microsoft.PowerShell.MarkdownRender.csproj", "{34942260-3746-4F08-B087-BC33D21C8253}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerShell.Security", "submodules\TreeStore.ProviderCore\submodules\PowerShell\src\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.csproj", "{0A115490-FBC8-41D2-9F6C-79AC1780882E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerShell", "PowerShell", "{92DF24A2-F8C0-4F85-A578-35537F67C1DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStore.DictionaryFS.Test", "submodules\TreeStore.ProviderCore\test\TreeStore.DictionaryFS.Test\TreeStore.DictionaryFS.Test.csproj", "{CA759E44-A09C-4045-81E5-7477851E6257}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeStoreFS", "src\TreeStoreFS\TreeStoreFS.csproj", "{CEC06D47-6DEA-49E6-A2BA-DA944EE134ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStoreFS", "src\TreeStoreFS\TreeStoreFS.csproj", "{CEC06D47-6DEA-49E6-A2BA-DA944EE134ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeStoreFS.Test", "test\TreeStoreFS.Test\TreeStoreFS.Test.csproj", "{15851A0B-F50C-441A-96DD-A045EAD6E7EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStoreFS.Test", "test\TreeStoreFS.Test\TreeStoreFS.Test.csproj", "{15851A0B-F50C-441A-96DD-A045EAD6E7EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -311,18 +309,6 @@ Global
 		{91550D79-CACE-4077-A66A-A838005FF996}.Release|x64.Build.0 = Release|Any CPU
 		{91550D79-CACE-4077-A66A-A838005FF996}.Release|x86.ActiveCfg = Release|Any CPU
 		{91550D79-CACE-4077-A66A-A838005FF996}.Release|x86.Build.0 = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|x64.Build.0 = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Debug|x86.Build.0 = Debug|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|Any CPU.Build.0 = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|x64.ActiveCfg = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|x64.Build.0 = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|x86.ActiveCfg = Release|Any CPU
-		{34942260-3746-4F08-B087-BC33D21C8253}.Release|x86.Build.0 = Release|Any CPU
 		{0A115490-FBC8-41D2-9F6C-79AC1780882E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A115490-FBC8-41D2-9F6C-79AC1780882E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A115490-FBC8-41D2-9F6C-79AC1780882E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -396,7 +382,6 @@ Global
 		{85FA5A31-F7CB-4225-8FCC-12719864D341} = {92DF24A2-F8C0-4F85-A578-35537F67C1DE}
 		{1307D1FF-1FCC-448D-8299-312A64C875BA} = {92DF24A2-F8C0-4F85-A578-35537F67C1DE}
 		{91550D79-CACE-4077-A66A-A838005FF996} = {92DF24A2-F8C0-4F85-A578-35537F67C1DE}
-		{34942260-3746-4F08-B087-BC33D21C8253} = {92DF24A2-F8C0-4F85-A578-35537F67C1DE}
 		{0A115490-FBC8-41D2-9F6C-79AC1780882E} = {92DF24A2-F8C0-4F85-A578-35537F67C1DE}
 		{CA759E44-A09C-4045-81E5-7477851E6257} = {744F2486-89F5-4D8D-8459-62A902448E50}
 		{CEC06D47-6DEA-49E6-A2BA-DA944EE134ED} = {865E1C7C-11DF-4FF4-A276-873C17FDCEE0}

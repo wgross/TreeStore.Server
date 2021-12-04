@@ -27,7 +27,7 @@ namespace TreeStore.Model
         }
 
         public EntityModel()
-            : base(string.Empty, new TagModel[0])
+            : base(string.Empty, Array.Empty<TagModel>())
         { }
 
         #endregion Construction and initialization of this instance
@@ -41,7 +41,7 @@ namespace TreeStore.Model
             return this.Category.Facets().Union(this.Tags.Select(t => t.Facet));
         }
 
-        public IEnumerable<FacetPropertyModel> FacetProperties()
+        public override IEnumerable<FacetPropertyModel> FacetProperties()
         {
             return this.Facets().SelectMany(f => f.Properties);
         }

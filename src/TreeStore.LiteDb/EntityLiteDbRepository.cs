@@ -74,11 +74,7 @@ namespace TreeStore.LiteDb
             if (relationshipExists)
                 return false;
 
-            if (base.Delete(entity))
-            {
-                return true;
-            }
-            return false;
+            return base.Delete(entity);
         }
 
         public override EntityModel? FindById(System.Guid id)

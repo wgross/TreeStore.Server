@@ -20,7 +20,7 @@ namespace TreeStoreFS.Nodes
         // ContainerCmdletProvider
         INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IRenameChildItem
     {
-        public CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
+        protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
         { }
 
@@ -34,7 +34,7 @@ namespace TreeStoreFS.Nodes
         #region IGetChildItems
 
         /// <inheritdoc/>
-        public bool HasChildItems() => this.Category.Entities.Any() || this.Category.Categories.Any();
+        public bool HasChildItems() => this.Category.Entities.Length > 0 || this.Category.Categories.Length > 0;
 
         /// <inheritdoc/>
         public IEnumerable<ProviderNode> GetChildItems()
@@ -171,8 +171,8 @@ namespace TreeStoreFS.Nodes
         }
 
         private object? GetChildByName(string childName)
-            => (object?)this.Category.Categories.FirstOrDefault(c => c.Name.Equals(childName, StringComparison.OrdinalIgnoreCase))
-            ?? (object?)this.Category.Entities.FirstOrDefault(e => e.Name.Equals(childName, StringComparison.OrdinalIgnoreCase));
+            => (object?)Array.Find(this.Category.Categories, c => c.Name.Equals(childName, StringComparison.OrdinalIgnoreCase))
+            ?? (object?)Array.Find(this.Category.Entities, e => e.Name.Equals(childName, StringComparison.OrdinalIgnoreCase));
 
         private async Task RenameChildItemAsync(object childToRename, string newName)
         {
