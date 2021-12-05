@@ -5,9 +5,14 @@ namespace TreeStore.Model
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Converts a single <paramref name="instance"/> of <typeparamref name="T"/> to a <see cref="IEnumerable{T}"/>.
+        /// </summary>
         public static IEnumerable<T> Yield<T>(this T? instance) where T : class
         {
-            if (instance is null) yield break;
+            if (instance is null)
+                yield break;
+
             yield return instance;
         }
 

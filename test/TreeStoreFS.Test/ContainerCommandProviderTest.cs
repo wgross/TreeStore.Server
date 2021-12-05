@@ -121,7 +121,7 @@ namespace TreeStoreFS.Test
                 .Invoke()
                 .Single();
 
-            Assert.True((bool)childAfterRemove.BaseObject);
+            Assert.False((bool)childAfterRemove.BaseObject);
         }
 
         #endregion Remove-Item -Path

@@ -37,7 +37,7 @@ namespace TreeStoreFS.Test
         }
 
         [Fact]
-        public void Powershell_reads_roots_category_child()
+        public void Powershell_reads_roots_child_category()
         {
             // ARRANGE
             this.ArrangeFileSystem();
@@ -71,7 +71,7 @@ namespace TreeStoreFS.Test
         }
 
         [Fact]
-        public void Powershell_reads_roots_entity_child()
+        public void Powershell_reads_roots_child_entity()
         {
             // ARRANGE
             this.ArrangeFileSystem();

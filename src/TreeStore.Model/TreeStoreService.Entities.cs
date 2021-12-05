@@ -16,7 +16,7 @@ namespace TreeStore.Model
             var entity = this.model.Entities.FindById(id);
             if (entity is null)
             {
-                this.logger.LogInformation("Entity(id='{entityId}') wasn't deleted: Entity(id='{entityId}') doesn't exist", id);
+                this.logger.LogInformation("Entity(id='{entityId}') wasn't deleted: entity doesn't exist", id);
 
                 return Task.FromResult(false);
             }

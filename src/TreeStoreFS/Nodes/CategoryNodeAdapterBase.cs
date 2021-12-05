@@ -113,7 +113,19 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         void IRemoveChildItem.RemoveChildItem(string childName, bool recurse)
         {
-            Await(this.TreeStoreService.DeleteCategoryAsync(this.Category.Id, Guard.Against.Null(childName, nameof(childName)), recurse, CancellationToken.None));
+            Guard.Against.NullOrEmpty(childName, nameof(childName));
+
+            var category = this.Category.Categories.FirstOrDefault(c => childName.Equals(c.Name, StringComparison.OrdinalIgnoreCase));
+            if (category is not null)
+            {
+                Await(this.TreeStoreService.DeleteCategoryAsync(parentId: this.Category.Id, childName, recurse, CancellationToken.None));
+            }
+
+            var entity = this.Category.Entities.FirstOrDefault(e => childName.Equals(e.Name, StringComparison.OrdinalIgnoreCase));
+            if (entity is not null)
+            {
+                Await(this.TreeStoreService.DeleteEntityAsync(entity.Id, CancellationToken.None));
+            }
         }
 
         #endregion IRemoveChildItem

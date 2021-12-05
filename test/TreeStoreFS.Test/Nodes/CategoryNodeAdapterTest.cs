@@ -196,13 +196,13 @@ namespace TreeStoreFS.Test.Nodes
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Removes_child_items(bool recurse)
+        public void Removes_child_category(bool recurse)
         {
             // ARRANGE
             var category = DefaultCategoryModel(DefaultRootCategoryModel());
             this.treeStoreServiceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.Parent.ToCategoryResult());
+                .ReturnsAsync(category.Parent.ToCategoryResult(entities: Array.Empty<EntityModel>(), categories: category.Yield()));
             var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Parent.Id);
 
             this.treeStoreServiceMock
@@ -210,7 +210,31 @@ namespace TreeStoreFS.Test.Nodes
                 .ReturnsAsync(true);
 
             // ACT
+            // tell the node to remove the category child.
             parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(category.Name, recurse);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removes_child_entity(bool recurse)
+        {
+            // ARRANGE
+            // put an entity under the root category
+            var entity = DefaultEntityModel(DefaultRootCategoryModel());
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(entity.Category.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.Category.ToCategoryResult(categories: Array.Empty<CategoryModel>(), entities: entity.Yield()));
+
+            var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, entity.Category.Id);
+
+            this.treeStoreServiceMock
+                .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // ACT
+            // tell the node to remote the entity child
+            parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(entity.Name, recurse);
         }
 
         [Fact]

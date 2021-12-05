@@ -39,7 +39,7 @@ namespace TreeStore.Model.Abstractions
 
         /// <summary>
         /// Reads the root <see cref="CategoryResult"/>. The model creates the root by itself.
-        /// It does always exits and cant't be deleted.
+        /// It does always exits and can't be deleted.
         /// </summary>
         Task<CategoryResult?> GetRootCategoryAsync(CancellationToken none);
 
@@ -90,8 +90,8 @@ namespace TreeStore.Model.Abstractions
         Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Copy the <paramref name="sourceCategoryId"/> as s subcategeory to <paramref name="destinationCategoryId"/>.
-        /// It <paramref name="recurse"/> is true, all subcatageories and entites are clined as well.
+        /// Copy the <paramref name="sourceCategoryId"/> as s subcategory to <paramref name="destinationCategoryId"/>.
+        /// It <paramref name="recurse"/> is true, all subcategories and entities are cloned as well.
         /// </summary>
         Task<CategoryResult> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken);
 

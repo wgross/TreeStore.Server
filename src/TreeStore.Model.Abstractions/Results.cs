@@ -18,6 +18,10 @@ namespace TreeStore.Model.Abstractions
         public EntityReferenceResult[] Entities { get; init; } = Array.Empty<EntityReferenceResult>();
     }
 
+    /// <summary>
+    /// An <see cref="EntityReferenceResult"/> represents the connection fro an <see cref="CategoryResult"/> to an <see cref="EntityResult"/>.
+    /// It avoids to transfer the whole entity data where only the name and Id is required.
+    /// </summary>
     public record EntityReferenceResult(Guid Id, string Name);
 
     public sealed record EntityResult(Guid Id, string Name, Guid CategoryId, Guid[] TagIds, IEnumerable<FacetPropertyValueResult> Values)

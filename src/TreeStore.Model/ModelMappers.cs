@@ -7,6 +7,9 @@ namespace TreeStore.Model
 {
     public static class ModelMappers
     {
+        /// <summary>
+        /// Maps an <see cref="EntityModel"/> to an instance of <see cref="EntityReferenceResult"/> to send over the wire.
+        /// </summary>
         public static EntityReferenceResult ToEntityReferenceResult(this EntityModel entity)
         {
             return new EntityReferenceResult(
@@ -34,6 +37,10 @@ namespace TreeStore.Model
             return new CategoryReferenceResult(Id: category.Id, Name: category.Name);
         }
 
+        /// <summary>
+        /// Maps the <see cref="CategoryModel"/> to the <see cref="CategoryResult"/> to be sent over the wire.
+        /// This creates a empty category result without the references to child categories or entities.
+        /// </summary>
         public static CategoryResult ToCategoryResult(this CategoryModel category)
         {
             if (category.Parent is null)
@@ -47,6 +54,10 @@ namespace TreeStore.Model
             }
         }
 
+        /// <summary>
+        /// Maps the <see cref="CategoryModel"/> to the <see cref="CategoryResult"/> to be sent over the wire.
+        /// This may include child categories and entities as <see cref="CategoryReferenceResult"/> and <see cref="EntityReferenceResult"/>.
+        /// </summary>
         public static CategoryResult ToCategoryResult(this CategoryModel category, IEnumerable<CategoryModel> categories, IEnumerable<EntityModel> entities)
         {
             if (category.Parent is null)
