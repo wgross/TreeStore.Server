@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,7 +22,7 @@ namespace TreeStore.Model
 
             if (tag is null)
             {
-                this.logger.LogError("Tag(id='{tagId}') wasn't updated: Tag(id='{tagId}') doesn't exist", id);
+                this.LogUpdatingTagFailed(id);
 
                 throw new InvalidOperationException($"Tag(id='{id}') wasn't updated: Tag(id='{id}') doesn't exist");
             }
@@ -41,7 +40,7 @@ namespace TreeStore.Model
             var tag = this.model.Tags.FindById(id);
             if (tag is null)
             {
-                this.logger.LogError("Tag(id='{tagId}') wasn't deleted: Tag(id='{tagId}') doesn't exist", id);
+                this.LogDeletingTagFailed(id);
 
                 return Task.FromResult(false);
             }
@@ -59,10 +58,7 @@ namespace TreeStore.Model
         }
 
         /// <inheritdoc/>
-        public Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken)
-        {
-            return Task.FromResult(this.model.Tags.FindAll().Select(t => t.ToTagResult()));
-        }
+        public Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken) => Task.FromResult(this.model.Tags.FindAll().Select(t => t.ToTagResult()));
 
         #region Apply
 
@@ -91,10 +87,7 @@ namespace TreeStore.Model
 
         private void Apply(FacetRequest facetRequest, FacetModel facet)
         {
-            facetRequest.Deletes?.ForEach(deletion =>
-            {
-                facet.RemoveProperty(deletion.Id);
-            });
+            facetRequest.Deletes?.ForEach(deletion => facet.RemoveProperty(deletion.Id));
 
             facetRequest.Updates?.ForEach(update =>
             {
@@ -103,10 +96,7 @@ namespace TreeStore.Model
                     this.Apply(update, facetProperty);
             });
 
-            facetRequest.Creates?.ForEach(creation =>
-            {
-                facet.AddProperty(this.Apply(creation));
-            });
+            facetRequest.Creates?.ForEach(creation => facet.AddProperty(this.Apply(creation)));
         }
 
         private FacetPropertyModel Apply(UpdateFacetPropertyRequest updateFacetPropertyRequest, FacetPropertyModel facetProperty)
@@ -124,8 +114,6 @@ namespace TreeStore.Model
                 Type = createFacetPropertyRequest.Type,
             };
         }
-
-        
 
         #endregion Apply
     }

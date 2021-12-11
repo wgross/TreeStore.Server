@@ -27,7 +27,7 @@ namespace TreeStore.Server.Host
         {
             services
                 .AddControllers()
-                // Add Controllers from this assembly explcitely bacause during test the test assembly would be
+                // Add Controllers from this assembly explicitly because during test the test assembly would be
                 // searched for Controllers without success
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .AddJsonOptions(options => TreeStoreJsonSerializerOptions.Apply(options.JsonSerializerOptions));

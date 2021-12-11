@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,7 +15,7 @@ namespace TreeStore.Model
             var entity = this.model.Entities.FindById(id);
             if (entity is null)
             {
-                this.logger.LogInformation("Entity(id='{entityId}') wasn't deleted: entity doesn't exist", id);
+                this.LogDeletingEntityFailed(id);
 
                 return Task.FromResult(false);
             }
@@ -50,7 +49,7 @@ namespace TreeStore.Model
 
             if (entity is null)
             {
-                this.logger.LogError("Entity(id='{entityId}') wasn't updated: Entity(id='{entityId}') doesn't exist", id);
+                this.LogUpdatingEntityFailedEntityMissing(id);
 
                 throw new InvalidOperationException($"Entity(id='{id}') wasn't updated: Entity(id='{id}') doesn't exist");
             }
@@ -62,7 +61,7 @@ namespace TreeStore.Model
                 var category = this.model.Categories.FindByParentAndName(entity.Category!, request.Name);
                 if (category is not null)
                 {
-                    this.logger.LogError("Entity(id='{entityId}') wasn't updated: duplicate name with Category(id='{categoryId}')", id, category.Id);
+                    this.LogUpdatingEntityFailedFailedDuplicatName(entity.Id, category.Id);
 
                     throw new InvalidOperationException($"Entity(id='{entity.Id}') wasn't updated: duplicate name with Category(id='{category.Id}')");
                 }
@@ -85,11 +84,7 @@ namespace TreeStore.Model
 
         private void Apply(CreateEntityTagsRequest? createEntityTagsRequest, EntityModel entityModel)
         {
-            createEntityTagsRequest?.Assigns?.ForEach(creation =>
-            {
-                // throws if tag is null
-                entityModel.AddTag(this.model.Tags.FindById(creation.TagId));
-            });
+            createEntityTagsRequest?.Assigns?.ForEach(creation => entityModel.AddTag(this.model.Tags.FindById(creation.TagId)));
         }
 
         private EntityModel Apply(UpdateEntityRequest updateEntityRequest, EntityModel entity)
@@ -123,17 +118,9 @@ namespace TreeStore.Model
 
         private void Apply(UpdateEntityTagsRequest? updateEntityTagsRequest, EntityModel entityModel)
         {
-            updateEntityTagsRequest?.Assigns?.ForEach(creation =>
-            {
-                // throws is tag is null
-                entityModel.AddTag(this.model.Tags.FindById(creation.TagId));
-            });
+            updateEntityTagsRequest?.Assigns?.ForEach(creation => entityModel.AddTag(this.model.Tags.FindById(creation.TagId)));
 
-            updateEntityTagsRequest?.Unassigns?.ForEach(removal =>
-            {
-                // throws is tag is null
-                entityModel.RemoveTag(removal.TagId);
-            });
+            updateEntityTagsRequest?.Unassigns?.ForEach(removal => entityModel.RemoveTag(removal.TagId));
         }
     }
 }

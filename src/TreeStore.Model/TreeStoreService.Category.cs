@@ -15,7 +15,6 @@ namespace TreeStore.Model
     public sealed partial class TreeStoreService : ITreeStoreService
     {
         private readonly ITreeStoreModel model;
-        private readonly ILogger<TreeStoreService> logger;
 
         public TreeStoreService(ITreeStoreModel model, ILogger<TreeStoreService> logger)
         {
@@ -44,7 +43,7 @@ namespace TreeStore.Model
             var parent = this.model.Categories.FindById(request.ParentId);
             if (parent is null)
             {
-                this.logger.LogError("Category(name='{categoryName}' wasn't created: Category(id='{parentId}') wasn't found", request.Name, request.ParentId);
+                this.LogCreatingCategoryFailedMissingParent(request.Name, request.ParentId);
 
                 throw new InvalidOperationException($"Category(name='{request.Name}' wasn't created: Category(id='{request.ParentId}') wasn't found");
             }
@@ -53,7 +52,11 @@ namespace TreeStore.Model
 
             parent.AddSubCategory(category);
 
-            return Task.FromResult(this.model.Categories.Upsert(category).ToCategoryResult());
+            this.model.Categories.Upsert(category);
+
+            this.LogCategoryCreated(category.Id, category.Parent!.Id, category.Name);
+
+            return Task.FromResult(category.ToCategoryResult());
         }
 
         /// <inheritdoc/>
@@ -62,7 +65,7 @@ namespace TreeStore.Model
             var category = this.model.Categories.FindById(id);
             if (category is null)
             {
-                this.logger.LogInformation("Category(id='{categoryId}') wasn't deleted: Category(id='{categoryId}') doesn't exist", id);
+                this.LogDeletingCategoryFailed(id);
 
                 return Task.FromResult(false);
             }
@@ -76,7 +79,7 @@ namespace TreeStore.Model
             var parentCategory = this.model.Categories.FindById(parentId);
             if (parentCategory is null)
             {
-                this.logger.LogInformation("Category(parentId='{parentId}',name='{childName}') wasn't deleted: Parent doesn't exist", parentId, childName);
+                this.LogDeletingCategoryByNameFailedMissingParent(parentId, childName);
 
                 return Task.FromResult(false);
             }
@@ -84,7 +87,7 @@ namespace TreeStore.Model
             var childCategory = this.model.Categories.FindByParentAndName(parentCategory!, Guard.Against.Null(childName, nameof(childName)));
             if (childCategory is null)
             {
-                this.logger.LogInformation("Category(parentId='{parentId}',name='{childName}') wasn't deleted: It doesn't exist", parentId, childName);
+                this.LogDeletingCategoryByNameFailedMissingChild(parentId, childName);
 
                 return Task.FromResult(false);
             }
@@ -101,7 +104,7 @@ namespace TreeStore.Model
 
             if (category is null)
             {
-                this.logger.LogInformation("Category(id='{id}') wasn't found.", id);
+                this.LogReadingCategoryFailedMissing(id);
 
                 return Task.FromResult((CategoryResult?)null);
             }
@@ -118,7 +121,7 @@ namespace TreeStore.Model
             var parentCategory = this.model.Categories.FindById(id);
             if (parentCategory is null)
             {
-                this.logger.LogInformation("Children of Category(id='{id}') weren't read: parent doesn't exist", id);
+                this.LogReadingCategoryChildrenFailedMissingParent(id);
 
                 return Task.FromResult((IEnumerable<CategoryResult>?)null);
             }
@@ -128,7 +131,7 @@ namespace TreeStore.Model
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public Task<CategoryResult> GetRootCategoryAsync(CancellationToken cancellationToken) => this.GetCategoryByIdImplAsync(this.model.Categories.Root().Id)!;
+        public Task<CategoryResult?> GetRootCategoryAsync(CancellationToken cancellationToken) => this.GetCategoryByIdImplAsync(this.model.Categories.Root().Id)!;
 
         /// <inheritdoc/>
         public Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
@@ -136,7 +139,7 @@ namespace TreeStore.Model
             var category = this.model.Categories.FindById(id);
             if (category is null)
             {
-                this.logger.LogError("Category(id='{categoryId}') wasn't updated: Category(id='{categoryId}') doesn't exist", id);
+                this.LogUpdatingCategoryFailedMissing(id);
 
                 throw new InvalidOperationException($"Category(id='{id}') wasn't updated: Category(id='{id}') doesn't exist");
             }
@@ -148,7 +151,7 @@ namespace TreeStore.Model
                 var entity = this.model.Entities.FindByCategoryAndName(category.Parent!, request.Name);
                 if (entity is not null)
                 {
-                    this.logger.LogError("Category(id='{categoryId}') wasn't updated: duplicate name with Entity(id='{entityId}')", id, entity.Id);
+                    this.LogUpdatingCategoryFailedDuplicateName(id, request.Name, entity.Id);
 
                     throw new InvalidOperationException($"Category(id='{category.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')");
                 }
