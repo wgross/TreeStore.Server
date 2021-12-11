@@ -72,9 +72,9 @@ namespace TreeStoreFS.Test
             this.PowerShell.Commands.Clear();
 
             // ACT
-            var result = this.PowerShell.AddCommand("Remove-Item")
+            _ = this.PowerShell.AddCommand("Remove-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("Recurse") // TODO: remove asks bc HasChildItems is always true => Avoid.
+                .AddParameter("Recurse") // TODO: remove asks b/c HasChildItems is always true => Avoid.
                 .Invoke()
                 .ToArray();
 
@@ -105,9 +105,9 @@ namespace TreeStoreFS.Test
             this.PowerShell.Commands.Clear();
 
             // ACT
-            var result = this.PowerShell.AddCommand("Remove-Item")
+            _ = this.PowerShell.AddCommand("Remove-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("Recurse") // TODO: remove asks bc HasChildItems is always true => Avoid.
+                .AddParameter("Recurse") // TODO: remove asks b/c HasChildItems is always true => Avoid.
                 .Invoke()
                 .ToArray();
 
@@ -151,7 +151,7 @@ namespace TreeStoreFS.Test
             Assert.False(this.PowerShell.HadErrors);
             Assert.Single(result);
 
-            var psobject = result.ElementAt(0);
+            var psobject = result[0];
 
             Assert.Equal("child", psobject.Property<string>("PSChildName"));
             Assert.True(psobject.Property<bool>("PSIsContainer"));
@@ -239,7 +239,7 @@ namespace TreeStoreFS.Test
                 .Invoke()
                 .Single();
 
-            Assert.True((bool)exists.BaseObject); ;
+            Assert.True((bool)exists.BaseObject);
         }
 
         #endregion Rename-Item -Path

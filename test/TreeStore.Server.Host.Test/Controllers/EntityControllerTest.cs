@@ -31,7 +31,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             CreateEntityRequest writtenEntity = null;
             this.modelServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<CreateEntityRequest, CancellationToken>((r, ct) => writtenEntity = r)
+                .Callback<CreateEntityRequest, CancellationToken>((r, _) => writtenEntity = r)
                 .ReturnsAsync(entity.ToEntityResult());
 
             var request = new CreateEntityRequest(
@@ -167,7 +167,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             UpdateEntityRequest writtenEntity = null;
             this.modelServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<Guid, UpdateEntityRequest, CancellationToken>((id, updt, ct) => writtenEntity = updt)
+                .Callback<Guid, UpdateEntityRequest, CancellationToken>((_1, updt, _2) => writtenEntity = updt)
                 .ReturnsAsync(entity.ToEntityResult());
 
             var request = new UpdateEntityRequest(

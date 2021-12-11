@@ -111,7 +111,7 @@ namespace TreeStore.LiteDb.Test
 
             // ASSERT
             // duplicate was rejected
-            Assert.StartsWith($"Entity(id='", result.Message);
+            Assert.StartsWith("Entity(id='", result.Message);
             Assert.EndsWith($"') is a duplicate in category(id='{entity.Category.Id}')", result.Message);
             Assert.IsType<LiteException>(result.InnerException);
             Assert.Equal($"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"e_{this.CategoryRepository.Root().Id}\"'.", result.InnerException.Message);
@@ -339,10 +339,7 @@ namespace TreeStore.LiteDb.Test
             // ARRANGE
             var value = Guid.NewGuid();
             var tag = this.TagRepository.Upsert(DefaultTag(WithDefaultProperty));
-            var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(this.CategoryRepository.Root()), WithoutTags, e =>
-             {
-                 e.AddTag(tag);
-             }));
+            var entity = this.EntityRepository.Upsert(DefaultEntity(WithEntityCategory(this.CategoryRepository.Root()), WithoutTags, e => e.AddTag(tag)));
 
             // set facet property value
             entity.SetFacetProperty(entity.Tags.Single().Facet.Properties.Single(), value);

@@ -224,7 +224,7 @@ namespace TreeStore.LiteDb.Test
             // ASSERT
             Assert.Equal($"Can't write Category(name='{category.Name}'): duplicate name", result.Message);
             Assert.StartsWith(
-                $"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"category_",
+                "Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"category_",
                 result.InnerException.Message);
         }
 

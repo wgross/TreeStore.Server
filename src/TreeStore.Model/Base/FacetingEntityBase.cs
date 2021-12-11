@@ -8,7 +8,7 @@
             this.Facet = facet;
         }
 
-        public FacetModel Facet
+        public FacetModel? Facet
         {
             get => this.facet;
             set
@@ -21,11 +21,11 @@
             }
         }
 
-        private FacetModel facet;
+        private FacetModel? facet;
 
         // public void AssignFacet(FacetModel facet) => this.Facet = facet;
 
-        protected virtual void OnAfterFacetChanged(FacetModel oldFacet, FacetModel newFacet)
+        protected virtual void OnAfterFacetChanged(FacetModel? oldFacet, FacetModel? newFacet)
         {
         }
     }

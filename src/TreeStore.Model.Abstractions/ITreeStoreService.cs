@@ -15,7 +15,7 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Creates a new entity from <paramref name="createEntityRequest"/>
         /// </summary>
-        Task<EntityResult?> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken);
+        Task<EntityResult> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reads all entities

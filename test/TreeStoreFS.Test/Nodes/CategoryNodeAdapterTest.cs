@@ -63,7 +63,7 @@ namespace TreeStoreFS.Test.Nodes
             CreateCategoryRequest request = default;
             this.treeStoreServiceMock
                 .Setup(s => s.CreateCategoryAsync(It.IsAny<CreateCategoryRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<CreateCategoryRequest, CancellationToken>((r, ct) => request = r)
+                .Callback<CreateCategoryRequest, CancellationToken>((r, _) => request = r)
                 .ReturnsAsync(child.ToCategoryResult());
 
             // ACT
@@ -98,7 +98,7 @@ namespace TreeStoreFS.Test.Nodes
             CreateCategoryRequest request = default;
             this.treeStoreServiceMock
                 .Setup(s => s.CreateCategoryAsync(It.IsAny<CreateCategoryRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<CreateCategoryRequest, CancellationToken>((r, ct) => request = r)
+                .Callback<CreateCategoryRequest, CancellationToken>((r, _) => request = r)
                 .ReturnsAsync(child.ToCategoryResult());
 
             // ACT
@@ -181,7 +181,7 @@ namespace TreeStoreFS.Test.Nodes
             CreateEntityRequest request = default;
             this.treeStoreServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<CreateEntityRequest, CancellationToken>((r, ct) => request = r)
+                .Callback<CreateEntityRequest, CancellationToken>((r, _) => request = r)
                 .ReturnsAsync(child.ToEntityResult());
 
             // ACT
@@ -342,7 +342,7 @@ namespace TreeStoreFS.Test.Nodes
             UpdateCategoryRequest request = null;
             this.treeStoreServiceMock
                 .Setup(s => s.UpdateCategoryAsync(subcategory.Id, It.IsAny<UpdateCategoryRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<Guid, UpdateCategoryRequest, CancellationToken>((id, r, ct) => request = r)
+                .Callback<Guid, UpdateCategoryRequest, CancellationToken>((_, r, __) => request = r)
                 .ReturnsAsync(subcategory.ToCategoryResult());
 
             // ACT
@@ -386,7 +386,7 @@ namespace TreeStoreFS.Test.Nodes
             UpdateEntityRequest request = null;
             this.treeStoreServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<Guid, UpdateEntityRequest, CancellationToken>((id, r, ct) => request = r)
+                .Callback<Guid, UpdateEntityRequest, CancellationToken>((_, r, __) => request = r)
                 .ReturnsAsync(entity.ToEntityResult());
 
             // ACT

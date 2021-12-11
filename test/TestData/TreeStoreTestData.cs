@@ -86,7 +86,7 @@ namespace TreeStore.Test.Common
         }
 
         public static Action<EntityModel> WithDefaultPropertySet<V>(V value)
-            => e => e.SetFacetProperty(e.Tags.First().Facet.Properties.First(), value);
+            => e => e.SetFacetProperty(e.Tags[0].Facet.Properties.First(), value);
 
         public static void WithoutTags(EntityModel entity) => entity.Tags.Clear();
 
