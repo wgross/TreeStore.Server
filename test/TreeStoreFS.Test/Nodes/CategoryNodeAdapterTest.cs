@@ -139,6 +139,36 @@ namespace TreeStoreFS.Test.Nodes
         }
 
         [Fact]
+        public void Copies_child_category_to_existing_destination()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            
+            var child = DefaultCategoryModel(root);
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(child.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(child.ToCategoryResult());
+            var childNode = new ContainerNode(child.Name, new CategoryNodeAdapter(this.treeStoreServiceMock.Object, child.Id));
+
+            var destination = DefaultCategoryModel(root, c => c.Name = "dest");
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(destination.ToCategoryResult());
+            var destinationNode = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, destination.Id);
+
+            var copied = DefaultCategoryModel(root);
+            this.treeStoreServiceMock
+                .Setup(s => s.CopyCategoryToAsync(child.Id, destination.Id, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(copied.ToCategoryResult());
+
+            // ACT
+            var result = (ContainerNode)destinationNode.GetService<ICopyChildItem>().CopyChildItem(childNode, Array.Empty<string>());
+
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public void Copies_child_category_recursive()
         {
             // ARRANGE
@@ -161,6 +191,37 @@ namespace TreeStoreFS.Test.Nodes
 
             // ACT
             var result = (ContainerNode)this.rootCategoryAdapter.GetService<ICopyChildItemRecursive>().CopyChildItemRecursive(childNode, new[] { "child2" });
+
+            // ASSERT
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void Copies_child_entity_to_existing_destination()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+
+            var entity = DefaultEntityModel(root, e => e.Name = "entity");
+            this.treeStoreServiceMock
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var destination = DefaultCategoryModel(root, c => c.Name = "dest");
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(destination.ToCategoryResult());
+            var destinationNode = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, destination.Id);
+
+            var copied = DefaultEntityModel(destination);
+            this.treeStoreServiceMock
+                .Setup(s => s.CopyEntityToAsync(entity.Id, destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(copied.ToEntityResult());
+
+            var entityNode = new LeafNode(entity.Name, new EntityNodeAdapter(this.treeStoreServiceMock.Object, entity.Id));
+
+            // ACT
+            var result = (LeafNode)destinationNode.GetService<ICopyChildItem>().CopyChildItem(entityNode, Array.Empty<string>());
 
             // ASSERT
             Assert.NotNull(result);
@@ -202,7 +263,7 @@ namespace TreeStoreFS.Test.Nodes
             var category = DefaultCategoryModel(DefaultRootCategoryModel());
             this.treeStoreServiceMock
                 .Setup(s => s.GetCategoryByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.Parent.ToCategoryResult(entities: Array.Empty<EntityModel>(), categories: category.Yield()));
+                .ReturnsAsync(category.Parent.ToCategoryResult(categories: category.Yield(), entities: Array.Empty<EntityModel>()));
             var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Parent.Id);
 
             this.treeStoreServiceMock

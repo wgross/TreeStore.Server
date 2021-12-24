@@ -9,7 +9,7 @@ namespace TreeStore.Model
 {
     public sealed partial class TreeStoreService
     {
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
         {
             var entity = this.model.Entities.FindById(id);
@@ -30,19 +30,19 @@ namespace TreeStore.Model
             return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public Task<IEnumerable<EntityResult>> GetEntitiesAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        ///<inheritdoc/>
-        public Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancelled)
+        /// <inheritdoc/>
+        public Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(this.model.Entities.FindById(id)?.ToEntityResult());
         }
 
-        ///<inheritdoc/>
+        /// <inheritdoc/>
         public Task<EntityResult> UpdateEntityAsync(Guid id, UpdateEntityRequest request, CancellationToken cancellationToken)
         {
             var entity = this.model.Entities.FindById(id);
@@ -70,6 +70,24 @@ namespace TreeStore.Model
             this.Apply(request, entity);
 
             return Task.FromResult(this.model.Entities.Upsert(entity).ToEntityResult());
+        }
+
+        /// <inheritdoc/>
+        public async Task<EntityResult> CopyEntityToAsync(Guid entityId, Guid destinationId, CancellationToken none)
+        {
+            var entity = this.model.Entities.FindById(entityId);
+            if (entity is null)
+                throw new InvalidOperationException($"Entity(id='{entityId}') wasn't copied: it doesn't exist");
+
+            var destinationCategory = this.model.Categories.FindById(destinationId);
+            if (destinationCategory is null)
+                throw new InvalidOperationException($"Entity(id='{entityId}') wasn't copied: Category(id='{destinationId}') doesn't exist");
+
+            var existingDuplicate = this.model.Categories.FindByParentAndName(destinationCategory, entity.Name);
+            if (existingDuplicate is not null)
+                throw new InvalidOperationException($"Entity(id='{entity.Id}') wasn't copied: name is duplicate of Category(id='{existingDuplicate.Id}')");
+
+            return this.model.Categories.CopyTo(entity, destinationCategory).ToEntityResult();
         }
 
         private EntityModel Apply(CreateEntityRequest createEntityRequest, EntityModel entityModel)

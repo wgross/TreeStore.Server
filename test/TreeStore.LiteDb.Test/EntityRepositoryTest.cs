@@ -111,8 +111,7 @@ namespace TreeStore.LiteDb.Test
 
             // ASSERT
             // duplicate was rejected
-            Assert.StartsWith("Entity(id='", result.Message);
-            Assert.EndsWith($"') is a duplicate in category(id='{entity.Category.Id}')", result.Message);
+            Assert.StartsWith($"Can't write Entity(name='{entity.Name}'): duplicate name", result.Message);
             Assert.IsType<LiteException>(result.InnerException);
             Assert.Equal($"Cannot insert duplicate key in unique index 'UniqueName'. The duplicate value is '\"e_{this.CategoryRepository.Root().Id}\"'.", result.InnerException.Message);
             Assert.Single(this.entitiesCollection.FindAll());
@@ -128,7 +127,7 @@ namespace TreeStore.LiteDb.Test
             var result = Assert.Throws<InvalidModelException>(() => this.EntityRepository.Upsert(entity));
 
             // ASSERT
-            Assert.Equal($"Entity(id='{entity.Id}',name='{entity.Name}') is mssing a category", result.Message);
+            Assert.Equal($"Entity(id='{entity.Id}',name='{entity.Name}') is missing a category", result.Message);
         }
 
         [Fact]

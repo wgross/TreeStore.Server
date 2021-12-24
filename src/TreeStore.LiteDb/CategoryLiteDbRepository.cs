@@ -152,6 +152,15 @@ namespace TreeStore.LiteDb
                 : categoryCopyTraverser.CopyCategory(sourceCategory, destinationParentCategory);
         }
 
+        public EntityModel CopyTo(EntityModel sourceEntity, CategoryModel destinationParentCategory)
+        {
+            using var scope = this.BeginScope(destinationParentCategory);
+
+            CategoryCopyTraverser categoryCopyTraverser = new(this, this.treeStoreLiteDbPersistence.Entities);
+
+            return this.treeStoreLiteDbPersistence.Entities.Upsert(categoryCopyTraverser.CopyToNewParentCategory(sourceEntity, destinationParentCategory));
+        }
+
         #endregion Create, Read, Update, Delete categories
     }
 }

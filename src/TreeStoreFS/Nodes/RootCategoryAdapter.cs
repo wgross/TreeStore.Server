@@ -21,8 +21,6 @@ namespace TreeStoreFS.Nodes
 
         #region INewChildItem
 
-       
-
         #endregion INewChildItem
     }
 }

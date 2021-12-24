@@ -18,8 +18,13 @@ namespace TreeStore.Model
         bool Delete(CategoryModel category, bool recurse);
 
         /// <summary>
-        /// Copy a category <paramref name="sourceCategory"/> to <paramref name="destinationParentCategory"/> as sub catagory.
+        /// Copy a category <paramref name="sourceCategory"/> to <paramref name="destinationParentCategory"/> as sub category.
         /// </summary>
         CategoryModel CopyTo(CategoryModel sourceCategory, CategoryModel destinationParentCategory, bool recurse);
+        
+        /// <summary>
+        /// Copy an entity <paramref name="sourceEntity"/> to <paramref name="destinationParentCategory"/> as sub category.
+        /// </summary>
+        EntityModel CopyTo(EntityModel sourceEntity, CategoryModel destinationParentCategory);
     }
 }

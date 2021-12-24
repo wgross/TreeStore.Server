@@ -10,7 +10,7 @@ namespace TreeStore.Model.Abstractions
         /// <summary>
         /// Retrieve the state of the entity having the id <paramref name="id"/>.
         /// </summary>
-        Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancelled);
+        Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new entity from <paramref name="createEntityRequest"/>
@@ -41,7 +41,7 @@ namespace TreeStore.Model.Abstractions
         /// Reads the root <see cref="CategoryResult"/>. The model creates the root by itself.
         /// It does always exits and can't be deleted.
         /// </summary>
-        Task<CategoryResult?> GetRootCategoryAsync(CancellationToken none);
+        Task<CategoryResult?> GetRootCategoryAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the category having the id <paramref name="id"/>.
@@ -60,7 +60,7 @@ namespace TreeStore.Model.Abstractions
         Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the specifed Tag
+        /// Retrieves the specified Tag
         /// </summary>
         Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken cancellationToken);
 
@@ -94,6 +94,12 @@ namespace TreeStore.Model.Abstractions
         /// It <paramref name="recurse"/> is true, all subcategories and entities are cloned as well.
         /// </summary>
         Task<CategoryResult> CopyCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, bool recurse, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Copies the entity identified by <param name="sourceEntityId"></param> to the category <param name="destinationCategoryId"></param>.
+        /// The created entity is returned.
+        /// </summary>
+        Task<EntityResult> CopyEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the tag specified by <paramref name="id"/>.

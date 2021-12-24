@@ -12,14 +12,6 @@ namespace TreeStore.Server.Host.Test.Controllers
 {
     public class EntityControllerTest : TreeStoreServerHostTestBase
     {
-        private readonly CategoryModel rootCategory;
-
-        public EntityControllerTest()
-        {
-            // model
-            this.rootCategory = DefaultRootCategoryModel();
-        }
-
         #region CREATE
 
         [Fact]
@@ -42,7 +34,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                         entity.FacetPropertyValues().Select(fpv => new UpdateFacetPropertyValueRequest(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray()));
 
             // ACT
-            var result = await this.clientService.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None);
+            var result = await this.clientService.CreateEntityAsync(createEntityRequest: request, cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -80,7 +72,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.CreateEntityAsync(new CreateEntityRequest(entity.Name, entity.Category.Id), CancellationToken.None)).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -101,7 +93,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(entity.ToEntityResult());
 
             // ACT
-            var result = await this.clientService.GetEntityByIdAsync(entity.Id, CancellationToken.None);
+            var result = await this.clientService.GetEntityByIdAsync(entity.Id, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -127,7 +119,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync((EntityResult)null);
 
             // ACT
-            var result = await this.clientService.GetEntityByIdAsync(Guid.NewGuid(), CancellationToken.None);
+            var result = await this.clientService.GetEntityByIdAsync(Guid.NewGuid(), CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Null(result);
@@ -144,7 +136,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(new[] { entity.ToEntityResult() });
 
             // ACT
-            var result = await this.clientService.GetEntitiesAsync(CancellationToken.None);
+            var result = await this.clientService.GetEntitiesAsync(CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -182,7 +174,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                       .ToArray()));
 
             // ACT
-            var result = await this.clientService.UpdateEntityAsync(entity.Id, request, CancellationToken.None);
+            var result = await this.clientService.UpdateEntityAsync(entity.Id, request, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             var expected = entity.ToEntityResult();
@@ -220,7 +212,7 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
             // ACT
-            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None));
+            var result = await Assert.ThrowsAsync<InvalidModelException>(() => this.clientService.UpdateEntityAsync(entity.Id, new UpdateEntityRequest(entity.Name), CancellationToken.None)).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal("fail: innerFail", result.Message);
@@ -241,12 +233,57 @@ namespace TreeStore.Server.Host.Test.Controllers
                 .ReturnsAsync(true);
 
             // ACT
-            var result = await this.clientService.DeleteEntityAsync(entity.Id, CancellationToken.None);
+            var result = await this.clientService.DeleteEntityAsync(entity.Id, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.True(result);
         }
 
         #endregion DELETE
+
+        #region COPY
+
+        [Fact]
+        public async Task Copy_entity()
+        {
+            // ARRANGE
+            var sourceEntity = DefaultEntityModel(DefaultRootCategoryModel());
+            var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
+            var copiedEntity = DefaultEntityModel(destinationCategory);
+
+            this.modelServiceMock
+                .Setup(s => s.CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(copiedEntity.ToEntityResult());
+
+            // ACT
+            var result = await this.clientService
+                .CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(copiedEntity.Id, result.Id);
+        }
+
+        [Fact]
+        public async Task Copy_entity_rethrows_if_copy_fails()
+        {
+            // ARRANGE
+            var sourceEntity = DefaultEntityModel(DefaultRootCategoryModel());
+            var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.modelServiceMock
+                .Setup(s => s.CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("fail"));
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
+               .CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal("fail", result.Message);
+        }
+
+        #endregion COPY
     }
 }

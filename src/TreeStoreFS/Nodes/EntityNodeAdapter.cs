@@ -19,6 +19,11 @@ namespace TreeStoreFS.Nodes
             this.entity = new Lazy<EntityResult?>(() => Await(this.TreeStoreService.GetEntityByIdAsync(entityId, CancellationToken.None)));
         }
 
+        /// <summary>
+        /// Any tree store node has an Id.
+        /// </summary>
+        public Guid Id => this.Entity.Id;
+
         public EntityResult Entity => this.entity.Value ?? throw new InvalidOperationException("Entity wasn't loaded");
 
         PSObject? IGetItem.GetItem() => PSObject.AsPSObject(this.Entity);

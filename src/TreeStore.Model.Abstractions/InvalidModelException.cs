@@ -17,9 +17,9 @@ namespace TreeStore.Model.Abstractions
         }
 
         public static InvalidModelException EntityWithoutCategory(Guid entityId, string name)
-            => new InvalidModelException($"Entity(id='{entityId}',name='{name}') is mssing a category");
+            => new InvalidModelException($"Entity(id='{entityId}',name='{name}') is missing a category");
 
-        public static InvalidModelException EntityWithDuplicateName(Guid entityId, Guid categoryId, Exception ex)
-            => new InvalidModelException($"Entity(id='{entityId}') is a duplicate in category(id='{categoryId}')", ex);
+        public static InvalidModelException EntityWithDuplicateName(string entityName, Exception ex)
+            => new InvalidModelException($"Can't write Entity(name='{entityName}'): duplicate name", ex);
     }
 }

@@ -18,7 +18,7 @@ namespace TreeStore.Model
 
         public static Func<T> AsFunc<T>(this T instance) => () => instance;
 
-        private static readonly object Null = new object();
+        private static readonly object Null = new();
 
         public static Func<T?> AsFunc<T>(this Func<T> instance)
         {

@@ -713,7 +713,41 @@ namespace TreeStore.LiteDb.Test
                 actualString: result.Message);
         }
 
+        [Fact]
+        public void CategoryRepository_copies_entity()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            var src = this.EntityRepository.Upsert(DefaultEntityModel(root, c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "dst"));
+
+            // ACT
+            var result = this.CategoryRepository.CopyTo(src, dst);
+
+            // ASSERT
+            Assert.NotEqual(src.Id, result.Id);
+            Assert.Equal(src.Name, result.Name);
+            Assert.Equal(dst.Id, result.Category.Id);
+        }
+
+        [Fact]
+        public void CategoryRepository_copying_entity_fails_for_duplicate_entity_name()
+        {
+            // ARRANGE
+            var root = this.CategoryRepository.Root();
+            var src = this.EntityRepository.Upsert(DefaultEntityModel(root, c => c.Name = "src"));
+            var dst = this.CategoryRepository.Upsert(DefaultCategoryModel(root, c => c.Name = "dst"));
+            var dst_duplicate = this.EntityRepository.Upsert(DefaultEntityModel(dst, c => c.Name = src.Name));
+
+            // ACT
+            var result = Assert.Throws<InvalidModelException>(() => this.CategoryRepository.CopyTo(src, dst));
+
+            // ASSERT
+            Assert.StartsWith(
+                expectedStartString: $"Can't write Entity(name='{src.Name}'): duplicate name",
+                actualString: result.Message);
+        }
+
         #endregion COPY
     }
 }
-;

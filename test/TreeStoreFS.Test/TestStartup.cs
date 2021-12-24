@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TreeStore.LiteDb;
@@ -13,11 +12,11 @@ namespace TreeStoreFS.Test
     {
         private readonly ITreeStoreService service;
 
-        public FileSystemTestStartup(IWebHostEnvironment hostingEnvironment, IConfiguration configuration) : base(hostingEnvironment, configuration)
+        public FileSystemTestStartup(IConfiguration configuration) : base(configuration)
         {
         }
 
-        public FileSystemTestStartup(ITreeStoreService service, IWebHostEnvironment webHostEnvironment, IConfiguration configuration) : base(webHostEnvironment, configuration)
+        public FileSystemTestStartup(ITreeStoreService service, IConfiguration configuration) : base(configuration)
         {
             this.service = service;
         }

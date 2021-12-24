@@ -72,6 +72,19 @@ namespace TreeStore.Server.Client
             return response.Deleted;
         }
 
+        /// <inheritdoc/>
+        public async Task<EntityResult> CopyEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<EntityResult>(
+                httpResponseMessage: await this.httpClient
+                    .PostAsJsonAsync("entities/copy", new CopyEntityRequest(
+                            SourceId: sourceEntityId,
+                            DestinationId: destinationCategoryId),
+                        TreeStoreJsonSerializerOptions.Default,
+                        cancellationToken).ConfigureAwait(false),
+                    cancellationToken).ConfigureAwait(false);
+        }
+
         #endregion /entities
 
         #region /categories
@@ -125,8 +138,8 @@ namespace TreeStore.Server.Client
                 httpResponseMessage: await this.httpClient
                     .PostAsJsonAsync("categories/copy", new CopyCategoryRequest(
                             SourceId: sourceCategoryId,
-                            DestinationId:
-                            destinationCategoryId, Recurse: recurse),
+                            DestinationId: destinationCategoryId,
+                            Recurse: recurse),
                         TreeStoreJsonSerializerOptions.Default,
                         cancellationToken).ConfigureAwait(false),
                     cancellationToken).ConfigureAwait(false);
@@ -142,6 +155,7 @@ namespace TreeStore.Server.Client
             return response.Deleted;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> DeleteCategoryAsync(Guid id, string childName, bool recurse, CancellationToken cancellationToken)
         {
             var response = await this.HandleJsonResponse<DeleteCategoryResponse>(

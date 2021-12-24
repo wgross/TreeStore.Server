@@ -115,13 +115,13 @@ namespace TreeStoreFS.Nodes
         {
             Guard.Against.NullOrEmpty(childName, nameof(childName));
 
-            var category = this.Category.Categories.FirstOrDefault(c => childName.Equals(c.Name, StringComparison.OrdinalIgnoreCase));
+            var category = Array.Find(this.Category.Categories, c => childName.Equals(c.Name, StringComparison.OrdinalIgnoreCase));
             if (category is not null)
             {
                 Await(this.TreeStoreService.DeleteCategoryAsync(parentId: this.Category.Id, childName, recurse, CancellationToken.None));
             }
 
-            var entity = this.Category.Entities.FirstOrDefault(e => childName.Equals(e.Name, StringComparison.OrdinalIgnoreCase));
+            var entity = Array.Find(this.Category.Entities, e => childName.Equals(e.Name, StringComparison.OrdinalIgnoreCase));
             if (entity is not null)
             {
                 Await(this.TreeStoreService.DeleteEntityAsync(entity.Id, CancellationToken.None));
@@ -142,12 +142,19 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         ProviderNode? ICopyChildItem.CopyChildItem(ProviderNode nodeToCopy, string[] destination)
         {
-            CategoryResult? result = null;
-
             if (Guard.Against.Null(nodeToCopy, nameof(nodeToCopy)).Underlying is CategoryNodeAdapterBase categoryNode)
-                result = Await(this.TreeStoreService.CopyCategoryToAsync(categoryNode.Id, this.Category.Id, false, CancellationToken.None));
+            {
+                var result = Await(this.TreeStoreService.CopyCategoryToAsync(categoryNode.Id, this.Category.Id, false, CancellationToken.None));
 
-            return new ContainerNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
+                return new ContainerNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
+            }
+            else if (Guard.Against.Null(nodeToCopy, nameof(nodeToCopy)).Underlying is EntityNodeAdapter entityNode)
+            {
+                var result = Await(this.TreeStoreService.CopyEntityToAsync(entityNode.Id, this.Category.Id, CancellationToken.None));
+
+                return new LeafNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
+            }
+            else throw new NotImplementedException("missing case");
         }
 
         /// <inheritdoc/>

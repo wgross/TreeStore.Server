@@ -29,7 +29,7 @@ namespace TreeStore.Server.Host.Test
                 .ConfigureWebHost(wh =>
                 {
                     wh.UseTestServer();
-                    wh.UseStartup(whctx => new TestStartup(this.modelServiceMock.Object, whctx.HostingEnvironment, whctx.Configuration));
+                    wh.UseStartup(whctx => new TestStartup(this.modelServiceMock.Object, whctx.Configuration));
                 })
                 .Build();
             this.host.StartAsync();

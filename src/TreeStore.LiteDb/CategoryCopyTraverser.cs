@@ -23,7 +23,7 @@ namespace TreeStore.LiteDb
             // copy the top most src as child of the dst
             var srcClone = this.CopyAndSaveCategory(src, dst);
 
-            // descend n src and continue wioth sub categories
+            // descend in src and continue with sub categories
             foreach (var srcChild in this.categoryRepository.FindByParent(src))
                 this.CopyCategoryRecursive(srcChild, srcClone);
 
@@ -34,10 +34,7 @@ namespace TreeStore.LiteDb
             return srcClone;
         }
 
-        private CategoryModel CopyAndSaveCategory(CategoryModel src, CategoryModel dst)
-        {
-            return this.categoryRepository.Upsert(this.CopyToNewParentCategory(src, dst));
-        }
+        private CategoryModel CopyAndSaveCategory(CategoryModel src, CategoryModel dst) => this.categoryRepository.Upsert(this.CopyToNewParentCategory(src, dst));
 
         private void CopyAndSaveEntity(EntityModel srcEntity, CategoryModel dstCategory) => this.entityRepository.Upsert(this.CopyToNewParentCategory(srcEntity, dstCategory));
 
@@ -46,14 +43,14 @@ namespace TreeStore.LiteDb
             var tmp = new CategoryModel(category.Name);
             tmp.Facet.Name = category.Facet.Name;
 
-            // TODO: this is wrong: property ids must be changed and also the entity values have to be tranferred to the
-            // proerties with the new Ids.
+            // TODO: this is wrong: property ids must be changed and also the entity values have to be transferred to the
+            // properties with the new Ids.
             tmp.Facet.Properties = category.Facet.Properties;
             dstParent.AddSubCategory(tmp);
             return tmp;
         }
 
-        private EntityModel CopyToNewParentCategory(EntityModel entity, CategoryModel dstCategory)
+        internal EntityModel CopyToNewParentCategory(EntityModel entity, CategoryModel dstCategory)
         {
             var tmp = (EntityModel)entity.Clone();
             tmp.SetCategory(dstCategory);

@@ -17,6 +17,6 @@ namespace TreeStoreFS.Test
                });
         }
 
-        private Startup StartUpFactory(WebHostBuilderContext arg) => new FileSystemTestStartup(arg.HostingEnvironment, arg.Configuration);
+        private Startup StartUpFactory(WebHostBuilderContext arg) => new FileSystemTestStartup(arg.Configuration);
     }
 }

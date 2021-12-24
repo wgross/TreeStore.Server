@@ -15,7 +15,7 @@ namespace TreeStore.Server.Host
 {
     public class Startup
     {
-        public Startup(IWebHostEnvironment hostingEnvironment, IConfiguration configuration)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -32,10 +32,7 @@ namespace TreeStore.Server.Host
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .AddJsonOptions(options => TreeStoreJsonSerializerOptions.Apply(options.JsonSerializerOptions));
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TreeStore.Server.Host", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "TreeStore.Server.Host", Version = "v1" }));
 
             this.ConfigureTreeStoreServices(services);
         }
@@ -64,10 +61,7 @@ namespace TreeStore.Server.Host
 
             app.UseMiddleware<MapExceptionMiddleware>();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }

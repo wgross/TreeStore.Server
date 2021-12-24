@@ -10,12 +10,9 @@ namespace TreeStore.Server.Host.IntegTest
         {
             return Microsoft.Extensions.Hosting.Host
                .CreateDefaultBuilder()
-               .ConfigureWebHostDefaults(webBuilder =>
-               {
-                   webBuilder.UseStartup(this.StartUpFactory);
-               });
+               .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup(this.StartUpFactory));
         }
 
-        private Startup StartUpFactory(WebHostBuilderContext arg) => new IntegTestStartup(arg.HostingEnvironment, arg.Configuration);
+        private Startup StartUpFactory(WebHostBuilderContext arg) => new IntegTestStartup(arg.Configuration);
     }
 }

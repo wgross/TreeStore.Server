@@ -156,7 +156,7 @@ namespace TreeStoreFS.Test
             // ARRANGE
             this.ArrangeFileSystem();
 
-            this.PowerShell.AddCommand("New-Item")
+            _ = this.PowerShell.AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("ItemType", "category")
                 .Invoke()
@@ -182,7 +182,7 @@ namespace TreeStoreFS.Test
             // ARRANGE
             this.ArrangeFileSystem();
 
-            this.PowerShell.AddCommand("New-Item")
+            _ = this.PowerShell.AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("ItemType", "category")
                 .Invoke()
@@ -208,7 +208,7 @@ namespace TreeStoreFS.Test
             // ARRANGE
             this.ArrangeFileSystem();
 
-            this.PowerShell.AddCommand("New-Item")
+            _ = this.PowerShell.AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("ItemType", "entity")
                 .Invoke()

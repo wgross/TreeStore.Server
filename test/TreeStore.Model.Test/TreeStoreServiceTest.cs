@@ -612,20 +612,24 @@ namespace TreeStore.Model.Test
 
             this.ArrangeCategoryRepository(mock =>
             {
+                // arrange the category to copy
                 mock
                     .Setup(r => r.FindById(source.Id))
                     .Returns(source);
 
+                // arrange the category top copy into
                 mock
                     .Setup(r => r.FindById(destination.Id))
                     .Returns(destination);
 
+                // expect a copy invocation with source and destination
                 mock
                     .Setup(r => r.CopyTo(source, destination, recurse))
                     .Returns(copy);
             });
 
             // ACT
+            // the source is copied into the destination
             var result = await this.service
                 .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None);
 
@@ -634,7 +638,7 @@ namespace TreeStore.Model.Test
         }
 
         // TODO: copy category with new name
-        // TODO: overwrite category with source category
+        // TODO: overwrite/merge category with source category
 
         [Theory]
         [InlineData(false)]
@@ -647,12 +651,14 @@ namespace TreeStore.Model.Test
 
             this.ArrangeCategoryRepository(mock =>
             {
+                // fetch source fails: it isn't found
                 mock
                     .Setup(r => r.FindById(source.Id))
                     .Returns((CategoryModel)null);
             });
 
             // ACT
+            // copy fails with exception
             var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
                  .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None));
 
@@ -672,16 +678,19 @@ namespace TreeStore.Model.Test
 
             this.ArrangeCategoryRepository(mock =>
             {
+                // arrange source top copy
                 mock
                     .Setup(r => r.FindById(source.Id))
                     .Returns(source);
 
+                // fetch the destination fails: it isn't found.
                 mock
                     .Setup(r => r.FindById(destination.Id))
                     .Returns((CategoryModel)null);
             });
 
             // ACT
+            // copying fails with exception
             var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service
                  .CopyCategoryToAsync(source.Id, destination.Id, recurse, CancellationToken.None));
 
@@ -938,8 +947,8 @@ namespace TreeStore.Model.Test
             // ASSERT
             Assert.Equal(entity.Name, writtenEntity.Name);
             Assert.Equal(entity.Id, writtenEntity.Id);
-            Assert.Equal(entity.Category.Id, writtenEntity.Category.Id);
-            Assert.Equal(value, entity.Values.Single().Value);
+            Assert.Equal(entity.Category!.Id, writtenEntity.Category!.Id);
+            Assert.Equal(value, (Guid)entity.Values.Single().Value!);
         }
 
         [Fact]
@@ -1081,6 +1090,143 @@ namespace TreeStore.Model.Test
 
             // ASSERT
             Assert.False(result);
+        }
+
+        [Fact]
+        public async Task Copies_entity()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            var source = DefaultEntityModel(root);
+            var destination = DefaultCategoryModel(root);
+            var copy = DefaultEntityModel(destination);
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                // entity repos provides the source entity
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns(source);
+            });
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                // arrange the category to copy into
+                mock
+                    .Setup(r => r.FindById(destination.Id))
+                    .Returns(destination);
+
+                // there is no duplicate category
+                mock
+                    .Setup(r => r.FindByParentAndName(destination, source.Name))
+                    .Returns((CategoryModel)null);
+
+                // expect a copy invocation with source and destination
+                mock
+                    .Setup(r => r.CopyTo(source, destination))
+                    .Returns(copy);
+            });
+
+            // ACT
+            var result = await this.service.CopyEntityToAsync(source.Id, destination.Id, CancellationToken.None);
+
+            // ASSERT
+            Assert.Equal(copy.Id, result.Id);
+        }
+
+        [Fact]
+        public async Task Copies_entity_fails_on_duplicate_category_name()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            var source = DefaultEntityModel(root);
+            var destination = DefaultCategoryModel(root);
+            var duplicate = DefaultCategoryModel(destination);
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                // entity repos provides the source entity
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns(source);
+            });
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                // arrange the category top copy into
+                mock
+                    .Setup(r => r.FindById(destination.Id))
+                    .Returns(destination);
+
+                // arrange a category with a duplicate name
+                mock
+                    .Setup(r => r.FindByParentAndName(destination, source.Name))
+                    .Returns(duplicate);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.CopyEntityToAsync(source.Id, destination.Id, CancellationToken.None));
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal($"Entity(id='{source.Id}') wasn't copied: name is duplicate of Category(id='{duplicate.Id}')", result.Message);
+        }
+
+        [Fact]
+        public async Task Coping_entity_fails_on_missing_source()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            var source = DefaultEntityModel(root);
+            var destination = DefaultCategoryModel(root);
+            var copy = DefaultEntityModel(destination);
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                // entity repos provides the source entity
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns((EntityModel)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.CopyEntityToAsync(source.Id, destination.Id, CancellationToken.None));
+
+            // ASSERT
+            Assert.Equal($"Entity(id='{source.Id}') wasn't copied: it doesn't exist", result.Message);
+        }
+
+        [Fact]
+        public async Task Copying_entity_fails_on_missing_destination()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            var source = DefaultEntityModel(root);
+            var destination = DefaultCategoryModel(root);
+            var copy = DefaultEntityModel(destination);
+
+            this.ArrangeEntityRepository(mock =>
+            {
+                // entity repos provides the source entity
+                mock
+                    .Setup(r => r.FindById(source.Id))
+                    .Returns(source);
+            });
+
+            this.ArrangeCategoryRepository(mock =>
+            {
+                // arrange the category top copy into
+                mock
+                    .Setup(r => r.FindById(destination.Id))
+                    .Returns((CategoryModel)null);
+            });
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.service.CopyEntityToAsync(source.Id, destination.Id, CancellationToken.None));
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal($"Entity(id='{source.Id}') wasn't copied: Category(id='{destination.Id}') doesn't exist", result.Message);
         }
 
         private void ArrangeEntityRepository(Action<Mock<IEntityRepository>> arrange)

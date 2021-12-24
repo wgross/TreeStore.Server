@@ -58,7 +58,7 @@ namespace TreeStore.LiteDb
             }
             catch (LiteException ex)
             {
-                throw InvalidModelException.EntityWithDuplicateName(entity.Id, entity.Category.Id, ex);
+                throw InvalidModelException.EntityWithDuplicateName(entity.Name, ex);
             }
         }
 

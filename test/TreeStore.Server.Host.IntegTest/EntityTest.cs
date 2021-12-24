@@ -24,11 +24,11 @@ namespace TreeStore.Server.Host.IntegTest
         public async Task Create_entity()
         {
             // ARRANGE
-            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None);
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
             var category = await this.client.UpdateCategoryAsync(rootCategory.Id,
                  request: new UpdateCategoryRequest(
                     Facet: new FacetRequest(new CreateFacetPropertyRequest("p1", FacetPropertyTypeValues.String))),
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
             var entity = DefaultEntityModel();
 
@@ -38,7 +38,7 @@ namespace TreeStore.Server.Host.IntegTest
                 CategoryId: rootCategory.Id,
                 Values: new FacetPropertyValuesRequest(new UpdateFacetPropertyValueRequest(category.Facet.Properties.Single().Id, category.Facet.Properties.Single().Type, "value")));
 
-            var result = await this.client.CreateEntityAsync(request, CancellationToken.None);
+            var result = await this.client.CreateEntityAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(entity.Name, result.Name);
@@ -52,11 +52,11 @@ namespace TreeStore.Server.Host.IntegTest
         public async Task Update_entity_values()
         {
             // ARRANGE
-            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None);
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
             var category = await this.client.UpdateCategoryAsync(rootCategory.Id,
                  request: new UpdateCategoryRequest(
                     Facet: new FacetRequest(new CreateFacetPropertyRequest("p1", FacetPropertyTypeValues.String))),
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
             var entityModel = DefaultEntityModel();
 
@@ -65,14 +65,14 @@ namespace TreeStore.Server.Host.IntegTest
                 CategoryId: rootCategory.Id,
                 Values: new FacetPropertyValuesRequest(new UpdateFacetPropertyValueRequest(category.Facet.Properties.Single().Id, category.Facet.Properties.Single().Type, "value")));
 
-            var entityResult = await this.client.CreateEntityAsync(createRequest, CancellationToken.None);
+            var entityResult = await this.client.CreateEntityAsync(createRequest, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             var request = new UpdateEntityRequest(
                 Values: new FacetPropertyValuesRequest(
                     new UpdateFacetPropertyValueRequest(category.Facet.Properties.Single().Id, category.Facet.Properties.Single().Type, "changed-value")));
 
-            var result = await this.client.UpdateEntityAsync(entityResult.Id, request, CancellationToken.None);
+            var result = await this.client.UpdateEntityAsync(entityResult.Id, request, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(entityModel.Name, result.Name);
@@ -87,18 +87,18 @@ namespace TreeStore.Server.Host.IntegTest
         {
             // ARRANGE
             // put entity under root category
-            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None);
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
             var entity = DefaultEntityModel();
 
             var request = new CreateEntityRequest(
                 Name: entity.Name,
                 CategoryId: rootCategory.Id);
 
-            var entityResult = await this.client.CreateEntityAsync(request, CancellationToken.None);
+            var entityResult = await this.client.CreateEntityAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             // delete the entity with the id from the create response.
-            var result = await this.client.DeleteEntityAsync(entityResult.Id, CancellationToken.None);
+            var result = await this.client.DeleteEntityAsync(entityResult.Id, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.True(result);
@@ -110,9 +110,9 @@ namespace TreeStore.Server.Host.IntegTest
             // ARRANGE
             // create a facet at the root category
             var rootCategory = await this.client.UpdateCategoryAsync(
-                id: (await this.client.GetRootCategoryAsync(CancellationToken.None)).Id,
+                id: (await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false)).Id,
                 request: new UpdateCategoryRequest(Facet: new FacetRequest(new CreateFacetPropertyRequest("p1", FacetPropertyTypeValues.String))),
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
             // put entity under root category with facet property value
             var entity = DefaultEntityModel();
@@ -122,11 +122,11 @@ namespace TreeStore.Server.Host.IntegTest
               CategoryId: rootCategory.Id,
               Values: new FacetPropertyValuesRequest(new UpdateFacetPropertyValueRequest(rootCategory.Facet.Properties.Single().Id, rootCategory.Facet.Properties.Single().Type, "value")));
 
-            var entityResult = await this.client.CreateEntityAsync(request, CancellationToken.None);
+            var entityResult = await this.client.CreateEntityAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // ACT
             // read entity using the id from create request
-            var result = await this.client.GetEntityByIdAsync(entityResult.Id, CancellationToken.None);
+            var result = await this.client.GetEntityByIdAsync(entityResult.Id, CancellationToken.None).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal(entity.Name, result.Name);

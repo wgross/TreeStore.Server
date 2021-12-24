@@ -14,7 +14,7 @@ namespace TreeStoreFS.Test
 
         protected TreeStoreTestServer TreeStoreServer { get; }
 
-        public CmdletProviderTestBase()
+        protected CmdletProviderTestBase()
         {
             this.PowerShell = PowerShell.Create();
             this.TreeStoreServer = new TreeStoreTestServer();

@@ -67,5 +67,13 @@ namespace TreeStore.Server.Host.Controllers
         {
             return this.Ok(new DeleteEntityResponse(Deleted: await this.service.DeleteEntityAsync(id, cancellationToken)));
         }
+
+        [HttpPost, Route("entities/copy")]
+        public async Task<IActionResult> CopyEntityAsync(
+            [FromBody] CopyEntityRequest request,
+            CancellationToken cancellationToken)
+        {
+            return this.Ok(await this.service.CopyEntityToAsync(request.SourceId, request.DestinationId, cancellationToken).ConfigureAwait(false));
+        }
     }
 }
