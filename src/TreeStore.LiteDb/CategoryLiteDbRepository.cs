@@ -79,8 +79,13 @@ namespace TreeStore.LiteDb
             using var scope = this.BeginScope(category);
 
             if (category.Parent is null)
+            {
                 if (category.Id != this.Root().Id)
+                {
                     throw new InvalidOperationException("Category must have parent.");
+                }
+            }
+
             try
             {
                 return base.Upsert(category);

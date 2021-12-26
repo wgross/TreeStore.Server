@@ -73,21 +73,41 @@ namespace TreeStore.Model
         }
 
         /// <inheritdoc/>
-        public async Task<EntityResult> CopyEntityToAsync(Guid entityId, Guid destinationId, CancellationToken none)
+        public async Task<EntityResult> CopyEntityToAsync(Guid sourceEntiyId, Guid destinationId, CancellationToken none)
         {
-            var entity = this.model.Entities.FindById(entityId);
-            if (entity is null)
-                throw new InvalidOperationException($"Entity(id='{entityId}') wasn't copied: it doesn't exist");
+            var sourceEntity = this.model.Entities.FindById(sourceEntiyId);
+            if (sourceEntity is null)
+                throw new InvalidOperationException($"Entity(id='{sourceEntiyId}') wasn't copied: it doesn't exist");
 
             var destinationCategory = this.model.Categories.FindById(destinationId);
             if (destinationCategory is null)
-                throw new InvalidOperationException($"Entity(id='{entityId}') wasn't copied: Category(id='{destinationId}') doesn't exist");
+                throw new InvalidOperationException($"Entity(id='{sourceEntiyId}') wasn't copied: Category(id='{destinationId}') doesn't exist");
 
-            var existingDuplicate = this.model.Categories.FindByParentAndName(destinationCategory, entity.Name);
+            var existingDuplicate = this.model.Categories.FindByParentAndName(destinationCategory, sourceEntity.Name);
             if (existingDuplicate is not null)
-                throw new InvalidOperationException($"Entity(id='{entity.Id}') wasn't copied: name is duplicate of Category(id='{existingDuplicate.Id}')");
+                throw new InvalidOperationException($"Entity(id='{sourceEntity.Id}') wasn't copied: name is duplicate of Category(id='{existingDuplicate.Id}')");
 
-            return this.model.Categories.CopyTo(entity, destinationCategory).ToEntityResult();
+            return this.model.Categories.CopyTo(sourceEntity, destinationCategory).ToEntityResult();
+        }
+
+        /// <inheritdoc/>
+        public Task<EntityResult> MoveEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken)
+        {
+            var sourceEntity = this.model.Entities.FindById(sourceEntityId);
+            if (sourceEntity is null)
+                throw new InvalidOperationException($"Entity(id='{sourceEntityId}') wasn't moved: Entity(id='{sourceEntityId}') doesn't exist");
+
+            var destinationCategory = this.model.Categories.FindById(destinationCategoryId);
+            if (destinationCategory is null)
+                throw new InvalidOperationException($"Entity(id='{sourceEntityId}') wasn't moved: Category(id='{destinationCategoryId}') doesn't exist");
+
+            var existingDuplicate = this.model.Categories.FindByParentAndName(destinationCategory, sourceEntity.Name);
+            if (existingDuplicate is not null)
+                throw new InvalidOperationException($"Entity(id='{sourceEntityId}') wasn't moved: name is duplicate of Category(id='{existingDuplicate.Id}')");
+
+            sourceEntity.SetCategory(destinationCategory);
+
+            return Task.FromResult(this.model.Entities.Upsert(sourceEntity).ToEntityResult());
         }
 
         private EntityModel Apply(CreateEntityRequest createEntityRequest, EntityModel entityModel)

@@ -20,6 +20,8 @@ namespace TreeStore.Server.Host.IntegTest
             this.client = new TreeStoreClient(this.serverFactory.CreateClient(), new NullLogger<TreeStoreClient>());
         }
 
+        #region CREATE / COPY / MOVE
+
         [Fact]
         public async Task Create_entity()
         {
@@ -47,6 +49,61 @@ namespace TreeStore.Server.Host.IntegTest
             Assert.Equal(category.Facet.Properties.Single().Type, result.Values.Single().Type);
             Assert.Null(result.Values.Single().Value);
         }
+
+        [Fact]
+        public async Task Copy_entity()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createC1 = new CreateEntityRequest(
+                Name: "c1",
+                CategoryId: rootCategory.Id);
+            var c1 = await this.client.CreateEntityAsync(createC1, CancellationToken.None).ConfigureAwait(false);
+
+            var createC2 = new CreateCategoryRequest(
+                Name: "c2",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+            var c2 = await this.client.CreateCategoryAsync(createC2, CancellationToken.None).ConfigureAwait(false);
+
+            // ACT
+            var result = await this.client.CopyEntityToAsync(c1.Id, c2.Id, CancellationToken.None).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(c1.Name, result.Name);
+            Assert.Equal(c2.Id, result.CategoryId);
+            Assert.NotEqual(c1.Id, result.Id);
+        }
+
+        [Fact]
+        public async Task Move_entity()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createC1 = new CreateEntityRequest(
+                Name: "c1",
+                CategoryId: rootCategory.Id);
+            var c1 = await this.client.CreateEntityAsync(createC1, CancellationToken.None).ConfigureAwait(false);
+
+            var createC2 = new CreateCategoryRequest(
+                Name: "c2",
+                ParentId: rootCategory.Id);
+            var c2 = await this.client.CreateCategoryAsync(createC2, CancellationToken.None).ConfigureAwait(false);
+
+            // ACT
+            var result = await this.client.MoveEntityToAsync(c1.Id, c2.Id, CancellationToken.None).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(c1.Name, result.Name);
+            Assert.Equal(c2.Id, result.CategoryId);
+            Assert.Equal(c1.Id, result.Id);
+        }
+
+        #endregion CREATE / COPY / MOVE
 
         [Fact]
         public async Task Update_entity_values()

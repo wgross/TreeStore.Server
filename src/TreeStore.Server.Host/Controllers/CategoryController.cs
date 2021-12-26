@@ -83,5 +83,13 @@ namespace TreeStore.Server.Host.Controllers
         {
             return this.Ok(await this.service.CopyCategoryToAsync(request.SourceId, request.DestinationId, request.Recurse, cancellationToken).ConfigureAwait(false));
         }
+
+        [HttpPost, Route("categories/move")]
+        public async Task<IActionResult> MoveCategoryAsync(
+            [FromBody] MoveCategoryRequest request,
+            CancellationToken cancellationToken)
+        {
+            return this.Ok(await this.service.MoveCategoryToAsync(request.SourceId, request.DestinationId, cancellationToken).ConfigureAwait(false));
+        }
     }
 }

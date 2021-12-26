@@ -8,7 +8,10 @@ namespace TreeStore.Common
     {
         internal static Guard Against { get; } = new Guard();
 
+#pragma warning disable CA1822 // Mark members as static
+
         internal T Null<T>([NotNull] T? t, string paramName, [CallerMemberName] string callerMemberName = "") where T : class
+#pragma warning restore CA1822 // Mark members as static
         {
             if (t is null)
                 throw new ArgumentNullException(paramName, $"In '{callerMemberName}'");
@@ -16,7 +19,10 @@ namespace TreeStore.Common
             return t;
         }
 
+#pragma warning disable CA1822 // Mark members as static
+
         internal string NullOrEmpty([NotNull] string? str, string paramName, [CallerMemberName] string callerMemberName = "")
+#pragma warning restore CA1822 // Mark members as static
         {
             if (string.IsNullOrEmpty(str))
                 throw new ArgumentNullException(paramName, $"In '{callerMemberName}'");

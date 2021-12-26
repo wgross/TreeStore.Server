@@ -25,7 +25,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromBody] CreateEntityRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await this.service.CreateEntityAsync(request, cancellationToken);
+            var result = await this.service.CreateEntityAsync(request, cancellationToken).ConfigureAwait(false);
 
             return this.CreatedAtAction("GetEntityById", new { id = result.Id }, result);
         }
@@ -35,7 +35,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromRoute(Name = "id")] Guid id,
             CancellationToken cancellationToken)
         {
-            var result = await this.service.GetEntityByIdAsync(id, cancellationToken);
+            var result = await this.service.GetEntityByIdAsync(id, cancellationToken).ConfigureAwait(false);
             if (result is null)
                 return this.NotFound();
             else
@@ -47,7 +47,7 @@ namespace TreeStore.Server.Host.Controllers
         {
             return this.Ok(new EntityCollectionResponse
             {
-                Entities = (await this.service.GetEntitiesAsync(cancellationToken)).ToArray()
+                Entities = (await this.service.GetEntitiesAsync(cancellationToken).ConfigureAwait(false)).ToArray()
             });
         }
 
@@ -57,7 +57,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromBody] UpdateEntityRequest request,
             CancellationToken cancellationToken)
         {
-            return this.Ok(await this.service.UpdateEntityAsync(id, request, cancellationToken));
+            return this.Ok(await this.service.UpdateEntityAsync(id, request, cancellationToken).ConfigureAwait(false));
         }
 
         [HttpDelete, Route("entities/{id}")]
@@ -65,7 +65,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromRoute(Name = "id")] Guid id,
             CancellationToken cancellationToken)
         {
-            return this.Ok(new DeleteEntityResponse(Deleted: await this.service.DeleteEntityAsync(id, cancellationToken)));
+            return this.Ok(new DeleteEntityResponse(Deleted: await this.service.DeleteEntityAsync(id, cancellationToken).ConfigureAwait(false)));
         }
 
         [HttpPost, Route("entities/copy")]
@@ -74,6 +74,14 @@ namespace TreeStore.Server.Host.Controllers
             CancellationToken cancellationToken)
         {
             return this.Ok(await this.service.CopyEntityToAsync(request.SourceId, request.DestinationId, cancellationToken).ConfigureAwait(false));
+        }
+
+        [HttpPost, Route("entities/move")]
+        public async Task<IActionResult> MoveEntityAsync(
+            [FromBody] CopyEntityRequest request,
+            CancellationToken cancellationToken)
+        {
+            return this.Ok(await this.service.MoveEntityToAsync(request.SourceId, request.DestinationId, cancellationToken).ConfigureAwait(false));
         }
     }
 }

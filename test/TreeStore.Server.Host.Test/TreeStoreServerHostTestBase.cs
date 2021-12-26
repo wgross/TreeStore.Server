@@ -12,30 +12,30 @@ namespace TreeStore.Server.Host.Test
     public abstract class TreeStoreServerHostTestBase : IDisposable
     {
         private bool disposedValue;
-        protected IHost host { get; }
+        protected IHost Host { get; }
         protected MockRepository Mocks { get; } = new MockRepository(MockBehavior.Strict);
 
-        protected Mock<ITreeStoreService> modelServiceMock { get; }
+        protected Mock<ITreeStoreService> ModelServiceMock { get; }
 
         protected TreeStoreClient clientService;
 
         public TreeStoreServerHostTestBase()
         {
             // server
-            this.modelServiceMock = this.Mocks.Create<ITreeStoreService>();
+            this.ModelServiceMock = this.Mocks.Create<ITreeStoreService>();
 
-            this.host = Microsoft.Extensions.Hosting.Host
+            this.Host = Microsoft.Extensions.Hosting.Host
                 .CreateDefaultBuilder()
                 .ConfigureWebHost(wh =>
                 {
                     wh.UseTestServer();
-                    wh.UseStartup(whctx => new TestStartup(this.modelServiceMock.Object, whctx.Configuration));
+                    wh.UseStartup(whctx => new TestStartup(this.ModelServiceMock.Object, whctx.Configuration));
                 })
                 .Build();
-            this.host.StartAsync();
+            this.Host.StartAsync();
 
             // client
-            this.clientService = new TreeStoreClient(this.host.GetTestClient(), new NullLogger<TreeStoreClient>());
+            this.clientService = new TreeStoreClient(this.Host.GetTestClient(), new NullLogger<TreeStoreClient>());
         }
 
         protected virtual void Dispose(bool disposing)
@@ -44,7 +44,7 @@ namespace TreeStore.Server.Host.Test
             {
                 if (disposing)
                 {
-                    this.host.StopAsync().GetAwaiter().GetResult();
+                    this.Host.StopAsync().GetAwaiter().GetResult();
                     this.Mocks.VerifyAll();
                 }
                 disposedValue = true;

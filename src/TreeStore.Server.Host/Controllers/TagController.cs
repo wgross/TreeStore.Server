@@ -25,7 +25,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromBody] CreateTagRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await this.service.CreateTagAsync(request, cancellationToken);
+            var result = await this.service.CreateTagAsync(request, cancellationToken).ConfigureAwait(false);
 
             return this.CreatedAtAction("GetTagById", new { id = result.Id }, result);
         }
@@ -35,7 +35,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromRoute(Name = "id")] Guid id,
             CancellationToken cancellationToken)
         {
-            var result = await this.service.GetTagByIdAsync(id, cancellationToken);
+            var result = await this.service.GetTagByIdAsync(id, cancellationToken).ConfigureAwait(false);
             if (result is null)
                 return this.NotFound();
             else
@@ -47,7 +47,7 @@ namespace TreeStore.Server.Host.Controllers
         {
             return this.Ok(new TagCollectionResponse
             {
-                Tags = (await this.service.GetTagsAsync(cancellationToken)).ToArray()
+                Tags = (await this.service.GetTagsAsync(cancellationToken).ConfigureAwait(false)).ToArray()
             });
         }
 
@@ -57,7 +57,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromBody] UpdateTagRequest request,
             CancellationToken cancellationToken)
         {
-            return this.Ok(await this.service.UpdateTagAsync(id, request, cancellationToken));
+            return this.Ok(await this.service.UpdateTagAsync(id, request, cancellationToken).ConfigureAwait(false));
         }
 
         [HttpDelete, Route("tags/{id}")]
@@ -65,7 +65,7 @@ namespace TreeStore.Server.Host.Controllers
             [FromRoute(Name = "id")] Guid id,
             CancellationToken cancellationToken)
         {
-            return this.Ok(new DeleteTagResponse(Deleted: await this.service.DeleteTagAsync(id, cancellationToken)));
+            return this.Ok(new DeleteTagResponse(Deleted: await this.service.DeleteTagAsync(id, cancellationToken).ConfigureAwait(false)));
         }
     }
 }

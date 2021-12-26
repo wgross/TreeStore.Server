@@ -129,7 +129,11 @@ namespace TreeStore.Model.Abstractions
 
     public record CopyCategoryRequest(Guid SourceId, Guid DestinationId, bool Recurse);
 
+    public record MoveCategoryRequest(Guid SourceId, Guid DestinationId);
+
     public record CopyEntityRequest(Guid SourceId, Guid DestinationId);
+
+    public record MoveEntityRequest(Guid SourceId, Guid DestinationId);
 
     #endregion Category
 }

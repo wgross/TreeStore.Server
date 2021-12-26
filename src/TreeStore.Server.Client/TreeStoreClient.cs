@@ -24,7 +24,7 @@ namespace TreeStore.Server.Client
             this.logger = logger;
         }
 
-        #region /entities
+        #region Entities /CREATE /COPY /MOVE
 
         /// <inheritdoc/>
         public async Task<EntityResult?> CreateEntityAsync(CreateEntityRequest createEntityRequest, CancellationToken cancellationToken)
@@ -33,6 +33,36 @@ namespace TreeStore.Server.Client
                 httpResponseMessage: await this.httpClient.PostAsJsonAsync("entities", createEntityRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+
+        /// <inheritdoc/>
+        public async Task<EntityResult> CopyEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<EntityResult>(
+                httpResponseMessage: await this.httpClient
+                    .PostAsJsonAsync("entities/copy", new CopyEntityRequest(
+                            SourceId: sourceEntityId,
+                            DestinationId: destinationCategoryId),
+                        TreeStoreJsonSerializerOptions.Default,
+                        cancellationToken).ConfigureAwait(false),
+                    cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<EntityResult> MoveEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<EntityResult>(
+               httpResponseMessage: await this.httpClient
+                   .PostAsJsonAsync("entities/move", new MoveEntityRequest(
+                           SourceId: sourceEntityId,
+                           DestinationId: destinationCategoryId),
+                       TreeStoreJsonSerializerOptions.Default,
+                       cancellationToken).ConfigureAwait(false),
+                   cancellationToken).ConfigureAwait(false);
+        }
+
+        #endregion Entities /CREATE /COPY /MOVE
+
+        #region Entities /READ
 
         /// <inheritdoc/>
         public async Task<EntityResult?> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -53,6 +83,10 @@ namespace TreeStore.Server.Client
             ).Entities;
         }
 
+        #endregion Entities /READ
+
+        #region Entities /UPDATE
+
         /// <inheritdoc/>
         public async Task<EntityResult?> UpdateEntityAsync(Guid id, UpdateEntityRequest updateEntityRequest, CancellationToken cancellationToken)
         {
@@ -60,6 +94,10 @@ namespace TreeStore.Server.Client
                  httpResponseMessage: await this.httpClient.PutAsJsonAsync($"entities/{id}", updateEntityRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                  cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+
+        #endregion Entities /UPDATE
+
+        #region Entities /DELETE
 
         /// <inheritdoc/>
         public async Task<bool> DeleteEntityAsync(Guid id, CancellationToken cancellationToken)
@@ -72,20 +110,7 @@ namespace TreeStore.Server.Client
             return response.Deleted;
         }
 
-        /// <inheritdoc/>
-        public async Task<EntityResult> CopyEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken)
-        {
-            return await this.HandleJsonResponse<EntityResult>(
-                httpResponseMessage: await this.httpClient
-                    .PostAsJsonAsync("entities/copy", new CopyEntityRequest(
-                            SourceId: sourceEntityId,
-                            DestinationId: destinationCategoryId),
-                        TreeStoreJsonSerializerOptions.Default,
-                        cancellationToken).ConfigureAwait(false),
-                    cancellationToken).ConfigureAwait(false);
-        }
-
-        #endregion /entities
+        #endregion Entities /DELETE
 
         #region /categories
 
@@ -140,6 +165,18 @@ namespace TreeStore.Server.Client
                             SourceId: sourceCategoryId,
                             DestinationId: destinationCategoryId,
                             Recurse: recurse),
+                        TreeStoreJsonSerializerOptions.Default,
+                        cancellationToken).ConfigureAwait(false),
+                    cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<CategoryResult> MoveCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<CategoryResult>(
+                httpResponseMessage: await this.httpClient
+                    .PostAsJsonAsync("categories/move", new MoveCategoryRequest(
+                            SourceId: sourceCategoryId,
+                            DestinationId: destinationCategoryId),
                         TreeStoreJsonSerializerOptions.Default,
                         cancellationToken).ConfigureAwait(false),
                     cancellationToken).ConfigureAwait(false);

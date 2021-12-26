@@ -25,28 +25,7 @@ namespace TreeStoreFS.Test.Nodes
             this.rootCategoryAdapter = new RootCategoryAdapter(this.treeStoreServiceMock.Object);
         }
 
-        [Fact]
-        public void Get_item()
-        {
-            // ARRANGE
-            var root = DefaultRootCategoryModel();
-            var category = DefaultCategoryModel(root);
-
-            this.treeStoreServiceMock
-                .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.ToCategoryResult());
-
-            var categoryAdapter = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Id);
-
-            // ACT
-            var result = categoryAdapter.GetRequiredService<IGetItem>().GetItem();
-
-            // ASSERT
-            Assert.NotNull(result);
-            Assert.Equal(category.Id, result.Property<Guid>("Id"));
-            Assert.Equal(category.Name, result.Property<string>("Name"));
-            Assert.Equal(category.Parent.Id, result.Property<Guid>("ParentId"));
-        }
+        #region CREATE / COPY / MOVE
 
         [Fact]
         public void Creates_child_category()
@@ -111,6 +90,33 @@ namespace TreeStoreFS.Test.Nodes
         }
 
         [Fact]
+        public void Creates_child_entity()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+
+            this.treeStoreServiceMock
+               .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
+               .ReturnsAsync(root.ToCategoryResult());
+
+            var child = DefaultEntityModel(WithEntityCategory(root));
+
+            CreateEntityRequest request = default;
+            this.treeStoreServiceMock
+                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<CreateEntityRequest, CancellationToken>((r, _) => request = r)
+                .ReturnsAsync(child.ToEntityResult());
+
+            // ACT
+            var result = this.rootCategoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, "entity", null);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(child.Name, request.Name);
+            Assert.Equal(root.Id, request.CategoryId);
+        }
+
+        [Fact]
         public void Copies_child_category()
         {
             // ARRANGE
@@ -143,7 +149,7 @@ namespace TreeStoreFS.Test.Nodes
         {
             // ARRANGE
             var root = DefaultRootCategoryModel();
-            
+
             var child = DefaultCategoryModel(root);
             this.treeStoreServiceMock
                 .Setup(s => s.GetCategoryByIdAsync(child.Id, It.IsAny<CancellationToken>()))
@@ -228,74 +234,90 @@ namespace TreeStoreFS.Test.Nodes
         }
 
         [Fact]
-        public void Creates_child_entity()
+        public void Moves_child_category_to_existing_destination()
         {
             // ARRANGE
             var root = DefaultRootCategoryModel();
+            var rootNode = new RootNode(new CategoryNodeAdapter(this.treeStoreServiceMock.Object, root.Id));
+
+            var child = DefaultCategoryModel(root);
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(child.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(child.ToCategoryResult());
+            var childNode = new ContainerNode(child.Name, new CategoryNodeAdapter(this.treeStoreServiceMock.Object, child.Id));
+
+            var destination = DefaultCategoryModel(root, c => c.Name = "dest");
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(destination.ToCategoryResult());
+            var destinationNode = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, destination.Id);
 
             this.treeStoreServiceMock
-               .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
-               .ReturnsAsync(root.ToCategoryResult());
-
-            var child = DefaultEntityModel(WithEntityCategory(root));
-
-            CreateEntityRequest request = default;
-            this.treeStoreServiceMock
-                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<CreateEntityRequest, CancellationToken>((r, _) => request = r)
-                .ReturnsAsync(child.ToEntityResult());
+                .Setup(s => s.MoveCategoryToAsync(child.Id, destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(child.ToCategoryResult());
 
             // ACT
-            var result = this.rootCategoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, "entity", null);
+            var result = (ContainerNode)destinationNode.GetService<IMoveChildItem>().MoveChildItem(rootNode, childNode, Array.Empty<string>());
 
             // ASSERT
             Assert.NotNull(result);
-            Assert.Equal(child.Name, request.Name);
-            Assert.Equal(root.Id, request.CategoryId);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void Removes_child_category(bool recurse)
+        [Fact]
+        public void Moves_child_entity_to_existing_destination()
         {
             // ARRANGE
-            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+            var root = DefaultRootCategoryModel();
+            var rootNode = new RootNode(new CategoryNodeAdapter(this.treeStoreServiceMock.Object, root.Id));
+
+            var child = DefaultEntityModel(root);
             this.treeStoreServiceMock
-                .Setup(s => s.GetCategoryByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(category.Parent.ToCategoryResult(categories: category.Yield(), entities: Array.Empty<EntityModel>()));
-            var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Parent.Id);
+                .Setup(s => s.GetEntityByIdAsync(child.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(child.ToEntityResult());
+            var childNode = new LeafNode(child.Name, new EntityNodeAdapter(this.treeStoreServiceMock.Object, child.Id));
+
+            var destination = DefaultCategoryModel(root, c => c.Name = "dest");
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(destination.ToCategoryResult());
+            var destinationNode = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, destination.Id);
 
             this.treeStoreServiceMock
-                .Setup(s => s.DeleteCategoryAsync(category.Parent.Id, category.Name, recurse, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
+                .Setup(s => s.MoveEntityToAsync(child.Id, destination.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(child.ToEntityResult());
 
             // ACT
-            // tell the node to remove the category child.
-            parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(category.Name, recurse);
+            var result = (LeafNode)destinationNode.GetService<IMoveChildItem>().MoveChildItem(rootNode, childNode, Array.Empty<string>());
+
+            // ASSERT
+            Assert.NotNull(result);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void Removes_child_entity(bool recurse)
+        #endregion CREATE / COPY / MOVE
+
+        #region READ
+
+        [Fact]
+        public void Get_item()
         {
             // ARRANGE
-            // put an entity under the root category
-            var entity = DefaultEntityModel(DefaultRootCategoryModel());
-            this.treeStoreServiceMock
-                .Setup(s => s.GetCategoryByIdAsync(entity.Category.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity.Category.ToCategoryResult(categories: Array.Empty<CategoryModel>(), entities: entity.Yield()));
-
-            var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, entity.Category.Id);
+            var root = DefaultRootCategoryModel();
+            var category = DefaultCategoryModel(root);
 
             this.treeStoreServiceMock
-                .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
+                .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(category.ToCategoryResult());
+
+            var categoryAdapter = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Id);
 
             // ACT
-            // tell the node to remote the entity child
-            parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(entity.Name, recurse);
+            var result = categoryAdapter.GetRequiredService<IGetItem>().GetItem();
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(category.Id, result.Property<Guid>("Id"));
+            Assert.Equal(category.Name, result.Property<string>("Name"));
+            Assert.Equal(category.Parent.Id, result.Property<Guid>("ParentId"));
         }
 
         [Fact]
@@ -386,6 +408,10 @@ namespace TreeStoreFS.Test.Nodes
             // ASSERT
             Assert.Empty(result);
         }
+
+        #endregion READ
+
+        #region UPDATE / RENAME
 
         [Theory]
         [InlineData("child")]
@@ -495,5 +521,55 @@ namespace TreeStoreFS.Test.Nodes
             // ASSERT
             Assert.Equal("Child item (name='e') wasn't renamed: There is already a child with name='c'", result.Message);
         }
+
+        #endregion UPDATE / RENAME
+
+        #region DELETE
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removes_child_category(bool recurse)
+        {
+            // ARRANGE
+            var category = DefaultCategoryModel(DefaultRootCategoryModel());
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(category.Parent.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(category.Parent.ToCategoryResult(categories: category.Yield(), entities: Array.Empty<EntityModel>()));
+            var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Parent.Id);
+
+            this.treeStoreServiceMock
+                .Setup(s => s.DeleteCategoryAsync(category.Parent.Id, category.Name, recurse, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // ACT
+            // tell the node to remove the category child.
+            parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(category.Name, recurse);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Removes_child_entity(bool recurse)
+        {
+            // ARRANGE
+            // put an entity under the root category
+            var entity = DefaultEntityModel(DefaultRootCategoryModel());
+            this.treeStoreServiceMock
+                .Setup(s => s.GetCategoryByIdAsync(entity.Category.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.Category.ToCategoryResult(categories: Array.Empty<CategoryModel>(), entities: entity.Yield()));
+
+            var parentCategory = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, entity.Category.Id);
+
+            this.treeStoreServiceMock
+                .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // ACT
+            // tell the node to remote the entity child
+            parentCategory.GetRequiredService<IRemoveChildItem>().RemoveChildItem(entity.Name, recurse);
+        }
+
+        #endregion DELETE
     }
 }

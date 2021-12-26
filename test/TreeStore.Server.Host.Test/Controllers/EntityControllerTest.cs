@@ -21,7 +21,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             CreateEntityRequest writtenEntity = null;
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<CreateEntityRequest, CancellationToken>((r, _) => writtenEntity = r)
                 .ReturnsAsync(entity.ToEntityResult());
@@ -67,7 +67,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
@@ -88,7 +88,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(entity.ToEntityResult());
 
@@ -114,7 +114,7 @@ namespace TreeStore.Server.Host.Test.Controllers
         public async Task Reading_unknown_entity_by_id_returns_null()
         {
             // ARRANGE
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.GetEntityByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((EntityResult)null);
 
@@ -131,7 +131,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.GetEntitiesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[] { entity.ToEntityResult() });
 
@@ -157,7 +157,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
             UpdateEntityRequest writtenEntity = null;
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<Guid, UpdateEntityRequest, CancellationToken>((_1, updt, _2) => writtenEntity = updt)
                 .ReturnsAsync(entity.ToEntityResult());
@@ -207,7 +207,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidModelException("fail", new Exception("innerFail")));
 
@@ -228,7 +228,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             // ARRANGE
             var entity = DefaultEntityModel(WithDefaultCategory, WithDefaultTag, WithDefaultPropertyValues);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.DeleteEntityAsync(entity.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
@@ -251,7 +251,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
             var copiedEntity = DefaultEntityModel(destinationCategory);
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(copiedEntity.ToEntityResult());
 
@@ -272,18 +272,62 @@ namespace TreeStore.Server.Host.Test.Controllers
             var sourceEntity = DefaultEntityModel(DefaultRootCategoryModel());
             var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
 
-            this.modelServiceMock
+            this.ModelServiceMock
                 .Setup(s => s.CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("fail"));
 
             // ACT
             var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
-               .CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None));
+               .CopyEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None)).ConfigureAwait(false);
 
             // ASSERT
             Assert.Equal("fail", result.Message);
         }
 
         #endregion COPY
+
+        #region MOVE
+
+        [Fact]
+        public async Task Move_entity()
+        {
+            // ARRANGE
+            var sourceEntity = DefaultEntityModel(DefaultRootCategoryModel());
+            var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ModelServiceMock
+                .Setup(s => s.MoveEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(sourceEntity.ToEntityResult());
+
+            // ACT
+            var result = await this.clientService
+                .MoveEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(sourceEntity.Id, result.Id);
+        }
+
+        [Fact]
+        public async Task Move_entity_rethrows_if_move_fails()
+        {
+            // ARRANGE
+            var sourceEntity = DefaultEntityModel(DefaultRootCategoryModel());
+            var destinationCategory = DefaultCategoryModel(DefaultRootCategoryModel());
+
+            this.ModelServiceMock
+                .Setup(s => s.MoveEntityToAsync(sourceEntity.Id, destinationCategory.Id, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("fail"));
+
+            // ACT
+            var result = await Assert.ThrowsAsync<InvalidOperationException>(() => this.clientService
+               .MoveEntityToAsync(sourceEntity.Id, destinationCategory.Id, CancellationToken.None)).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal("fail", result.Message);
+        }
+
+        #endregion MOVE
     }
 }

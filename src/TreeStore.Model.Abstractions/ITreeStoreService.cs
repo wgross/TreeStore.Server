@@ -105,5 +105,15 @@ namespace TreeStore.Model.Abstractions
         /// Deletes the tag specified by <paramref name="id"/>.
         /// </summary>
         Task<bool> DeleteTagAsync(Guid id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Moves the category <paramref name="sourceCategoryId"/> into category <paramref name="destinationCatageoryId"/>.
+        /// </summary>
+        Task<CategoryResult> MoveCategoryToAsync(Guid sourceCategoryId, Guid destinationCatageoryId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Moves the entity <paramref name="sourceEntityId"/> into category <paramref name="destinationCategoryId"/>.
+        /// </summary>
+        Task<EntityResult> MoveEntityToAsync(Guid sourceEntityId, Guid destinationCategoryId, CancellationToken cancellationToken);
     }
 }

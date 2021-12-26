@@ -20,6 +20,8 @@ namespace TreeStore.Server.Host.IntegTest
             this.client = new TreeStoreClient(this.serverFactory.CreateClient(), new NullLogger<TreeStoreClient>());
         }
 
+        #region CREATE / COPY / MOVE
+
         [Fact]
         public async Task Create_category()
         {
@@ -44,6 +46,76 @@ namespace TreeStore.Server.Host.IntegTest
 
             Assert.All(request.Facet.Creates, c => Assert.Equal(c.Type, getResultProperty(c.Name).Type));
         }
+
+        [Fact]
+        public async Task Copy_category()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createC1 = new CreateCategoryRequest(
+                Name: "c1",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var c1 = await this.client.CreateCategoryAsync(createC1, CancellationToken.None).ConfigureAwait(false);
+
+            var createC2 = new CreateCategoryRequest(
+                Name: "c2",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var c2 = await this.client.CreateCategoryAsync(createC2, CancellationToken.None).ConfigureAwait(false);
+
+            // ACT
+            var result = await this.client.CopyCategoryToAsync(c1.Id, c2.Id, false, CancellationToken.None).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(c1.Name, result.Name);
+            Assert.Equal(c2.Id, result.ParentId);
+            Assert.NotEqual(c1.Id, result.Id);
+        }
+
+        [Fact]
+        public async Task Move_category()
+        {
+            // ARRANGE
+            var rootCategory = await this.client.GetRootCategoryAsync(CancellationToken.None).ConfigureAwait(false);
+
+            var createC1 = new CreateCategoryRequest(
+                Name: "c1",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var c1 = await this.client.CreateCategoryAsync(createC1, CancellationToken.None).ConfigureAwait(false);
+
+            var createC2 = new CreateCategoryRequest(
+                Name: "c2",
+                ParentId: rootCategory.Id,
+                Facet: new FacetRequest(
+                        new CreateFacetPropertyRequest(Name: "p1", Type: FacetPropertyTypeValues.DateTime),
+                        new CreateFacetPropertyRequest(Name: "p2", Type: FacetPropertyTypeValues.Long)));
+
+            var c2 = await this.client.CreateCategoryAsync(createC2, CancellationToken.None).ConfigureAwait(false);
+
+            // ACT
+            var result = await this.client.MoveCategoryToAsync(c1.Id, c2.Id, CancellationToken.None).ConfigureAwait(false);
+
+            // ASSERT
+            Assert.Equal(c1.Name, result.Name);
+            Assert.Equal(c2.Id, result.ParentId);
+            Assert.Equal(c1.Id, result.Id);
+        }
+
+        #endregion CREATE / COPY / MOVE
+
+        #region READ
 
         [Fact]
         public async Task Read_category_by_id()
@@ -110,6 +182,10 @@ namespace TreeStore.Server.Host.IntegTest
                 Assert.Equal(p.Name, getResultProperty(p.Id).Name);
             });
         }
+
+        #endregion READ
+
+        #region UPDATE
 
         [Fact]
         public async Task Update_category_by_id()
@@ -201,6 +277,10 @@ namespace TreeStore.Server.Host.IntegTest
             Assert.StartsWith($"Category(id='{category1.Id}') wasn't updated: duplicate name with Entity(id='{entity.Id}')", result.Message);
         }
 
+        #endregion UPDATE
+
+        #region DELETE
+
         [Fact]
         public async Task Delete_category_by_id()
         {
@@ -246,5 +326,7 @@ namespace TreeStore.Server.Host.IntegTest
             Assert.True(result);
             Assert.Null(await this.client.GetCategoryByIdAsync(category.Id, CancellationToken.None).ConfigureAwait(false));
         }
+
+        #endregion DELETE
     }
 }

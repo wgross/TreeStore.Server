@@ -11,10 +11,7 @@ namespace TreeStoreFS.Test
         {
             return Microsoft.Extensions.Hosting.Host
                .CreateDefaultBuilder()
-               .ConfigureWebHostDefaults(webBuilder =>
-               {
-                   webBuilder.UseStartup(this.StartUpFactory);
-               });
+               .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup(this.StartUpFactory));
         }
 
         private Startup StartUpFactory(WebHostBuilderContext arg) => new FileSystemTestStartup(arg.Configuration);

@@ -322,5 +322,113 @@ namespace TreeStoreFS.Test
         }
 
         #endregion Rename-Item -Path
+
+        #region Move-Item -Path -Destination
+
+        [Fact]
+        public void PowerShell_moves_child_category_keeping_name()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // create a destination category
+            _ = this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child1")
+                .AddParameter("ItemType", "category")
+                .Invoke()
+                .ToArray();
+            this.PowerShell.Commands.Clear();
+
+            var childBeforeCopy = this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child2")
+                .AddParameter("ItemType", "category")
+                .Invoke()
+                .Single();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            // move child2 under child1
+            this.PowerShell.AddCommand("Move-Item")
+                .AddParameter("Path", @"test:\child2")
+                .AddParameter("Destination", @"test:\child1")
+                .Invoke();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            this.PowerShell.Commands.Clear();
+            var movedChild = this.PowerShell
+                .AddCommand("Get-Item")
+                .AddParameter("Path", @"test:\child1\child2")
+                .Invoke()
+                .Single();
+
+            Assert.Equal(childBeforeCopy.Property<Guid>("Id"), movedChild.Property<Guid>("Id"));
+            Assert.Equal(childBeforeCopy.Property<string>("Name"), movedChild.Property<string>("Name"));
+
+            this.PowerShell.Commands.Clear();
+            var sourceExists = this.PowerShell
+                .AddCommand("Test-Path")
+                .AddParameter("Path", @"test:\child2")
+                .Invoke()
+                .Single();
+
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.False((bool)sourceExists.BaseObject);
+        }
+
+        [Fact]
+        public void PowerShell_moves_child_entity_keeping_name()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // create a destination category
+            var childBeforeCopy = this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child1")
+                .AddParameter("ItemType", "entity")
+                .Invoke()
+                .Single();
+            this.PowerShell.Commands.Clear();
+
+            _ = this.PowerShell.AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child2")
+                .AddParameter("ItemType", "category")
+                .Invoke()
+                .Single();
+            this.PowerShell.Commands.Clear();
+
+            // ACT
+            // move child2 under child1
+            this.PowerShell.AddCommand("Move-Item")
+                .AddParameter("Path", @"test:\child1")
+                .AddParameter("Destination", @"test:\child2")
+                .Invoke();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            this.PowerShell.Commands.Clear();
+            var movedChild = this.PowerShell
+               .AddCommand("Get-Item")
+               .AddParameter("Path", @"test:\child2\child1")
+               .Invoke()
+               .Single();
+
+            Assert.Equal(childBeforeCopy.Property<Guid>("Id"), movedChild.Property<Guid>("Id"));
+            Assert.Equal(childBeforeCopy.Property<string>("Name"), movedChild.Property<string>("Name"));
+
+            this.PowerShell.Commands.Clear();
+            var sourceExists = this.PowerShell
+                .AddCommand("Test-Path")
+                .AddParameter("Path", @"test:\child1")
+                .Invoke()
+                .Single();
+
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.False((bool)sourceExists.BaseObject);
+        }
+
+        #endregion Move-Item -Path -Destination
     }
 }

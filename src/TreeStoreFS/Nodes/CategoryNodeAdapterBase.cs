@@ -18,7 +18,7 @@ namespace TreeStoreFS.Nodes
         // ItemCmdletProvider
         IGetItem, IItemExists,
         // ContainerCmdletProvider
-        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IRenameChildItem
+        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IMoveChildItem, IRenameChildItem
     {
         protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
@@ -44,7 +44,7 @@ namespace TreeStoreFS.Nodes
                 // the node was fetched before with the ids of entites and categories belonging to it.
                 // if none were there the call back to fetch the children again is avoided.
                 // Since the nodes only lives as long as a single path traversal lasts there in no risk to represent the
-                // backends state wrongly here.
+                // backend state wrongly here.
                 return Array.Empty<ProviderNode>();
             }
 
@@ -152,9 +152,12 @@ namespace TreeStoreFS.Nodes
             {
                 var result = Await(this.TreeStoreService.CopyEntityToAsync(entityNode.Id, this.Category.Id, CancellationToken.None));
 
-                return new LeafNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
+                return new LeafNode(result!.Name, new EntityNodeAdapter(this.TreeStoreService, result!.Id));
             }
-            else throw new NotImplementedException("missing case");
+            else
+            {
+                throw new NotImplementedException("missing case");
+            }
         }
 
         /// <inheritdoc/>
@@ -211,5 +214,26 @@ namespace TreeStoreFS.Nodes
         }
 
         #endregion IRenameChildItem
+
+        #region IMoveChildItem
+
+        ProviderNode? IMoveChildItem.MoveChildItem(ContainerNode parentOfNodeToMove, ProviderNode nodeToMove, string[] destination)
+        {
+            if (Guard.Against.Null(nodeToMove, nameof(nodeToMove)).Underlying is CategoryNodeAdapterBase categoryNode)
+            {
+                var result = Await(this.TreeStoreService.MoveCategoryToAsync(categoryNode.Id, this.Category.Id, CancellationToken.None));
+
+                return new ContainerNode(result!.Name, new CategoryNodeAdapter(this.TreeStoreService, result!.Id));
+            }
+            else if (Guard.Against.Null(nodeToMove, nameof(nodeToMove)).Underlying is EntityNodeAdapter entityNode)
+            {
+                var result = Await(this.TreeStoreService.MoveEntityToAsync(entityNode.Id, this.Category.Id, CancellationToken.None));
+
+                return new LeafNode(result!.Name, new EntityNodeAdapter(this.TreeStoreService, result!.Id));
+            }
+            else throw new NotImplementedException("missing case");
+        }
+
+        #endregion IMoveChildItem
     }
 }
