@@ -16,7 +16,7 @@ namespace TreeStoreFS.Nodes
         // Path Traversal
         IGetChildItems,
         // ItemCmdletProvider
-        IGetItem, IItemExists,
+        IGetItem,
         // ContainerCmdletProvider
         INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IMoveChildItem, IRenameChildItem,
         // DynamicItemPropertyCommandProvider
@@ -139,13 +139,6 @@ namespace TreeStoreFS.Nodes
         }
 
         #endregion IRemoveChildItem
-
-        #region IItemExists
-
-        /// <inheritdoc/>
-        bool IItemExists.ItemExists() => true;
-
-        #endregion IItemExists
 
         #region ICopyChildItem, ICopyChildItemRecursive
 
