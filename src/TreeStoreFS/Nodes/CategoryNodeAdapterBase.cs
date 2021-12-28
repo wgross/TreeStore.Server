@@ -20,7 +20,7 @@ namespace TreeStoreFS.Nodes
         // ContainerCmdletProvider
         INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IMoveChildItem, IRenameChildItem,
         // DynamicItemPropertyCommandProvider
-        INewItemProperty, IGetItemProperty, IRenameItemProperty
+        INewItemProperty, IRenameItemProperty
     {
         protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
@@ -66,7 +66,15 @@ namespace TreeStoreFS.Nodes
         #region IGetItem
 
         /// <inheritdoc/>
-        PSObject IGetItem.GetItem() => PSObject.AsPSObject(this.Category);
+        PSObject IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(this.Category));
+
+        private PSObject AddAllFacetProperties(PSObject pso)
+        {
+            foreach (var property in this.Category.Facet!.Properties)
+                pso.Properties.Add(new PSNoteProperty(property.Name, property.Type));
+
+            return pso;
+        }
 
         #endregion IGetItem
 
@@ -248,41 +256,16 @@ namespace TreeStoreFS.Nodes
             var existingDestinationProperty = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
             if (existingDestinationProperty is not null)
                 throw new InvalidOperationException($"Creating property(name='{propertyName}') failed: property name is duplicate");
+            
+            // send the update but don't keep the result. The category is fetch again during the next command
 
-            this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
+            Await(this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
                 Facet: new FacetRequest(
                     Properties: new CreateFacetPropertyRequest(Name: propertyName, propertyType))),
-                    CancellationToken.None);
+                    CancellationToken.None));
         }
 
         #endregion INewItemProperty
-
-        #region IGetItemProperty
-
-        PSObject IGetItemProperty.GetItemProperty(IEnumerable<string>? propertyToGet)
-        {
-            var pso = new PSObject();
-            if (propertyToGet is null || !propertyToGet.Any())
-            {
-                foreach (var property in this.Category.Facet!.Properties)
-                {
-                    pso.Properties.Add(new PSNoteProperty(property.Name, property.Type));
-                }
-            }
-            else
-            {
-                foreach (var propertyName in propertyToGet)
-                {
-                    var property = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
-
-                    if (property is not null)
-                        pso.Properties.Add(new PSNoteProperty(property.Name, property.Type));
-                }
-            }
-            return pso;
-        }
-
-        #endregion IGetItemProperty
 
         #region IRenameItemProperty
 
@@ -296,10 +279,12 @@ namespace TreeStoreFS.Nodes
             if (existingDestinationProperty is not null)
                 throw new InvalidOperationException($"Renaming property(name='{sourceProperty}') failed: property name is duplicate");
 
-            this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
+            // send the update but don't keep the result. The category is fetch again during the next command
+
+            Await(this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
                 Facet: new FacetRequest(
                     Properties: new UpdateFacetPropertyRequest(Id: propertyToChange.Id, Name: destinationProperty))),
-                    CancellationToken.None);
+                    CancellationToken.None));
         }
 
         #endregion IRenameItemProperty

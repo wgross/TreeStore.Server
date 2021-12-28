@@ -85,52 +85,6 @@ namespace TreeStoreFS.Test.Nodes
 
         #endregion CREATE
 
-        #region READ
-
-        [Fact]
-        public void Read_all_property()
-        {
-            // ARRANGE
-            var root = DefaultRootCategoryModel(WithDefaultProperties);
-
-            this.treeStoreServiceMock
-                .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(root.ToCategoryResult());
-
-            // ACT
-            var result = this.rootCategoryAdapter.GetService<IGetItemProperty>().GetItemProperty(null);
-
-            // ASSERT
-            Assert.Equal(FacetPropertyTypeValues.String, result.Property<FacetPropertyTypeValues>("string"));
-            Assert.Equal(FacetPropertyTypeValues.Long, result.Property<FacetPropertyTypeValues>("long"));
-            Assert.Equal(FacetPropertyTypeValues.Double, result.Property<FacetPropertyTypeValues>("double"));
-            Assert.Equal(FacetPropertyTypeValues.Decimal, result.Property<FacetPropertyTypeValues>("decimal"));
-            Assert.Equal(FacetPropertyTypeValues.DateTime, result.Property<FacetPropertyTypeValues>("datetime"));
-            Assert.Equal(FacetPropertyTypeValues.Guid, result.Property<FacetPropertyTypeValues>("guid"));
-            Assert.Equal(FacetPropertyTypeValues.Bool, result.Property<FacetPropertyTypeValues>("bool"));
-        }
-
-        [Theory]
-        [InlineData("GUID")]
-        [InlineData("guid")]
-        public void Read_facet_property_by_name(string propertyName)
-        {
-            // ARRANGE
-            var root = DefaultRootCategoryModel(WithDefaultProperty);
-
-            this.treeStoreServiceMock
-                .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(root.ToCategoryResult());
-
-            // ACT
-            var result = this.rootCategoryAdapter.GetService<IGetItemProperty>().GetItemProperty(propertyName.Yield());
-
-            // ASSERT
-            Assert.Equal(FacetPropertyTypeValues.Guid, result.Property<FacetPropertyTypeValues>("guid"));
-        }
-
-        #endregion READ
-
         #region UPDATE
 
         [Fact]

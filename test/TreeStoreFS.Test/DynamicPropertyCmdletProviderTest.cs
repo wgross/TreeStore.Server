@@ -16,23 +16,28 @@ namespace TreeStoreFS.Test
             // ARRANGE
             this.ArrangeFileSystem();
 
-            _ = this.PowerShell.AddCommand("New-Item")
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "category")
-                .Invoke()
-                .Single();
-            this.PowerShell.Commands.Clear();
+                .AddParameter("ItemType", "category"));
 
             // ACT
-            this.PowerShell
+            this.InvokeAndClear(ps => ps
                 .AddCommand("New-ItemProperty")
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("Name", "p1")
-                .AddParameter("PropertyType", "long")
-                .Invoke();
+                .AddParameter("PropertyType", "long"));
 
             // ASSERT
             Assert.False(this.PowerShell.HadErrors);
+
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Get-ItemProperty")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("Name", "p1"))
+                .Single();
+
+            Assert.Equal(FacetPropertyTypeValues.Long, result.Property<FacetPropertyTypeValues>("p1"));
         }
 
         #endregion New-ItemProperty -Path -Name -Type
@@ -45,35 +50,28 @@ namespace TreeStoreFS.Test
             // ARRANGE
             this.ArrangeFileSystem();
 
-            _ = this.PowerShell.AddCommand("New-Item")
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "category")
-                .Invoke()
-                .Single();
-            this.PowerShell.Commands.Clear();
+                .AddParameter("ItemType", "category"));
 
-            this.PowerShell
-              .AddCommand("New-ItemProperty")
-              .AddParameter("Path", @"test:\child")
-              .AddParameter("Name", "p1")
-              .AddParameter("PropertyType", "long")
-              .Invoke();
-            this.PowerShell.Commands.Clear();
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-ItemProperty")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("Name", "p1")
+                .AddParameter("PropertyType", "long"));
 
-            this.PowerShell
+            this.InvokeAndClear(ps => ps
                .AddCommand("Rename-ItemProperty")
                .AddParameter("Path", @"test:\child")
                .AddParameter("Name", "p1")
-               .AddParameter("NewName", "p2")
-               .Invoke();
-            this.PowerShell.Commands.Clear();
+               .AddParameter("NewName", "p2"));
 
             // ACT
-            var result = this.PowerShell
+            var result = this.InvokeAndClear(ps => ps
                 .AddCommand("Get-ItemProperty")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("Name", "p2")
-                .Invoke()
+                .AddParameter("Name", "p2"))
                 .Single();
 
             // ASSERT

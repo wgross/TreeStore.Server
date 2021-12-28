@@ -13,7 +13,7 @@ namespace TreeStoreFS.Nodes
         // ItemProvider
         IGetItem,
         // ItemPropertyProvider
-        IGetItemProperty, ISetItemProperty, IClearItemProperty
+        ISetItemProperty, IClearItemProperty
 
     {
         private readonly Lazy<EntityResult?> entity;
@@ -35,36 +35,6 @@ namespace TreeStoreFS.Nodes
 
         PSObject? IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(this.Entity));
 
-        #endregion IGetItem
-
-        #region IGetItemProperty
-
-        // TODO: the built in properties like Name should be included as well.
-
-        PSObject IGetItemProperty.GetItemProperty(IEnumerable<string>? propertyToGet)
-        {
-            var pso = new PSObject();
-            if (propertyToGet is null || !propertyToGet.Any())
-            {
-                AddAllFacetProperties(pso);
-            }
-            else
-            {
-                foreach (var propertyName in propertyToGet)
-                {
-                    var property = this.GetFacetPropertyByName(propertyName);
-
-                    if (property is not null)
-                        pso.Properties.Add(new PSNoteProperty(property.Name, property.Value));
-                }
-            }
-
-            return pso;
-        }
-
-        private FacetPropertyValueResult? GetFacetPropertyByName(string propertyName)
-            => this.Entity.Values.FirstOrDefault(v => v.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
-
         private PSObject AddAllFacetProperties(PSObject pso)
         {
             foreach (var property in this.Entity.Values)
@@ -73,7 +43,7 @@ namespace TreeStoreFS.Nodes
             return pso;
         }
 
-        #endregion IGetItemProperty
+        #endregion IGetItem
 
         #region ISetItemProperty
 
@@ -90,6 +60,9 @@ namespace TreeStoreFS.Nodes
                 Values: new FacetPropertyValuesRequest(facetProperyUpdates.ToArray())),
                 CancellationToken.None));
         }
+
+        private FacetPropertyValueResult? GetFacetPropertyByName(string propertyName)
+            => this.Entity.Values.FirstOrDefault(v => v.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
 
         #endregion ISetItemProperty
 
