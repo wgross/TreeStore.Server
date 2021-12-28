@@ -105,6 +105,7 @@ namespace TreeStore.Server.Host.Test.Controllers
             Assert.Equal(expected.TagIds.Single(), result.TagIds.Single());
             Assert.All(expected.Values, ev =>
             {
+                Assert.Equal(ev.Name, resultValue(ev.Id).Name);
                 Assert.Equal(ev.Value, resultValue(ev.Id).Value);
                 Assert.Equal(ev.Type, resultValue(ev.Id).Type);
             });

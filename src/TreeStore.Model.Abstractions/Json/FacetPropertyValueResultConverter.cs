@@ -4,6 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace TreeStore.Model.Abstractions.Json
 {
+    /// <summary>
+    /// The type converter is required to map the string representation of <see cref="FacetPropertyTypeValues"/> back to its
+    /// C# type.
+    /// </summary>
     public sealed class FacetPropertyValueResultConverter : JsonConverter<FacetPropertyValueResult>
     {
         public override FacetPropertyValueResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -77,11 +81,25 @@ namespace TreeStore.Model.Abstractions.Json
                 throw new InvalidOperationException("Value property not found");
             }
 
+            static string ReadName(ref Utf8JsonReader reader)
+            {
+                if (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+                    if (nameof(FacetPropertyValueResult.Name).Equals(reader.GetString(), StringComparison.OrdinalIgnoreCase))
+                        if (reader.Read() && reader.TokenType == JsonTokenType.String)
+                            return reader.GetString() ?? throw new InvalidOperationException("Name of a property must never be null");
+
+                throw new InvalidOperationException("Name property not found");
+            }
+
+            // the order of reading corresponds with the order of writing.
+
             var id = ReadId(ref reader);
             var type = ReadType(ref reader);
+            var name = ReadName(ref reader);
             var value = ReadValue(ref reader, type);
             var result = new FacetPropertyValueResult(
                 Id: id,
+                Name: name,
                 Type: type,
                 Value: value);
 
@@ -137,9 +155,13 @@ namespace TreeStore.Model.Abstractions.Json
                     }
                 }
             }
+
+            // the order of reading corresponds with the order of writing.
+
             writer.WriteStartObject();
             writer.WriteString(nameof(FacetPropertyValueResult.Id), value.Id);
             writer.WriteNumber("$type", (int)value.Type);
+            writer.WriteString(nameof(FacetPropertyResult.Name), value.Name);
             WriteValue(writer, value.Type, value.Value);
             writer.WriteEndObject();
         }

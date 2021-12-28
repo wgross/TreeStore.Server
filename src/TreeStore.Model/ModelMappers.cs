@@ -17,6 +17,11 @@ namespace TreeStore.Model
                 Name: entity.Name);
         }
 
+        /// <summary>
+        /// Maps an <see cref="EntityModel"/> to an instance of <see cref="EntityResult"/> to send it over the wire.
+        /// The <see cref="FacetPropertyValueResult"/> is extended with name and type information from the categories facet property
+        /// definition
+        /// </summary>
         public static EntityResult ToEntityResult(this EntityModel entity)
         {
             return new EntityResult(
@@ -24,7 +29,11 @@ namespace TreeStore.Model
                 Name: entity.Name,
                 CategoryId: entity.Category!.Id,
                 TagIds: entity.Tags.Select(t => t.Id).ToArray(),
-                Values: entity.FacetPropertyValues().Select(fpv => new FacetPropertyValueResult(fpv.facetProperty.Id, fpv.facetProperty.Type, fpv.value)).ToArray());
+                Values: entity.FacetPropertyValues().Select(fpv => new FacetPropertyValueResult(
+                    Id: fpv.facetProperty.Id,
+                    Name: fpv.facetProperty.Name,
+                    Type: fpv.facetProperty.Type,
+                    Value: fpv.value)).ToArray());
         }
 
         public static TagResult ToTagResult(this TagModel tag)

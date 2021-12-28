@@ -18,7 +18,9 @@ namespace TreeStoreFS.Nodes
         // ItemCmdletProvider
         IGetItem, IItemExists,
         // ContainerCmdletProvider
-        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IMoveChildItem, IRenameChildItem
+        INewChildItem, IRemoveChildItem, ICopyChildItemRecursive, IMoveChildItem, IRenameChildItem,
+        // DynamicItemPropertyCommandProvider
+        INewItemProperty, IGetItemProperty, IRenameItemProperty
     {
         protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
@@ -209,7 +211,7 @@ namespace TreeStoreFS.Nodes
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Unkown reference type: '{childToRename.GetType()}'");
+                    throw new InvalidOperationException($"Unknown reference type: '{childToRename.GetType()}'");
             }
         }
 
@@ -235,5 +237,71 @@ namespace TreeStoreFS.Nodes
         }
 
         #endregion IMoveChildItem
+
+        #region INewItemProperty
+
+        void INewItemProperty.NewItemProperty(string propertyName, string? propertyTypeName, object? value)
+        {
+            if (!Enum.TryParse<FacetPropertyTypeValues>(propertyTypeName, ignoreCase: true, out var propertyType))
+                throw new InvalidOperationException($"FacetProperty(name='{propertyName}') wasn't created: type '{propertyTypeName}' is unknown");
+
+            var existingDestinationProperty = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+            if (existingDestinationProperty is not null)
+                throw new InvalidOperationException($"Creating property(name='{propertyName}') failed: property name is duplicate");
+
+            this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
+                Facet: new FacetRequest(
+                    Properties: new CreateFacetPropertyRequest(Name: propertyName, propertyType))),
+                    CancellationToken.None);
+        }
+
+        #endregion INewItemProperty
+
+        #region IGetItemProperty
+
+        PSObject IGetItemProperty.GetItemProperty(IEnumerable<string>? propertyToGet)
+        {
+            var pso = new PSObject();
+            if (propertyToGet is null || !propertyToGet.Any())
+            {
+                foreach (var property in this.Category.Facet!.Properties)
+                {
+                    pso.Properties.Add(new PSNoteProperty(property.Name, property.Type));
+                }
+            }
+            else
+            {
+                foreach (var propertyName in propertyToGet)
+                {
+                    var property = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+
+                    if (property is not null)
+                        pso.Properties.Add(new PSNoteProperty(property.Name, property.Type));
+                }
+            }
+            return pso;
+        }
+
+        #endregion IGetItemProperty
+
+        #region IRenameItemProperty
+
+        void IRenameItemProperty.RenameItemProperty(string sourceProperty, string destinationProperty)
+        {
+            var propertyToChange = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(sourceProperty, StringComparison.OrdinalIgnoreCase));
+            if (propertyToChange is null)
+                throw new InvalidOperationException($"Renaming property(name='{sourceProperty}') failed: property doesn't exist");
+
+            var existingDestinationProperty = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(destinationProperty, StringComparison.OrdinalIgnoreCase));
+            if (existingDestinationProperty is not null)
+                throw new InvalidOperationException($"Renaming property(name='{sourceProperty}') failed: property name is duplicate");
+
+            this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(
+                Facet: new FacetRequest(
+                    Properties: new UpdateFacetPropertyRequest(Id: propertyToChange.Id, Name: destinationProperty))),
+                    CancellationToken.None);
+        }
+
+        #endregion IRenameItemProperty
     }
 }

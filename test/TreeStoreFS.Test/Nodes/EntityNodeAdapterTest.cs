@@ -3,6 +3,8 @@ using Moq;
 using PowerShellFilesystemProviderBase;
 using PowerShellFilesystemProviderBase.Capabilities;
 using System;
+using System.Linq;
+using System.Management.Automation;
 using System.Threading;
 using TreeStore.Model;
 using TreeStore.Model.Abstractions;
@@ -21,12 +23,17 @@ namespace TreeStoreFS.Test.Nodes
             this.treeStoreService = this.Mocks.Create<ITreeStoreService>();
         }
 
+        #region IGetItem
+
         [Fact]
         public void Get_item()
         {
             // ARRANGE
-            var category = DefaultRootCategoryModel();
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
             var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(category.FacetProperties().Single(), value);
 
             this.treeStoreService
                 .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
@@ -42,6 +49,145 @@ namespace TreeStoreFS.Test.Nodes
             Assert.Equal(entity.Id, result.Property<Guid>("Id"));
             Assert.Equal(entity.Name, result.Property<string>("Name"));
             Assert.Equal(entity.Category.Id, result.Property<Guid>("CategoryId"));
+            Assert.Equal(value, result.Property<Guid?>("guid"));
         }
+
+        #endregion IGetItem
+
+        #region IGetItemProperty
+
+        [Fact]
+        public void Get_item_property_value_null()
+        {
+            // ARRANGE
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            this.treeStoreService
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var entityNodeAdapter = new EntityNodeAdapter(this.treeStoreService.Object, entity.Id);
+
+            // ACT
+            var result = entityNodeAdapter.GetRequiredService<IGetItemProperty>().GetItemProperty("guid".Yield());
+
+            // ASSERT
+            Assert.Null(result.Property<Guid?>("guid"));
+        }
+
+        [Fact]
+        public void Get_item_property_value()
+        {
+            // ARRANGE
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(category.FacetProperties().Single(), value);
+
+            this.treeStoreService
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var entityNodeAdapter = new EntityNodeAdapter(this.treeStoreService.Object, entity.Id);
+
+            // ACT
+            var result = entityNodeAdapter.GetRequiredService<IGetItemProperty>().GetItemProperty("guid".Yield());
+
+            // ASSERT
+            Assert.Equal(value, result.Property<Guid?>("guid"));
+        }
+
+        [Fact]
+        public void Get_all_item_property_values()
+        {
+            // ARRANGE
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(category.FacetProperties().Single(), value);
+
+            this.treeStoreService
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var entityNodeAdapter = new EntityNodeAdapter(this.treeStoreService.Object, entity.Id);
+
+            // ACT
+            var result = entityNodeAdapter.GetRequiredService<IGetItemProperty>().GetItemProperty(null);
+
+            // ASSERT
+            Assert.Equal(value, result.Property<Guid?>("guid"));
+        }
+
+        #endregion IGetItemProperty
+
+        #region ISetItemProperty
+
+        [Fact]
+        public void Set_item_property_value()
+        {
+            // ARRANGE
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            this.treeStoreService
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            UpdateEntityRequest result = null;
+            this.treeStoreService
+                .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<Guid, UpdateEntityRequest, CancellationToken>((_, updt, _) => result = updt)
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var entityNodeAdapter = new EntityNodeAdapter(this.treeStoreService.Object, entity.Id);
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(category.FacetProperties().Single(), value);
+
+            // ACT
+            entityNodeAdapter.GetRequiredService<ISetItemProperty>().SetItemProperty(PSObject.AsPSObject(new { guid = value }));
+
+            // ASSERT
+            Assert.Equal(value, result.Values.Updates.Single().Value);
+        }
+
+        #endregion ISetItemProperty
+
+        #region IClearItemProperty
+
+        [Fact]
+        public void Clear_item_property_value()
+        {
+            // ARRANGE
+            var category = DefaultRootCategoryModel(WithDefaultProperty);
+            var entity = DefaultEntityModel(WithEntityCategory(category));
+
+            this.treeStoreService
+                .Setup(s => s.GetEntityByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity.ToEntityResult());
+
+            UpdateEntityRequest result = null;
+            this.treeStoreService
+                .Setup(s => s.UpdateEntityAsync(entity.Id, It.IsAny<UpdateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<Guid, UpdateEntityRequest, CancellationToken>((_, updt, _) => result = updt)
+                .ReturnsAsync(entity.ToEntityResult());
+
+            var entityNodeAdapter = new EntityNodeAdapter(this.treeStoreService.Object, entity.Id);
+
+            var value = Guid.NewGuid();
+            entity.SetFacetProperty(category.FacetProperties().Single(), value);
+
+            // ACT
+            entityNodeAdapter.GetRequiredService<IClearItemProperty>().ClearItemProperty("guid".Yield());
+
+            // ASSERT
+            Assert.Null(result.Values.Updates.Single().Value);
+        }
+
+        #endregion IClearItemProperty
     }
 }

@@ -27,5 +27,8 @@ namespace TreeStore.Model.Abstractions
     public sealed record EntityResult(Guid Id, string Name, Guid CategoryId, Guid[] TagIds, IEnumerable<FacetPropertyValueResult> Values)
         : EntityReferenceResult(Id, Name);
 
-    public sealed record FacetPropertyValueResult(Guid Id, FacetPropertyTypeValues Type, object? Value);
+    /// <summary>
+    /// A <see cref="FacetPropertyValueResult"/> contains the value a a facet property inherited from an ancestor
+    /// category. It is extended by its current name.
+    public sealed record FacetPropertyValueResult(Guid Id, string Name, FacetPropertyTypeValues Type, object? Value);
 }

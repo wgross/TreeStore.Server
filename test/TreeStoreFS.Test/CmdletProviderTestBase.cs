@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using TreeStore.Server.Client;
 using TreeStoreFS.Nodes;
@@ -44,6 +46,14 @@ namespace TreeStoreFS.Test
                 .AddParameter("Root", "")
                 .Invoke();
             this.PowerShell.Commands.Clear();
+        }
+
+        protected Collection<PSObject> InvokeAndClear(Action<PowerShell> invoke)
+        {
+            invoke(this.PowerShell);
+            var result = this.PowerShell.Invoke();
+            this.PowerShell.Commands.Clear();
+            return result;
         }
     }
 }

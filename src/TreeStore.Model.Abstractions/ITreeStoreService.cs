@@ -65,9 +65,9 @@ namespace TreeStore.Model.Abstractions
         Task<TagResult?> GetTagByIdAsync(Guid id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates the category identified by <paramref name="id"/> with the changes data defined in <paramref name="requestCategoryRequest"/>
+        /// Updates the category identified by <paramref name="id"/> with the changes data defined in <paramref name="updateRequest"/>
         /// </summary>
-        Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest requestCategoryRequest, CancellationToken cancellationToken);
+        Task<CategoryResult> UpdateCategoryAsync(Guid id, UpdateCategoryRequest updateRequest, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the tag identified by <paramref name="id"/> with the changed data from <paramref name="updateTagRequest"/>
