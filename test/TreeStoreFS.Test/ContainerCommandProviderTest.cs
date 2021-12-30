@@ -18,10 +18,10 @@ namespace TreeStoreFS.Test
             this.ArrangeFileSystem();
 
             // ACT
-            var result = this.PowerShell.AddCommand("New-Item")
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "category")
-                .Invoke()
+                .AddParameter("ItemType", "category"))
                 .Single();
 
             // ASSERT
@@ -32,7 +32,7 @@ namespace TreeStoreFS.Test
             Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", result.Property<string>("PSParentPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", result.Property<string>("PSParentPath"));
         }
 
         [Fact]
@@ -52,6 +52,11 @@ namespace TreeStoreFS.Test
             Assert.False(this.PowerShell.HadErrors);
 
             Assert.Equal("child", result.Property<string>("PSChildName"));
+            Assert.False(result.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", result.Property<string>("PSParentPath"));
         }
 
         #endregion New-Item -Path -ItemType -Value
@@ -157,8 +162,8 @@ namespace TreeStoreFS.Test
             Assert.True(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child\", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         [Fact]
@@ -190,8 +195,8 @@ namespace TreeStoreFS.Test
             Assert.False(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child\", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         #endregion Get-ChildItem -Path -Recurse
@@ -430,5 +435,97 @@ namespace TreeStoreFS.Test
         }
 
         #endregion Move-Item -Path -Destination
+
+        #region Resolve-Path -Path
+
+        [Fact]
+        public void Resolve_root_path()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("Set-Location")
+                .AddParameter("Path", @"test:\"));
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Resolve-Path")
+                .AddParameter("Path", "."))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.NotNull(result);
+
+            var pathInfo = result.ImmediateBaseObject is PathInfo pi ? pi : throw new Exception("nope");
+
+            Assert.Equal(@"test:\", pathInfo.Path);
+        }
+
+        [Fact]
+        public void Resolve_child_category_path()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "category"))
+                .Single();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("Set-Location")
+                .AddParameter("Path", @"test:\"));
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Resolve-Path")
+                .AddParameter("Path", "child"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.NotNull(result);
+
+            var pathInfo = result.ImmediateBaseObject is PathInfo pi ? pi : throw new Exception("nope");
+
+            Assert.Equal(@"test:\child", pathInfo.Path);
+        }
+
+
+        [Fact]
+        public void Resolve_child_category_path_with_wildcard()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "category"))
+                .Single();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("Set-Location")
+                .AddParameter("Path", @"test:\"));
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Resolve-Path")
+                .AddParameter("Path", "ch*"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.NotNull(result);
+
+            var pathInfo = result.ImmediateBaseObject is PathInfo pi ? pi : throw new Exception("nope");
+
+            Assert.Equal(@"test:\child", pathInfo.Path);
+        }
+
+        #endregion Resolve-Path -Path
     }
 }

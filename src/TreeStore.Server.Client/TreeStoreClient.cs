@@ -112,47 +112,13 @@ namespace TreeStore.Server.Client
 
         #endregion Entities /DELETE
 
-        #region /categories
-
-        /// <inheritdoc/>
-        public async Task<CategoryResult?> GetRootCategoryAsync(CancellationToken cancellationToken)
-        {
-            return await this.HandleJsonResponse<CategoryResult>(
-                httpResponseMessage: await this.httpClient.GetAsync("categories", cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
+        #region Categories /CREATE /COPY /MOVE
 
         /// <inheritdoc/>
         public async Task<CategoryResult?> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
                 httpResponseMessage: await this.httpClient.PostAsJsonAsync("categories", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task<IEnumerable<CategoryResult>?> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
-        {
-            var categories = await this.HandleJsonResponse<CategoryCollectionResponse>(
-                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}/children", cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return categories?.Categories;
-        }
-
-        /// <inheritdoc/>
-        public async Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
-        {
-            return await this.HandleJsonResponse<CategoryResult>(
-                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task<CategoryResult?> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
-        {
-            return await this.HandleJsonResponse<CategoryResult>(
-                httpResponseMessage: await this.httpClient.PutAsJsonAsync($"categories/{id}", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -170,6 +136,7 @@ namespace TreeStore.Server.Client
                     cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<CategoryResult> MoveCategoryToAsync(Guid sourceCategoryId, Guid destinationCategoryId, CancellationToken cancellationToken)
         {
             return await this.HandleJsonResponse<CategoryResult>(
@@ -181,6 +148,52 @@ namespace TreeStore.Server.Client
                         cancellationToken).ConfigureAwait(false),
                     cancellationToken).ConfigureAwait(false);
         }
+
+        #endregion Categories /CREATE /COPY /MOVE
+
+        #region Categories /READ
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<CategoryResult>?> GetCategoriesByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var categories = await this.HandleJsonResponse<CategoryCollectionResponse>(
+                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}/children", cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            return categories?.Categories;
+        }
+
+        /// <inheritdoc/>
+        public async Task<CategoryResult?> GetRootCategoryAsync(CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<CategoryResult>(
+                httpResponseMessage: await this.httpClient.GetAsync("categories", cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<CategoryResult?> GetCategoryByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<CategoryResult>(
+                httpResponseMessage: await this.httpClient.GetAsync($"categories/{id}", cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        #endregion Categories /READ
+
+        #region Categories /UPDATE
+
+        /// <inheritdoc/>
+        public async Task<CategoryResult?> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        {
+            return await this.HandleJsonResponse<CategoryResult>(
+                httpResponseMessage: await this.httpClient.PutAsJsonAsync($"categories/{id}", request, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        #endregion Categories /UPDATE
+
+        #region Categories /DELETE
 
         /// <inheritdoc/>
         public async Task<bool> DeleteCategoryAsync(Guid id, bool recurse, CancellationToken cancellationToken)
@@ -202,9 +215,9 @@ namespace TreeStore.Server.Client
             return response.Deleted;
         }
 
-        #endregion /categories
+        #endregion Categories /DELETE
 
-        #region /tags
+        #region Tags /CREATE
 
         /// <inheritdoc/>
         public async Task<TagResult?> CreateTagAsync(CreateTagRequest createTagRequest, CancellationToken cancellationToken)
@@ -213,6 +226,10 @@ namespace TreeStore.Server.Client
                httpResponseMessage: await this.httpClient.PostAsJsonAsync("tags", createTagRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+
+        #endregion Tags /CREATE
+
+        #region Tags /READ
 
         /// <inheritdoc/>
         public async Task<IEnumerable<TagResult>> GetTagsAsync(CancellationToken cancellationToken)
@@ -232,6 +249,10 @@ namespace TreeStore.Server.Client
                  cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
+        #endregion Tags /READ
+
+        #region Tags /UPDATE
+
         /// <inheritdoc/>
         public async Task<TagResult?> UpdateTagAsync(Guid id, UpdateTagRequest updateTagRequest, CancellationToken cancellationToken)
         {
@@ -239,6 +260,10 @@ namespace TreeStore.Server.Client
                 httpResponseMessage: await this.httpClient.PutAsJsonAsync($"tags/{id}", updateTagRequest, TreeStoreJsonSerializerOptions.Default, cancellationToken).ConfigureAwait(false),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+
+        #endregion Tags /UPDATE
+
+        #region Tags /DELETE
 
         /// <inheritdoc/>
         public async Task<bool> DeleteTagAsync(Guid id, CancellationToken cancellationToken)
@@ -250,7 +275,7 @@ namespace TreeStore.Server.Client
             return response.Deleted;
         }
 
-        #endregion /tags
+        #endregion Tags /DELETE
 
         #region Common Implementation
 

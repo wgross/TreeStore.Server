@@ -1,3 +1,6 @@
 [submodule "submodules/TreeStore.ProviderCore"]
 	path = submodules/TreeStore.ProviderCore
 	url = https://github.com/wgross/TreeStore.ProviderCore.git
+[submodule "submodules/psake"]
+	path = submodules/psake
+	url = https://github.com/psake/psake.git

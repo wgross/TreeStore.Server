@@ -67,7 +67,7 @@ namespace TreeStoreFS.Test
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace TreeStoreFS.Test
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\", psobject.Property<string>("PSParentPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         [Fact]

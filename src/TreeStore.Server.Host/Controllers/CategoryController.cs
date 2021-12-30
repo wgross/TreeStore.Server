@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using TreeStore.Model.Abstractions;
@@ -17,7 +18,14 @@ namespace TreeStore.Server.Host.Controllers
             this.service = service;
         }
 
+        /// <summary>
+        /// Create new sub categories. Parent category and other properties are specified in <see cref="CreateCategoryRequest"/>.
+        /// </summary>
+        /// <returns>
+        /// The created category or an error object describing the problem
+        /// </returns>
         [HttpPost, Route("categories")]
+        [ProducesResponseType(typeof(CategoryResult), (int)HttpStatusCode.Created)]
         public async Task<IActionResult> CreateCategoryAsync([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await this.service.CreateCategoryAsync(request, cancellationToken).ConfigureAwait(false);
