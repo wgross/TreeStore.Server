@@ -36,16 +36,64 @@ namespace TreeStoreFS.Test
         }
 
         [Fact]
+        public void PowerShell_creates_category_with_itemtype_directory()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "Directory"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            Assert.Equal("child", result.Property<string>("PSChildName"));
+            Assert.True(result.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", result.Property<string>("PSParentPath"));
+        }
+
+        [Fact]
         public void PowerShell_creates_entity()
         {
             // ARRANGE
             this.ArrangeFileSystem();
 
             // ACT
-            var result = this.PowerShell.AddCommand("New-Item")
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "entity")
-                .Invoke()
+                .AddParameter("ItemType", "entity"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            Assert.Equal("child", result.Property<string>("PSChildName"));
+            Assert.False(result.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", result.Property<string>("PSParentPath"));
+        }
+
+        [Fact]
+        public void PowerShell_creates_entity_with_itemtype_file()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "file"))
                 .Single();
 
             // ASSERT

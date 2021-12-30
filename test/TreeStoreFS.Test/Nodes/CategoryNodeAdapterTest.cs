@@ -55,6 +55,33 @@ namespace TreeStoreFS.Test.Nodes
         }
 
         [Fact]
+        public void Creates_child_category_as_directory()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+
+            this.treeStoreServiceMock
+                .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(root.ToCategoryResult());
+
+            var child = DefaultCategoryModel(root, WithDefaultProperty);
+
+            CreateCategoryRequest request = default;
+            this.treeStoreServiceMock
+                .Setup(s => s.CreateCategoryAsync(It.IsAny<CreateCategoryRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<CreateCategoryRequest, CancellationToken>((r, _) => request = r)
+                .ReturnsAsync(child.ToCategoryResult());
+
+            // ACT
+            var result = this.rootCategoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, "Directory", null);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(child.Name, request.Name);
+            Assert.Equal(root.Id, request.ParentId);
+        }
+
+        [Fact]
         public void Creates_grandchild_category()
         {
             // ARRANGE
@@ -109,6 +136,33 @@ namespace TreeStoreFS.Test.Nodes
 
             // ACT
             var result = this.rootCategoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, "entity", null);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(child.Name, request.Name);
+            Assert.Equal(root.Id, request.CategoryId);
+        }
+
+        [Fact]
+        public void Creates_child_entity_as_file()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+
+            this.treeStoreServiceMock
+               .Setup(s => s.GetRootCategoryAsync(It.IsAny<CancellationToken>()))
+               .ReturnsAsync(root.ToCategoryResult());
+
+            var child = DefaultEntityModel(WithEntityCategory(root));
+
+            CreateEntityRequest request = default;
+            this.treeStoreServiceMock
+                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<CreateEntityRequest, CancellationToken>((r, _) => request = r)
+                .ReturnsAsync(child.ToEntityResult());
+
+            // ACT
+            var result = this.rootCategoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, "File", null);
 
             // ASSERT
             Assert.NotNull(result);

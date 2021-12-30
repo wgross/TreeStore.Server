@@ -85,8 +85,11 @@ namespace TreeStoreFS.Nodes
         {
             return Guard.Against.Null(itemTypeName, nameof(itemTypeName)).ToLowerInvariant() switch
             {
-                "category" => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
-                "entity" => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
+                "category" or "directory" 
+                    => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
+
+                "entity" or "file" 
+                    => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
 
                 _ => throw new NotImplementedException()
             };
