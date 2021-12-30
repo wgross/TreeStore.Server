@@ -134,22 +134,21 @@ namespace TreeStoreFS.Test
         #region Get-ChildItem -Path -Recurse
 
         [Fact]
-        public void PowerShell_retrieves_roots_child_categories()
+        public void PowerShell_reads_roots_child_categories()
         {
             // ARRANGE
             this.ArrangeFileSystem();
 
-            _ = this.PowerShell.AddCommand("New-Item")
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "category")
-                .Invoke()
+                .AddParameter("ItemType", "category"))
                 .ToArray();
-            this.PowerShell.Commands.Clear();
 
             // ACT
-            var result = this.PowerShell.AddCommand("Get-ChildItem")
-                .AddParameter("Path", @"test:\")
-                .Invoke()
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Get-ChildItem")
+                .AddParameter("Path", @"test:\"))
                 .ToArray();
 
             // ASSERT
@@ -162,27 +161,26 @@ namespace TreeStoreFS.Test
             Assert.True(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child\", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         [Fact]
-        public void PowerShell_retrieves_root_child_entities()
+        public void PowerShell_reads_root_child_entities()
         {
             // ARRANGE
             this.ArrangeFileSystem();
 
-            _ = this.PowerShell.AddCommand("New-Item")
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
-                .AddParameter("ItemType", "entity")
-                .Invoke()
+                .AddParameter("ItemType", "entity"))
                 .ToArray();
-            this.PowerShell.Commands.Clear();
 
             // ACT
-            var result = this.PowerShell.AddCommand("Get-ChildItem")
-                .AddParameter("Path", @"test:\")
-                .Invoke()
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Get-ChildItem")
+                .AddParameter("Path", @"test:\"))
                 .ToArray();
 
             // ASSERT
@@ -195,11 +193,84 @@ namespace TreeStoreFS.Test
             Assert.False(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
-            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child\", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
             Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
         }
 
         #endregion Get-ChildItem -Path -Recurse
+
+        #region GetChildItem -Path -Name
+
+        [Fact]
+        public void PowerShell_reads_roots_child_category_names()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "category"));
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Get-ChildItem")
+                .AddParameter("Path", @"test:\")
+                .AddParameter("Name"))
+                .ToArray();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.Single(result);
+
+            var psobject = result[0];
+
+            Assert.IsType<string>(psobject.ImmediateBaseObject);
+            Assert.Equal("child", psobject.ImmediateBaseObject as string);
+            Assert.Equal("child", psobject.Property<string>("PSChildName"));
+            Assert.True(psobject.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
+        }
+
+        [Fact]
+        public void PowerShell_reads_root_child_entitiy_names()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity"))
+                .ToArray();
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Get-ChildItem")
+                .AddParameter("Path", @"test:\")
+                .AddParameter("Name"))
+                .ToArray();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.Single(result);
+
+            var psobject = result[0];
+
+            Assert.IsType<string>(psobject.ImmediateBaseObject);
+            Assert.Equal("child", psobject.ImmediateBaseObject as string);
+            Assert.Equal("child", psobject.Property<string>("PSChildName"));
+            Assert.False(psobject.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", psobject.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", psobject.Property<string>("PSParentPath"));
+        }
+
+        #endregion GetChildItem -Path -Name
 
         #region Copy-Item -Path -Destination -Recurse
 
@@ -494,7 +565,6 @@ namespace TreeStoreFS.Test
             Assert.Equal(@"test:\child", pathInfo.Path);
         }
 
-
         [Fact]
         public void Resolve_child_category_path_with_wildcard()
         {
@@ -505,6 +575,37 @@ namespace TreeStoreFS.Test
                 .AddCommand("New-Item")
                 .AddParameter("Path", @"test:\child")
                 .AddParameter("ItemType", "category"))
+                .Single();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("Set-Location")
+                .AddParameter("Path", @"test:\"));
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("Resolve-Path")
+                .AddParameter("Path", "ch*"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+            Assert.NotNull(result);
+
+            var pathInfo = result.ImmediateBaseObject is PathInfo pi ? pi : throw new Exception("nope");
+
+            Assert.Equal(@"test:\child", pathInfo.Path);
+        }
+
+        [Fact]
+        public void Resolve_child_entity_path_with_wildcard()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "entity"))
                 .Single();
 
             this.InvokeAndClear(ps => ps

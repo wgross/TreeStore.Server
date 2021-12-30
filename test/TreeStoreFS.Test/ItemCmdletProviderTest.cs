@@ -28,7 +28,7 @@ namespace TreeStoreFS.Test
 
             var psobject = result.Single();
 
-            Assert.Equal(string.Empty, psobject.Property<string>("PSChildName"));
+            Assert.Equal("test:", psobject.Property<string>("PSChildName"));
             Assert.True(psobject.Property<bool>("PSIsContainer"));
             Assert.Equal("test", psobject.Property<PSDriveInfo>("PSDrive").Name);
             Assert.Equal("TreeStoreFS", psobject.Property<ProviderInfo>("PSProvider").Name);
