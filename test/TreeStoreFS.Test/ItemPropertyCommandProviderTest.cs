@@ -114,6 +114,49 @@ namespace TreeStoreFS.Test
             Assert.Equal(17, result.Property<long?>("p1"));
         }
 
+        [Theory]
+        [InlineData((object)(int)17)]
+        [InlineData((object)(short)17)]
+        [InlineData((object)(ushort)17)]
+        [InlineData((object)(uint)17)]
+        public void Update_item_long_property_value_with_shorter_int(object shorterInt)
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child")
+                .AddParameter("ItemType", "category"));
+
+            this.InvokeAndClear(ps => ps
+               .AddCommand("New-ItemProperty")
+               .AddParameter("Path", @"test:\child")
+               .AddParameter("Name", "p1")
+               .AddParameter("PropertyType", "long"));
+
+            this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child\item")
+                .AddParameter("ItemType", "entity"));
+
+            // ACT
+            this.InvokeAndClear(ps => ps
+                .AddCommand("Set-ItemProperty")
+                .AddParameter("Path", @"test:\child\item")
+                .AddParameter("Name", "p1")
+                .AddParameter("Value", shorterInt));
+
+            // ASSERT
+            var result = this.InvokeAndClear(ps => ps
+               .AddCommand("Get-ItemProperty")
+               .AddParameter("Path", @"test:\child\item")
+               .AddParameter("Name", "p1"))
+               .Single();
+
+            Assert.Equal(17, result.Property<long?>("p1"));
+        }
+
         #endregion Set-ItemProperty -Path -Name -Value
 
         #region Clear-ItemProperty -Path -Name

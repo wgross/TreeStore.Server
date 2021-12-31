@@ -114,11 +114,11 @@ namespace TreeStore.Model.Abstractions.Json
                             break;
 
                         case FacetPropertyTypeValues.Decimal:
-                            writer.WriteNumber(propertyName, (decimal)value);
+                            writer.WriteNumber(propertyName, Convert.ToDecimal(value));
                             break;
 
                         case FacetPropertyTypeValues.Double:
-                            writer.WriteNumber(propertyName, (double)value);
+                            writer.WriteNumber(propertyName, Convert.ToDouble(value));
                             break;
 
                         case FacetPropertyTypeValues.Guid:
@@ -126,7 +126,7 @@ namespace TreeStore.Model.Abstractions.Json
                             break;
 
                         case FacetPropertyTypeValues.Long:
-                            writer.WriteNumber(propertyName, (long)value);
+                            writer.WriteNumber(propertyName, Convert.ToInt64(value));
                             break;
 
                         case FacetPropertyTypeValues.String:

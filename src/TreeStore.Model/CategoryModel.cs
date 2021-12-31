@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace TreeStore.Model
 {
+    /// <summary>A category groups other categories and <see cref="EntityModel" />.</summary>
     public class CategoryModel : FacetingEntityBase, ICloneable
     {
         public CategoryModel()
