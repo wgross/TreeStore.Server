@@ -171,6 +171,35 @@ namespace TreeStoreFS.Test.Nodes
         }
 
         [Fact]
+        public void Creates_child_entity_as_default()
+        {
+            // ARRANGE
+            var root = DefaultRootCategoryModel();
+            var category = DefaultCategoryModel(root);
+            var categoryAdapter = new CategoryNodeAdapter(this.treeStoreServiceMock.Object, category.Id);
+
+            this.treeStoreServiceMock
+               .Setup(s => s.GetCategoryByIdAsync(category.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(category.ToCategoryResult());
+
+            var child = DefaultEntityModel(WithEntityCategory(category));
+
+            CreateEntityRequest request = default;
+            this.treeStoreServiceMock
+                .Setup(s => s.CreateEntityAsync(It.IsAny<CreateEntityRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<CreateEntityRequest, CancellationToken>((r, _) => request = r)
+                .ReturnsAsync(child.ToEntityResult());
+
+            // ACT
+            var result = categoryAdapter.GetService<INewChildItem>().NewChildItem(child.Name, itemTypeName: null, newItemValue: null);
+
+            // ASSERT
+            Assert.NotNull(result);
+            Assert.Equal(child.Name, request.Name);
+            Assert.Equal(category.Id, request.CategoryId);
+        }
+
+        [Fact]
         public void Copies_child_category()
         {
             // ARRANGE

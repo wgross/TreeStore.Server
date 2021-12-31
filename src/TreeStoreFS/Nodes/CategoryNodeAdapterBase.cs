@@ -97,13 +97,17 @@ namespace TreeStoreFS.Nodes
         /// <inheritdoc/>
         ProviderNode? INewChildItem.NewChildItem(string childName, string? itemTypeName, object? newItemValue)
         {
-            return Guard.Against.Null(itemTypeName, nameof(itemTypeName)).ToLowerInvariant() switch
+            return itemTypeName?.ToLowerInvariant() switch
             {
                 "category" or "directory"
-                    => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
+                    => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, childName))),
 
                 "entity" or "file"
-                    => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
+                    => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, childName))),
+
+                null => this.Category.ParentId != Guid.Empty
+                        ? this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, childName)))
+                        : throw new ArgumentNullException(nameof(itemTypeName)),
 
                 _ => throw new NotImplementedException()
             };
@@ -113,7 +117,7 @@ namespace TreeStoreFS.Nodes
         {
             return await this.TreeStoreService.CreateEntityAsync(
                new CreateEntityRequest(
-                   Name: childName,
+                   Name: Guard.Against.NullOrEmpty(childName, nameof(childName)),
                    CategoryId: parentId),
                    CancellationToken.None).ConfigureAwait(false);
         }
@@ -122,7 +126,7 @@ namespace TreeStoreFS.Nodes
         {
             return await this.TreeStoreService.CreateCategoryAsync(
                 new CreateCategoryRequest(
-                    Name: childName,
+                    Name: Guard.Against.NullOrEmpty(childName, nameof(childName)),
                     ParentId: parentId,
                     Facet: null),
                     CancellationToken.None).ConfigureAwait(false);
