@@ -22,6 +22,20 @@ namespace TreeStoreFS.Nodes
         // DynamicItemPropertyCommandProvider
         INewItemProperty, IRenameItemProperty
     {
+        private record CategoryItem
+        {
+            private readonly CategoryResult underlying;
+
+            public CategoryItem(CategoryResult underlying)
+            {
+                this.underlying = underlying;
+            }
+
+            public Guid Id => this.underlying.Id;
+
+            public string Name => this.underlying.Name;
+        }
+
         protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
         { }
@@ -66,7 +80,7 @@ namespace TreeStoreFS.Nodes
         #region IGetItem
 
         /// <inheritdoc/>
-        PSObject IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(this.Category));
+        PSObject IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(new CategoryItem(this.Category)));
 
         private PSObject AddAllFacetProperties(PSObject pso)
         {
@@ -85,10 +99,10 @@ namespace TreeStoreFS.Nodes
         {
             return Guard.Against.Null(itemTypeName, nameof(itemTypeName)).ToLowerInvariant() switch
             {
-                "category" or "directory" 
+                "category" or "directory"
                     => this.CreateCategoryNode(Await(this.NewChildContainer(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
 
-                "entity" or "file" 
+                "entity" or "file"
                     => this.CreateEntityNode(Await(this.NewChildEntity(this.Category.Id, Guard.Against.Null(childName, nameof(childName))))),
 
                 _ => throw new NotImplementedException()
@@ -252,7 +266,7 @@ namespace TreeStoreFS.Nodes
             var existingDestinationProperty = this.Category.Facet!.Properties.FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
             if (existingDestinationProperty is not null)
                 throw new InvalidOperationException($"Creating property(name='{propertyName}') failed: property name is duplicate");
-            
+
             // send the update but don't keep the result. The category is fetch again during the next command
 
             Await(this.TreeStoreService.UpdateCategoryAsync(this.Category.Id, new UpdateCategoryRequest(

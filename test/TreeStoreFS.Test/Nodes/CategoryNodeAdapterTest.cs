@@ -371,7 +371,6 @@ namespace TreeStoreFS.Test.Nodes
             Assert.NotNull(result);
             Assert.Equal(category.Id, result.Property<Guid>("Id"));
             Assert.Equal(category.Name, result.Property<string>("Name"));
-            Assert.Equal(category.Parent.Id, result.Property<Guid>("ParentId"));
         }
 
         [Fact]

@@ -42,11 +42,7 @@ namespace TreeStoreFS.Test.Nodes
             Assert.NotNull(result);
             Assert.Equal(root.Id, result.Property<Guid>("Id"));
             Assert.Equal(root.Name, result.Property<string>("Name"));
-            Assert.NotNull(result.Property<FacetResult>("Facet"));
-            Assert.Equal(root.Facet.Properties.Single().Id, result.Property<FacetResult>("Facet").Properties.Single().Id);
-            Assert.Equal(root.Facet.Properties.Single().Type, result.Property<FacetResult>("Facet").Properties.Single().Type);
         }
-
         
     }
 }

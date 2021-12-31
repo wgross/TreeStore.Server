@@ -33,7 +33,7 @@ namespace TreeStoreFS.Nodes
 
         #region IGetItem
 
-        PSObject? IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(this.Entity));
+        PSObject? IGetItem.GetItem() => this.AddAllFacetProperties(PSObject.AsPSObject(new EntityItem(this.Entity)));
 
         private PSObject AddAllFacetProperties(PSObject pso)
         {

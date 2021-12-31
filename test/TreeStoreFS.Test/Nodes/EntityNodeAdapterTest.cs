@@ -48,7 +48,6 @@ namespace TreeStoreFS.Test.Nodes
             Assert.NotNull(result);
             Assert.Equal(entity.Id, result.Property<Guid>("Id"));
             Assert.Equal(entity.Name, result.Property<string>("Name"));
-            Assert.Equal(entity.Category.Id, result.Property<Guid>("CategoryId"));
             Assert.Equal(value, result.Property<Guid?>("guid"));
         }
 
