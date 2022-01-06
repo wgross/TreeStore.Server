@@ -1,4 +1,4 @@
-Import-Module ./TreeStoreFS.Dll 
+Import-Module ./TreeStoreFS.psd1 
 New-PSDrive -Name data -PSProvider TreeStoreFS -Root "https://localhost:44371/"
 
 Set-Location data:\

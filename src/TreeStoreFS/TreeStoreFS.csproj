@@ -11,4 +11,16 @@
     <ProjectReference Include="..\TreeStore.Server.Client\TreeStore.Server.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TreeStoreFS.Format.ps1xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TreeStoreFS.psm1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TreeStoreFS.psd1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

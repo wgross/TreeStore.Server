@@ -22,20 +22,6 @@ namespace TreeStoreFS.Nodes
         // DynamicItemPropertyCommandProvider
         INewItemProperty, IRenameItemProperty
     {
-        private record CategoryItem
-        {
-            private readonly CategoryResult underlying;
-
-            public CategoryItem(CategoryResult underlying)
-            {
-                this.underlying = underlying;
-            }
-
-            public Guid Id => this.underlying.Id;
-
-            public string Name => this.underlying.Name;
-        }
-
         protected CategoryNodeAdapterBase(ITreeStoreService treeStoreService)
             : base(treeStoreService)
         { }
