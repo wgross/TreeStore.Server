@@ -32,6 +32,8 @@ namespace TreeStore.Server.Host
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .AddJsonOptions(options => TreeStoreJsonSerializerOptions.Apply(options.JsonSerializerOptions));
 
+            services.AddCors(static options => options.AddPolicy(name: "localhost-only", static builder => builder.WithOrigins("http://localhost")));
+
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "TreeStore.Server.Host", Version = "v1" }));
 
             this.ConfigureTreeStoreServices(services);
@@ -56,6 +58,8 @@ namespace TreeStore.Server.Host
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("localhost-only");
 
             app.UseAuthorization();
 
