@@ -23,11 +23,7 @@ namespace TreeStore.Model.Test
             return t;
         }
 
-        protected TreeStoreModel NewModel()
-        {
-            return new TreeStoreModel(this.Persistence.Object);
-        }
-
+       
         protected TagModel DefaultTagModel(Action<TagModel> setup = null) => Setup(new TagModel("t", new FacetModel("f", new FacetPropertyModel("p"))), setup);
 
         protected EntityModel DefaultEntityModel(Action<EntityModel> setup = null, params TagModel[] tags) => Setup(new EntityModel("e", tags), setup);

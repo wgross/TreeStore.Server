@@ -8,7 +8,7 @@ namespace TreeStore.Server.Host
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args).UseWindowsService().Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

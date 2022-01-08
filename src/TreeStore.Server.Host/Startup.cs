@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using TreeStore.LiteDb;
 using TreeStore.Model;
@@ -39,10 +38,11 @@ namespace TreeStore.Server.Host
             this.ConfigureTreeStoreServices(services);
         }
 
-        protected virtual void ConfigureTreeStoreServices(IServiceCollection serviceCollection)
+        protected virtual void ConfigureTreeStoreServices(IServiceCollection services)
         {
-            serviceCollection.AddSingleton<ITreeStoreModel>(sc => TreeStoreLiteDbPersistence.InMemory(sc.GetRequiredService<ILoggerFactory>()));
-            serviceCollection.AddScoped<ITreeStoreService, TreeStoreService>();
+            services.Configure<TreeStoreLiteDbOptions>(this.Configuration.GetSection("LiteDb"));
+            services.AddSingleton<ITreeStoreModel, TreeStoreLiteDbPersistence>();
+            services.AddScoped<ITreeStoreService, TreeStoreService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

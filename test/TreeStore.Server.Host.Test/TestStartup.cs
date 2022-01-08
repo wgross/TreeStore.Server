@@ -15,7 +15,7 @@ namespace TreeStore.Server.Host.Test
 
         protected override void ConfigureTreeStoreServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddScoped<ITreeStoreService>(_ => this.service);
+            serviceCollection.AddScoped(_ => this.service);
         }
     }
 }
