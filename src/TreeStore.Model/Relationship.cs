@@ -1,10 +1,9 @@
-﻿
-using TreeStore.Model.Abstractions;
+﻿using TreeStore.Model.Abstractions;
 using TreeStore.Model.Base;
 
 namespace TreeStore.Model
 {
-    public class Relationship : TaggedBase, IRelationship
+    public class Relationship : TaggedModelBase, IRelationship
     {
         public Relationship(string name, EntityModel? from, EntityModel? to, params TagModel[] tags)
             : base(name, tags)

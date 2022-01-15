@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Xunit;
 
 namespace TreeStore.Model.Test
@@ -40,6 +41,19 @@ namespace TreeStore.Model.Test
             // ASSERT
             Assert.Equal("changed-name", result.Name);
             Assert.Equal("changed-name", result.Facet.Name);
+        }
+
+        [Fact]
+        public void Categeory_rejects_null_facet()
+        {
+            // ARRANGE
+            var category = new CategoryModel("name");
+
+            // ACT
+            var result = Assert.Throws<ArgumentNullException>(() => category.Facet = null);
+
+            // ASSERT
+            Assert.Equal("value", result.ParamName);
         }
 
         [Fact]

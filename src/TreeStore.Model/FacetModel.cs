@@ -5,7 +5,7 @@ using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class FacetModel : NamedBase, IFacet<FacetPropertyModel>
+    public class FacetModel : NamedModelBase, IFacet<FacetPropertyModel>
     {
         #region Construction and initialization of this instance
 

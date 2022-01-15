@@ -2,7 +2,7 @@
 
 namespace TreeStore.Model
 {
-    public class TagModel : FacetingEntityBase, ITag
+    public class TagModel : FacetingModelBase, ITag
     {
         public TagModel()
             : base(string.Empty, new FacetModel(string.Empty))

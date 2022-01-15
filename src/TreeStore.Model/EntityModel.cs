@@ -6,7 +6,7 @@ using TreeStore.Model.Base;
 
 namespace TreeStore.Model
 {
-    public sealed class EntityModel : CategorizedBase, IEntity, ICloneable
+    public sealed class EntityModel : CategorizedModelBase, IEntity, ICloneable
     {
         #region Construction and initialization of this instance
 
@@ -32,22 +32,10 @@ namespace TreeStore.Model
 
         #endregion Construction and initialization of this instance
 
-        #region Entity has Categories
-
-        public IEnumerable<FacetModel> Facets()
-        {
-            if (this.Category is null)
-                return this.Tags.Select(t => t.Facet);
-            return this.Category.Facets().Union(this.Tags.Select(t => t.Facet));
-        }
-
-        public override IEnumerable<FacetPropertyModel> FacetProperties()
-        {
-            return this.Facets().SelectMany(f => f.Properties);
-        }
+        #region IClonable
 
         public object Clone() => new EntityModel(this.Name, this.Tags.ToArray(), this.Values);
 
-        #endregion Entity has Categories
+        #endregion IClonable
     }
 }

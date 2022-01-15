@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TreeStore.Model
 {
-    public interface IRepository<T> where T : NamedBase
+    public interface IRepository<T> where T : NamedModelBase
     {
         T? FindById(Guid id);
 

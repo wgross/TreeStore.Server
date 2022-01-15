@@ -3,16 +3,16 @@ using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public abstract class NamedBase : IIdentifiable, INamed, IEquatable<object?>
+    public abstract class NamedModelBase : IIdentifiable, INamed, IEquatable<object?>
     {
         #region Construction and initialization of this instance
 
-        public NamedBase(string name)
+        public NamedModelBase(string name)
         {
             this.Name = name;
         }
 
-        public NamedBase()
+        public NamedModelBase()
             : this(string.Empty)
 
         {
@@ -58,7 +58,7 @@ namespace TreeStore.Model
             if (object.ReferenceEquals(this, obj))
                 return true;
 
-            if (obj is NamedBase nb)
+            if (obj is NamedModelBase nb)
                 return (this.GetType(), this.Id).Equals((obj.GetType(), nb.Id));
 
             return false;

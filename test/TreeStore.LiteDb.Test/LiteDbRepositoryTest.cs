@@ -14,7 +14,7 @@ namespace TreeStore.LiteDb.Test
         private readonly LiteDbRepositoryBase<TestEntity> repository;
         private readonly ILiteCollection<TestEntity> entities;
 
-        private class TestEntity : NamedBase, IIdentifiable
+        private class TestEntity : NamedModelBase, IIdentifiable
         {
             public TestEntity() : base()
             { }

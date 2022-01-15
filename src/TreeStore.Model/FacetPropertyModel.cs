@@ -3,7 +3,7 @@ using TreeStore.Model.Abstractions;
 
 namespace TreeStore.Model
 {
-    public class FacetPropertyModel : NamedBase, IFacetProperty
+    public class FacetPropertyModel : NamedModelBase, IFacetProperty
     {
         public FacetPropertyTypeValues Type { get; set; }
 

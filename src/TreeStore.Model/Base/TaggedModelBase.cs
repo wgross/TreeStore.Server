@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace TreeStore.Model.Base
 {
-    public abstract class TaggedBase : HasPropertyValuesBase
+    public abstract class TaggedModelBase : FacetedModelBase
     {
-        protected TaggedBase(string name, TagModel[] tags)
+        protected TaggedModelBase(string name, TagModel[] tags)
             : base(name)
         {
             this.Tags = tags.ToList();
@@ -44,7 +44,9 @@ namespace TreeStore.Model.Base
                 this.RemoveTag(tag);
         }
 
-        public override IEnumerable<FacetPropertyModel> FacetProperties()
-            => this.Tags.SelectMany(t => t.Facet.Properties).Union(base.FacetProperties());
+        /// <summary>
+        /// A tagged model item receives its <see cref="FacetModel"/> from the assigned set of <see cref="TagModel"/>.
+        /// </summary>
+        public override IEnumerable<FacetModel> Facets() => this.Tags.Select(t => t.Facet);
     }
 }

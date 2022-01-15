@@ -26,7 +26,7 @@ namespace TreeStore.LiteDb
     }
 
     public abstract class LiteDbRepositoryBase<T> : LiteDbRepositoryBase
-        where T : NamedBase, IIdentifiable
+        where T : NamedModelBase, IIdentifiable
     {
         protected ILogger Logger { get; }
 

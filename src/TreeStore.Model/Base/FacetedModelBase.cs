@@ -4,9 +4,13 @@ using System.Linq;
 
 namespace TreeStore.Model.Base
 {
-    public abstract class HasPropertyValuesBase : NamedBase
+    /// <summary>
+    /// Base class fro all model item receiving <see cref="FacetModel"/> instances with properties and storing the
+    /// values with them.
+    /// </summary>
+    public abstract class FacetedModelBase : NamedModelBase
     {
-        public HasPropertyValuesBase(string name)
+        public FacetedModelBase(string name)
             : base(name)
         { }
 
@@ -29,10 +33,14 @@ namespace TreeStore.Model.Base
             => (facetProperty, this.Values.TryGetValue(facetProperty.Id.ToString(), out var value), value);
 
         /// <summary>
-        /// Returns all <see cref="FacetPropertyModel"/> associeted woth this item
+        /// Returns all <see cref="FacetModel"/> associated with this item.
         /// </summary>
-        /// <returns></returns>
-        public virtual IEnumerable<FacetPropertyModel> FacetProperties() => Enumerable.Empty<FacetPropertyModel>();
+        public abstract IEnumerable<FacetModel> Facets();
+
+        /// <summary>
+        /// Selects <see cref="FacetPropertyModel"/> from <see cref="Facets()"/>.
+        /// </summary>
+        public IEnumerable<FacetPropertyModel> FacetProperties() => this.Facets().SelectMany(f => f.Properties);
 
         protected void RemoveObsoletePropertyValues()
         {

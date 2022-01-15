@@ -6,9 +6,9 @@ namespace TreeStore.Model.Base
     /// <summary>
     /// All items are categorized
     /// </summary>
-    public abstract class CategorizedBase : TaggedBase
+    public abstract class CategorizedModelBase : TaggedModelBase
     {
-        public CategorizedBase(string name, TagModel[] tags)
+        public CategorizedModelBase(string name, TagModel[] tags)
             : base(name, tags)
         {
         }
@@ -27,12 +27,15 @@ namespace TreeStore.Model.Base
             set { }
         }
 
-        public override IEnumerable<FacetPropertyModel> FacetProperties()
+        /// <summary>
+        /// A categorized model item receives its <see cref="FacetModel"/> from the category hierarchy and
+        /// the additionally assigned <see cref="TagModel"/>.
+        /// </summary>
+        override public IEnumerable<FacetModel> Facets()
         {
-            if (this.Category is null)
-                return base.FacetProperties();
-
-            return this.Category.Facets().SelectMany(f => f.Properties).Union(base.FacetProperties());
+            return this.Category is null
+                ? base.Facets()
+                : this.Category.Facets().Union(base.Facets());
         }
     }
 }

@@ -59,6 +59,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStoreFS", "src\TreeStor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TreeStoreFS.Test", "test\TreeStoreFS.Test\TreeStoreFS.Test.csproj", "{15851A0B-F50C-441A-96DD-A045EAD6E7EB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47E0C83E-8725-457A-9F28-5F4BF9E23356}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
