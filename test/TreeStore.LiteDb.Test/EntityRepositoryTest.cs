@@ -226,7 +226,7 @@ namespace TreeStore.LiteDb.Test
             Assert.NotNull(readEntity);
             Assert.Equal(entity.Id, readEntity.AsDocument["_id"].AsGuid);
             Assert.Equal(entity.Tags.Single().Id, readEntity["Tags"].AsArray[0].AsDocument["$id"].AsGuid);
-            Assert.Equal(TagLiteDbRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+            Assert.Equal("tags", readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
         }
 
         [Fact]
@@ -314,7 +314,7 @@ namespace TreeStore.LiteDb.Test
 
             Assert.NotNull(readEntity);
             Assert.Equal(entity.Id, readEntity.AsDocument["_id"].AsGuid);
-            Assert.Equal(TagLiteDbRepository.CollectionName, readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
+            Assert.Equal("tags", readEntity["Tags"].AsArray[0].AsDocument["$ref"].AsString);
 
             // value of every type
             var resultValuesDocument = readEntity.AsDocument["Values"].AsDocument;

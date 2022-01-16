@@ -6,13 +6,11 @@ namespace TreeStore.LiteDb
 {
     public class TagLiteDbRepository : LiteDbRepositoryBase<TagModel>, ITagRepository
     {
-        public const string CollectionName = "tags";
-
         public TagLiteDbRepository(LiteRepository liteDbrepository, ILogger<TagLiteDbRepository> logger)
-            : base(liteDbrepository, CollectionName, logger)
+            : base(liteDbrepository, "tags", logger)
         {
             liteDbrepository.Database
-                .GetCollection(CollectionName)
+                .GetCollection(this.CollectionName)
                 .EnsureIndex(
                     name: nameof(TagModel.Name),
                     expression: $"LOWER($.{nameof(TagModel.Name)})",

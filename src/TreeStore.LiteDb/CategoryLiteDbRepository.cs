@@ -7,7 +7,7 @@ using TreeStore.Model;
 
 namespace TreeStore.LiteDb
 {
-    public sealed class CategoryLiteDbRepository : LiteDbRepositoryBase<CategoryModel>, ICategoryRepository
+    public sealed partial class CategoryLiteDbRepository : LiteDbRepositoryBase<CategoryModel>, ICategoryRepository
     {
         public const string collectionName = "categories";
 
@@ -41,7 +41,7 @@ namespace TreeStore.LiteDb
         private readonly ILogger<CategoryLiteDbRepository> logger;
 
         /// <summary>
-        /// return the root node of the repositorty. If not exists it is created.
+        /// Returns the root node of the repository. If not exists it is created.
         /// </summary>
         public CategoryModel Root() => this.FindRootCategory() ?? this.CreateRootCategory();
 
@@ -55,7 +55,7 @@ namespace TreeStore.LiteDb
                 .FirstOrDefault();
 
             if (rootCategory is not null)
-                this.Logger.FoundExistingRootCategory(rootCategory);
+                this.logger.LogFoundExistingRootCategory(rootCategory.Id);
 
             return rootCategory;
         }
@@ -65,7 +65,7 @@ namespace TreeStore.LiteDb
             var rootCategory = new CategoryModel(string.Empty);
             this.LiteCollection().Upsert(rootCategory);
 
-            this.Logger.FoundExistingRootCategory(rootCategory);
+            this.logger.LogFoundExistingRootCategory(rootCategory.Id);
 
             return rootCategory;
         }

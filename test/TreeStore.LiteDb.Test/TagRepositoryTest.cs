@@ -17,7 +17,7 @@ namespace TreeStore.LiteDb.Test
         public TagRepositoryTest()
         {
             this.repository = new TagLiteDbRepository(this.Persistence.LiteRepository, new NullLogger<TagLiteDbRepository>());
-            this.tags = this.Persistence.LiteRepository.Database.GetCollection(TagLiteDbRepository.CollectionName);
+            this.tags = this.Persistence.LiteRepository.Database.GetCollection("tags");
         }
 
         [Fact]

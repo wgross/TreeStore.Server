@@ -1,34 +1,23 @@
 ﻿using Microsoft.Extensions.Logging;
-using TreeStore.Model;
-using TreeStore.Model.Abstractions;
+using System;
 
 namespace TreeStore.LiteDb
 {
-    internal static class LogMessages
+    internal static partial class LogMessages
     {
-        internal static void DeletingLiteDbItem<T>(this ILogger logger, T liteDbItem) where T : IIdentifiable
-        {
-            logger.LogDebug("Deleting liteDbItem(id='{id}',type='{type}')", liteDbItem.Id, nameof(T));
-        }
+        [LoggerMessage(1, LogLevel.Debug, "Deleting {type}(id='{id}')")]
+        internal static partial void LogDeletingLiteDbItem(this ILogger logger, string type, Guid id);
 
-        internal static void FoundExistingRootCategory(this ILogger logger, CategoryModel category)
-        {
-            logger.LogInformation("Found existing root category(id='{id}')", category.Id);
-        }
+        [LoggerMessage(2, LogLevel.Information, "Found existing root category(id='{id}')")]
+        internal static partial void LogFoundExistingRootCategory(this ILogger logger, Guid id);
 
-        internal static void CreatedNewRootCatagory(this ILogger logger, CategoryModel category)
-        {
-            logger.LogInformation("Created new root category(id='{id}')", category.Id);
-        }
+        [LoggerMessage(3, LogLevel.Information, "Created root category(id='{id}')")]
+        internal static partial void LogCreatedNewRootCategory(this ILogger logger, Guid id);
 
-        internal static void UpsertedLiteDbItem<T>(this ILogger logger, T liteDbItem) where T : IIdentifiable
-        {
-            logger.LogInformation("Upserted liteDbItem(id='{id}',type='{type}')", liteDbItem.Id, nameof(T));
-        }
+        [LoggerMessage(4, LogLevel.Information, "Upserted {type}(id='{id}')")]
+        internal static partial void LogUpsertedLiteDbItem(this ILogger logger, string type, Guid id);
 
-        internal static void UpsertedLiteDbItemFailed<T>(this ILogger logger, T liteDbItem) where T : IIdentifiable
-        {
-            logger.LogWarning("Upserted liteDbItem(id='{id}',type='{type}') failed. LiteDb returned 'false'", liteDbItem.Id, nameof(T));
-        }
+        [LoggerMessage(5, LogLevel.Error, "Upserting {type}(id='{id}') failed in LitDb")]
+        internal static partial void LogUpsertingLiteDbItemFailed(this ILogger logger, string type, Guid id);
     }
 }

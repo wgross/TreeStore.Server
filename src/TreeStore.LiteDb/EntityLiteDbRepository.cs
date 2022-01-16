@@ -9,25 +9,24 @@ namespace TreeStore.LiteDb
 {
     public class EntityLiteDbRepository : LiteDbRepositoryBase<EntityModel>, IEntityRepository
     {
-        public const string CollectionName = "entities";
         private readonly TreeStoreLiteDbPersistence persistence;
 
         static EntityLiteDbRepository()
         {
             BsonMapper.Global
                 .Entity<EntityModel>()
-                    .DbRef(e => e.Tags, TagLiteDbRepository.CollectionName)
-                    .DbRef(e => e.Category, CategoryLiteDbRepository.collectionName);
+                    .DbRef(e => e.Tags, "tags")
+                    .DbRef(e => e.Category, "categories");
         }
 
         public EntityLiteDbRepository(TreeStoreLiteDbPersistence persistence, ILogger<EntityLiteDbRepository> logger)
-            : base(persistence.LiteRepository, CollectionName, logger)
+            : base(persistence.LiteRepository, "entities", logger)
         {
             // name+categoryid of an entity is unique
             persistence
                 .LiteRepository
                 .Database
-                .GetCollection(CollectionName)
+                .GetCollection(this.CollectionName)
                 .EnsureIndex(
                     name: nameof(EntityModel.UniqueName),
                     expression: $"$.{nameof(EntityModel.UniqueName)}",

@@ -12,7 +12,7 @@ namespace TreeStore.LiteDb
         {
             BsonMapper.Global
                .Entity<Relationship>()
-                   .DbRef(r => r.Tags, TagLiteDbRepository.CollectionName)
+                   .DbRef(r => r.Tags, "tags")
                    .DbRef(r => r.From, "entities")
                    .DbRef(r => r.To, "entities");
         }

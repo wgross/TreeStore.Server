@@ -12,7 +12,7 @@ namespace TreeStore.LiteDb
         protected string CollectionName { get; init; }
 
         /// <summary>
-        /// Provides low oleve access to underlying the lite db.
+        /// Provides low level access to underlying the lite db.
         /// </summary>
         public LiteRepository LiteRepository { get; }
 
@@ -25,29 +25,34 @@ namespace TreeStore.LiteDb
         }
     }
 
-    public abstract class LiteDbRepositoryBase<T> : LiteDbRepositoryBase
+    public abstract partial class LiteDbRepositoryBase<T> : LiteDbRepositoryBase
         where T : NamedModelBase, IIdentifiable
     {
-        protected ILogger Logger { get; }
+        private readonly ILogger logger;
 
-        protected IDisposable BeginScope(T t) => this.Logger.BeginScope($"{nameof(T)}(id='{{id}}')", t.Id);
+        protected IDisposable BeginScope(T t) => this.logger.BeginScope($"{nameof(T)}(id='{{id}}')", t.Id);
 
         static LiteDbRepositoryBase() => BsonMapper.Global.Entity<T>().Id(v => v.Id);
 
         public LiteDbRepositoryBase(LiteRepository repository, string collectionName, ILogger<LiteDbRepositoryBase<T>> logger)
             : base(repository, collectionName)
         {
-            this.Logger = logger;
+            this.logger = logger;
         }
 
+        /// <summary>
+        /// Generic update method used by all derived repositories.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public virtual T Upsert(T item)
         {
             var succeeded = this.LiteRepository.Upsert(item, CollectionName);
 
             if (succeeded)
-                this.Logger.UpsertedLiteDbItem(item);
+                this.LogUpsertedLiteDbItem(item);
             else
-                this.Logger.UpsertedLiteDbItemFailed(item);
+                this.LogUpsertingLiteDbItemFailed(item);
 
             return item;
         }
@@ -62,11 +67,21 @@ namespace TreeStore.LiteDb
         {
             using var scope = this.BeginScope(item);
 
-            this.Logger.DeletingLiteDbItem(item);
+            this.LogDeletingLiteDbItem(item);
 
             return this.LiteCollection().Delete(item.Id);
         }
 
         abstract protected ILiteCollection<T> IncludeRelated(ILiteCollection<T> from);
+
+        #region Logging
+
+        protected void LogDeletingLiteDbItem(T instance) => this.logger.LogDeletingLiteDbItem(nameof(T), instance.Id);
+
+        protected void LogUpsertedLiteDbItem(T instance) => this.logger.LogUpsertedLiteDbItem(nameof(T), instance.Id);
+
+        protected void LogUpsertingLiteDbItemFailed(T instance) => this.logger.LogUpsertingLiteDbItemFailed(nameof(T), instance.Id);
+
+        #endregion Logging
     }
 }
