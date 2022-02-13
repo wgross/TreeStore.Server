@@ -13,3 +13,14 @@ HTTP Error 400. The request hostname is invalid.
 
 Using the IP '127.0.0.1' also fails.
 
+## Configuration of Persistence
+
+Use Litedb with in memory store for testing purpose. 
+In AppSettings.json:
+
+```json
+ "LiteDb": {
+    "FileName" : ":memory:"
+  }
+```
+

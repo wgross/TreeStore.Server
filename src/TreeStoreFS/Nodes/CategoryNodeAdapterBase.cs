@@ -82,6 +82,9 @@ namespace TreeStoreFS.Nodes
 
         /// <inheritdoc/>
         ProviderNode? INewChildItem.NewChildItem(string childName, string? itemTypeName, object? newItemValue)
+            => this.NewChildItemImpl(childName, itemTypeName, newItemValue);
+
+        virtual protected ProviderNode? NewChildItemImpl(string childName, string? itemTypeName, object? newItemType)
         {
             return itemTypeName?.ToLowerInvariant() switch
             {

@@ -36,6 +36,29 @@ namespace TreeStoreFS.Test
         }
 
         [Fact]
+        public void PowerShell_creates_category_in_root_by_default()
+        {
+            // ARRANGE
+            this.ArrangeFileSystem();
+
+            // ACT
+            var result = this.InvokeAndClear(ps => ps
+                .AddCommand("New-Item")
+                .AddParameter("Path", @"test:\child"))
+                .Single();
+
+            // ASSERT
+            Assert.False(this.PowerShell.HadErrors);
+
+            Assert.Equal("child", result.Property<string>("PSChildName"));
+            Assert.True(result.Property<bool>("PSIsContainer"));
+            Assert.Equal("test", result.Property<PSDriveInfo>("PSDrive").Name);
+            Assert.Equal("TreeStoreFS", result.Property<ProviderInfo>("PSProvider").Name);
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:\child", result.Property<string>("PSPath"));
+            Assert.Equal(@"TreeStoreFS\TreeStoreFS::test:", result.Property<string>("PSParentPath"));
+        }
+
+        [Fact]
         public void PowerShell_creates_category_with_itemtype_directory()
         {
             // ARRANGE
